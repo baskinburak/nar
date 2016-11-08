@@ -1,11 +1,11 @@
 #include <iostream>
-#include <nar/narnode/exception.h>
+#include <nar/narnode/Exception/exception.h>
 #include <nar/lib/rapidjson/document.h>
 #include <nar/lib/rapidjson/allocators.h>
 #include <nar/lib/rapidjson/stringbuffer.h>
 #include <nar/lib/rapidjson/writer.h>
 #include <cstdlib>
-#include <nar/narnode/ipcclient.h>
+#include <nar/narnode/IPC/ipcclient.h>
 #include <fstream>
 #define NAR_IPC_FILE "/tmp/nar_ipc"
 

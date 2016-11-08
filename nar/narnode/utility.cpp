@@ -1,5 +1,5 @@
 #include <nar/narnode/utility.h>
-#include <nar/narnode/exception.h>
+#include <nar/narnode/Exception/exception.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
