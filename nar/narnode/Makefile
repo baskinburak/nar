@@ -1,12 +1,12 @@
-SRC_FILES := $(shell find . ! -name "cli.cpp" -name "*.cpp")
+SRC_FILES := $(shell find . ! -name "cli.cpp" ! -name "daemon.cpp" -name "*.cpp")
 
 all: nardaemon narcli
 
 nardaemon: *.cpp
-	g++ -o nardaemon $(SRC_FILES) -I../../
+	g++ -std=c++11 -o nardaemon daemon.cpp $(SRC_FILES) -I../../ -lpthread
 
 narcli: *.cpp
-	g++ -o narcli cli.cpp -I../../
+	g++ -std=c++11 -o narcli cli.cpp $(SRC_FILES) -I../../ -lpthread
 
 clean:
 	rm -f nardaemon narcli
