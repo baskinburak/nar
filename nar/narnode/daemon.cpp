@@ -11,6 +11,9 @@
 #include <nar/lib/rapidjson/allocators.h>
 #include <nar/lib/rapidjson/stringbuffer.h>
 #include <nar/lib/rapidjson/writer.h>
+#include <nar/narnode/Socket/ClientSocket.h>
+#include <nar/narnode/FileKeeper/FileKeeper.h>
+#include <cstdlib>
 
 void handle_cli_ipc(int sockfd) {
     char buf[129];
@@ -26,6 +29,17 @@ void handle_cli_ipc(int sockfd) {
 
     if(action == std::string("push")) {
         std::string push_file(doc["file"].GetString());
+        nar::ClientSocket skt("127.0.0.1", 12345);
+        nar::FileKeeper file_keeper(push_file);
+
+        char* buf = (char*) malloc(sizeof(char)*512);
+        int step = 512;
+        int start = 0;
+        int len;
+        while((len = file_keeper.getBytes(start, step, buf)) > 0) {
+            skt.send(buf, len);            
+            start+=len;
+        }
     }
 
 

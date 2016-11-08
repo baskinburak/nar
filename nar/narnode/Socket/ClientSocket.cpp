@@ -19,7 +19,7 @@ ClientSocket::ClientSocket ( std::string host, int port )
 }
 
 
-const ClientSocket& nar::ClientSocket::send ( char *& offset, int &length ) const
+const ClientSocket& nar::ClientSocket::send ( char * offset, int length ) const
 {
   if ( ! Socket::send ( offset,length ) )
     {

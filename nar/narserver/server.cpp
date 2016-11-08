@@ -19,23 +19,27 @@ using namespace std;
 void myread(int sock_num)
 {
 	int n;
-	char buffer[256];
+	char buffer[10000];
 
-	ofstream fout("file");
+	ofstream fout;
+    
+    fout.open("file", ios::binary | ios::out);
 
-	bzero(buffer,256);
-    n = read(sock_num, buffer, 255);
+	bzero(buffer,10000);
+    n = read(sock_num, buffer, 9999);
+    std::cout << n  << std::endl;
     if(n < 0 ){
     	cout << "problem in reading: " << endl;
     }
     //print the message from client.
     fout << buffer;
-
+    fout.write(buffer, n);
     //optional
     n = write(sock_num, "thanks bro,I got it!", 21);
     if(n < 0){
     	cout << "problem in writing: " << endl;
-    }	
+    }
+    fout.close();
 }
 
 int main(int argc, char *argv[])
@@ -70,6 +74,9 @@ int main(int argc, char *argv[])
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(port_no); //converts to network byte order
     server_addr.sin_addr.s_addr = INADDR_ANY;
+
+    int on = 1;
+    setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (const char*) &on, sizeof(on));
 
     if(bind(socket_fd,(struct sockaddr *) &server_addr, sizeof(server_addr)) < 0 ){
     	cout << "ERROR on bind() " << endl;

@@ -13,8 +13,8 @@ class ClientSocket : private Socket
   ClientSocket ( std::string host, int port );
   virtual ~ClientSocket(){};
 
-  const ClientSocket& send ( char *& offset, int &length ) const;
-  const ServerSocket& recv ( char *& offset, int &length ) const;
+  const ClientSocket& send ( char * offset, int length ) const;
+  const ClientSocket& recv ( char * offset, int length ) const;
 };
 }
 

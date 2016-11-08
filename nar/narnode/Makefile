@@ -1,4 +1,4 @@
-SRC_FILES := $(shell find . ! -name "cli.cpp" ! -name "daemon.cpp" -name "*.cpp")
+SRC_FILES := $(shell find . ! -name "cli.cpp" ! -name "daemon.cpp" ! -name "FileKeeperTest.cpp" -name "*.cpp")
 
 all: nardaemon narcli
 
