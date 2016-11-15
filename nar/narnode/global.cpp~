@@ -50,7 +50,7 @@ void nar::Global::set_curdir(std::string cd) {
 
 void nar::Global::set_narServerIp(std::string ip){
     write_start();
-    narServerIP = ip;
+    narServerIp = ip;
     write_end();
 }
 void nar::Global::set_narServerPort(int port){

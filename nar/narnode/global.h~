@@ -24,7 +24,7 @@ namespace nar {
             std::string get_curdir();
             void set_curdir(std::string cd);
 			std::string get_narServerIp();
-			int get_narServerPort();
+			int set_narServerPort();
 			void set_narServerIp(std::string ip);
 			void set_narServerPort(int port);
     };
