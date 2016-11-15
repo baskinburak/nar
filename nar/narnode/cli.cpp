@@ -11,6 +11,13 @@
 
 
 void nar_push_file(std::string file_name) {
+/*
+{
+    "action": "push",
+    "file": file_path
+}
+*/
+
     char* real_path = realpath(file_name.c_str(), NULL);
     file_name = std::string(real_path);
     std::cout << file_name << std::endl;
@@ -45,10 +52,44 @@ void nar_push_file(std::string file_name) {
     nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(stringify);
-    std::string response = ipc_client.getResponse();
+    std::string response;
+    while( (response = ipc_client.getResponse()) != "END") {
+        std::cout << response << std::endl;
+    }
+    ipc_client.closeConnection();
+}
 
+void nar_ls() {
+/*
+{
+    "action": "ls"
+}
+*/
+    rapidjson::Document doc;
+    doc.SetObject();
+    rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
 
-    std::cout << response << std::endl;
+    rapidjson::Value action;
+    action.SetString("ls");
+
+    doc.AddMember("action", action, allocator);
+
+    rapidjson::StringBuffer buffer;
+    buffer.Clear();
+
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    doc.Accept(writer);
+
+    std::string stringify(buffer.GetString());
+
+    nar::IPCClient ipc_client(NAR_IPC_FILE);
+    ipc_client.connectServer();
+    ipc_client.sendRequest(stringify);
+    std::string response;
+    while( (response = ipc_client.getResponse()) != "END") {
+        std::cout << response << std::endl;
+    }
+    ipc_client.closeConnection();
 }
 
 int main(int argc, char* argv[]){
@@ -65,6 +106,8 @@ int main(int argc, char* argv[]){
 
         std::string file_name(argv[2]);
         nar_push_file(file_name);
+    } else if(first_arg == std::string("ls")) {
+        nar_ls();
     }
 
     return 0;

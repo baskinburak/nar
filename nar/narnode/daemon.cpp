@@ -14,8 +14,12 @@
 #include <nar/narnode/Socket/ClientSocket.h>
 #include <nar/narnode/FileKeeper/FileKeeper.h>
 #include <cstdlib>
+#include <nar/narnode/Task/PushFile.h>
+#include <nar/narnode/Task/LS.h>
+#include <nar/narnode/global.h>
 
-void handle_cli_ipc(int sockfd) {
+
+void handle_cli_ipc(int sockfd, nar::Global* globals) {
     char buf[129];
     int len = nar::get_int_sckt(sockfd);
     nar::send_string_sckt(sockfd, std::string("OK"), 2);
@@ -27,21 +31,17 @@ void handle_cli_ipc(int sockfd) {
     doc.Parse(json.c_str());
     std::string action(doc["action"].GetString());
 
-    if(action == std::string("push")) {
-        std::string push_file(doc["file"].GetString());
-        nar::ClientSocket skt("127.0.0.1", 12345);
-        nar::FileKeeper file_keeper(push_file);
 
-        char* buf = (char*) malloc(sizeof(char)*512);
-        int step = 512;
-        int start = 0;
-        int len;
-        while((len = file_keeper.getBytes(start, step, buf)) > 0) {
-            skt.send(buf, len);            
-            start+=len;
-        }
+    if(action == std::string("push")) {
+        nar::task::PushFile task(doc["file"].GetString());
+        task.run(sockfd, globals);
+    } else if(action == std::string("ls")) {
+        nar::task::LS task;
+        task.run(sockfd, globals);
+    } else if(action == std::string()) { //todo
     }
 
+    
 
     close(sockfd);
 }
@@ -49,10 +49,12 @@ void handle_cli_ipc(int sockfd) {
 int main() {
     nar::IPCServer cli_server(std::string("/tmp/nar_ipc"));
     cli_server.initialize();
+    nar::Global* globals = new nar::Global();
+    
 
     while(true) {
         int sockfd = cli_server.acceptConnection();
-        std::thread ipc_thread(handle_cli_ipc, sockfd);
+        std::thread ipc_thread(handle_cli_ipc, sockfd, globals);
         ipc_thread.detach();
     }
 }
