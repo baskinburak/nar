@@ -1,107 +1,82 @@
-/*
-Author: dogu
-Task: Server side for listen()
-Date: 06.11.16
-*/
-
-#include <stdio.h>
+#include <map>
+#include <nar/lib/Socket/Socket.h>
+#include <thread>
 #include <iostream>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h> 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <fstream>
+#include <nar/lib/rapidjson/document.h>
+#include <nar/lib/rapidjson/allocators.h>
+#include <nar/lib/rapidjson/stringbuffer.h>
+#include <nar/lib/rapidjson/writer.h>
+#include <nar/narnode/utility.h>
+#include <nar/narnode/Exception/exception.h>
 
-using namespace std;
+std::map<std::string, nar::Socket> peer_keepalives;
 
-void myread(int sock_num)
-{
-	int n;
-	char buffer[10000];
-
-	ofstream fout;
-    
-    fout.open("file", ios::binary | ios::out);
-
-	bzero(buffer,10000);
-    n = read(sock_num, buffer, 9999);
-    std::cout << n  << std::endl;
-    if(n < 0 ){
-    	cout << "problem in reading: " << endl;
+std::string get_message(nar::Socket& skt) {
+    char buf[1025];
+    int received = skt.recv(buf, 1024);
+    if(received <= 0) throw nar::Exception("damn son");
+    int len = 0;
+    int prev_len = 0;
+    int idx = 0;
+    for(; idx<received; idx++) {
+        if(buf[idx] == ' ') {
+            idx++;
+            break;
+        }
+        if(buf[idx] > '9' || buf[idx] < '0') {
+            std::cout << "bad request" << std::endl;
+            skt.send((char*) "bad request", 11);
+            skt.close();
+            throw nar::Exception("such exception");
+        }
+        prev_len = len;
+        len*=10;
+        len += buf[idx] - '0';
+        if(prev_len > len) {
+            std::cout << "overflow" << std::endl;
+            skt.send((char*) "integer overflow", 16);
+            skt.close();
+            throw nar::Exception("wowowo");
+        }
     }
-    //print the message from client.
-    fout << buffer;
-    fout.write(buffer, n);
-    //optional
-    n = write(sock_num, "thanks bro,I got it!", 21);
-    if(n < 0){
-    	cout << "problem in writing: " << endl;
+    std::string data;
+    int cur;
+    data.append(buf+idx, cur = std::min((received - idx + 1), len));
+    len -= cur;
+
+    while(len > 0) {
+        int rec = skt.recv(buf, std::min(len, 1024));
+        if(rec > 0) {
+            data.append(buf, rec);
+            len-=rec;
+        } else {
+            throw nar::Exception("wtf");
+        }
     }
-    fout.close();
+    return data;
+}
+
+void handle_connection(nar::Socket skt, int id) {
+    std::string request = get_message(skt);
+
+    std::cout << request << std::endl;
+
+    skt.close();
 }
 
 int main(int argc, char *argv[])
 {
-	int socket_fd, newsocket_fd, port_no;//size of client address for accept() call
-	socklen_t client_len;
-	struct sockaddr_in server_addr;
-	struct sockaddr_in client_addr;
+    nar::Socket entry_skt;
+    entry_skt.create();
+    entry_skt.bind(12345);
+    entry_skt.listen();
+    int i = 0;
+    while(true) {
+        nar::Socket new_skt;
+        entry_skt.accept(new_skt, NULL);
 
-	//domain, type, protocol
-	socket_fd = socket(AF_INET, SOCK_STREAM, 0); //IPv4, TCP
-
-	if(socket_fd < 0){
-		cout << "ERROR on socket() " << endl;
-		exit(1);
-	}
-
-	/*
-	 * Socket address, internet style.
-	 *
-	struct sockaddr_in {
-		short	sin_family; //IPv4 or IPv6
-		u_short	sin_port;  //port no
-		struct	in_addr sin_addr; //in_addr only contains s_addr
-		char	sin_zero[8];
-	};
-	*/
-
-	bzero( (char *) &server_addr, sizeof(server_addr)); //values in buffer are set to 0
-
-	port_no = atoi(argv[1]);
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(port_no); //converts to network byte order
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-
-    int on = 1;
-    setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (const char*) &on, sizeof(on));
-
-    if(bind(socket_fd,(struct sockaddr *) &server_addr, sizeof(server_addr)) < 0 ){
-    	cout << "ERROR on bind() " << endl;
-    	exit(2);
-    }
-
-    listen(socket_fd,10);
-
-    client_len = sizeof(client_addr);
-
-    int pid;
-    while (1) {
-	     newsocket_fd = accept(socket_fd, (struct sockaddr *) &client_addr, &client_len);
-	     if (newsocket_fd < 0) 
-	         cout << ("ERROR on accept() ") << endl;
-	     pid = fork();
-	     if (pid < 0)
-	         cout << ("ERROR on fork() ") << endl;
-	     if (pid == 0) { //child
-	         close(socket_fd);
-	         myread(newsocket_fd);
-	         exit(0);
-	     }
-	     else 
-	     	close(newsocket_fd);
-	 }
+        std::thread thr(&handle_connection, new_skt, i++);
+        thr.detach();
+    }    	
 	return 0;
 }

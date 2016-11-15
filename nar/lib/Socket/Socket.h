@@ -33,13 +33,15 @@ class Socket
   bool connect ( const std::string host, const int port );
 
   // Data Transimission
-  bool send ( char *& offset, int &length ) const;
-  int recv ( char *& offset, int &length ) const;
+  bool send ( char * offset, int length ) const;
+  int recv ( char * offset, int length ) const;
 
 
   void set_non_blocking ( const bool );
 
   bool is_valid() const { return m_sock != -1; }
+
+  void close() const;
 
  private:
 

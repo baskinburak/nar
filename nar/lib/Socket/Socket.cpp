@@ -8,6 +8,11 @@
 #include <fcntl.h>
 #include <iostream>
 
+void nar::Socket::close() const{
+    std::cout << "socket closed" << std::endl;
+    ::close(m_sock);
+}
+
 void nar::Socket::error(const char* msg, int errNo) const {
   std::cout  << "Error in "<< msg  << ": "<< strerror(errNo) << std::endl;
 }
@@ -24,8 +29,6 @@ nar::Socket::Socket() :
 
 nar::Socket::~Socket()
 {
-  if ( is_valid() )
-    ::close ( m_sock );
 }
 
 bool nar::Socket::create()
@@ -123,7 +126,7 @@ bool nar::Socket::accept ( Socket& new_socket, const sockaddr_in * addr  ) const
 }
 
 
-bool nar::Socket::send ( char *& offset, int &length ) const
+bool nar::Socket::send ( char * offset, int length ) const
 {
   int len = ::send ( m_sock, offset, length, MSG_NOSIGNAL );
   int tmp = errno;
@@ -138,7 +141,7 @@ bool nar::Socket::send ( char *& offset, int &length ) const
 }
 
 
-int nar::Socket::recv ( char *& offset, int &length ) const
+int nar::Socket::recv ( char * offset, int length ) const
 {
   //char buf [ MAXRECV + 1 ];
 

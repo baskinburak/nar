@@ -11,7 +11,6 @@
 #include <nar/lib/rapidjson/allocators.h>
 #include <nar/lib/rapidjson/stringbuffer.h>
 #include <nar/lib/rapidjson/writer.h>
-#include <nar/narnode/Socket/ClientSocket.h>
 #include <nar/narnode/FileKeeper/FileKeeper.h>
 #include <cstdlib>
 #include <nar/narnode/Task/PushFile.h>
