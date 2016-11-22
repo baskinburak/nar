@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <iostream>
 
+
 void nar::Socket::close() const{
     std::cout << "socket closed" << std::endl;
     ::close(m_sock);

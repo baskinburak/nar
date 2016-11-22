@@ -43,6 +43,13 @@ class Socket
 
   void close() const;
 
+  bool is_active() const {
+        int error = 0;
+        socklen_t len = sizeof(error);
+        int retval = getsockopt(m_sock, SOL_SOCKET, SO_ERROR, &error, &len);
+        return error == 0;
+    }
+
  private:
 
   int m_sock;
