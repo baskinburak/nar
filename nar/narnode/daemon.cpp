@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <nar/narnode/Task/PushFile.h>
 #include <nar/narnode/Task/LS.h>
+#include <nar/narnode/Task/PullFile.h>
 #include <nar/narnode/global.h>
 
 
@@ -37,10 +38,10 @@ void handle_cli_ipc(int sockfd, nar::Global* globals) {
     } else if(action == std::string("ls")) {
         nar::task::LS task;
         task.run(sockfd, globals);
-    } else if(action == std::string()) { //todo
+    } else if(action == std::string("pull")) { //todo
+        nar::task::PullFile task(doc["file"].GetString());
+        task.run(sockfd, globals);
     }
-
-    
 
     close(sockfd);
 }
@@ -49,6 +50,7 @@ int main() {
     nar::IPCServer cli_server(std::string("/tmp/nar_ipc"));
     cli_server.initialize();
     nar::Global* globals = new nar::Global();
+    globals->set_username(std::string("nar_admin"));
     
 
     while(true) {

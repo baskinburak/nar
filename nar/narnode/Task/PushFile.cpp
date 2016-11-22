@@ -102,6 +102,12 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 
 	nar::Socket *serverSck = establishServerConnection(globals); // Connect to Server
 
+    std::cout << "here" << std::endl;
+
+    if(ITask::handshake(*serverSck, globals)) {
+        std::cout << "handshake done" << std::endl;
+    }
+
 	sendJson(msg,serverSck); 							// Send Push File REQ
 	
 	nlohmann::json response;
