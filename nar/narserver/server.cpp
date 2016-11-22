@@ -9,8 +9,8 @@
 #include <nar/narnode/utility.h>
 #include <nar/narnode/Exception/exception.h>
 #include <nar/lib/json.hpp>
-#include <nar/narserver/Database/Database.h>
-#include <nar/narserver/Database/dbstructs.h>
+#include <nar/narserver/Database.h>
+#include <nar/narserver/dbstructs.h>
 
 using namespace nlohmann;
 
@@ -61,6 +61,7 @@ std::string get_message(nar::Socket& skt) {
         }
     }
     return data;
+
 }
 
 bool handshake(nar::Socket& skt, bool& keepalive) {

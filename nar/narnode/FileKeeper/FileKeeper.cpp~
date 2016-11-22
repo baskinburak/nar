@@ -1,5 +1,4 @@
 #include "FileKeeper.h"
-#include <cstring>
 
 nar::FileKeeper::FileKeeper(char * file){
 	_file = file;
@@ -7,8 +6,7 @@ nar::FileKeeper::FileKeeper(char * file){
 }
 
 nar::FileKeeper::FileKeeper(std::string file){
-	_file = (char*) malloc(sizeof(char)*(file.size()+1));
-    std::strcpy(_file, file.c_str());
+	_file = (char *)file.c_str();
 	_fd = openFdRdonly(_file);
 }
 
@@ -40,7 +38,6 @@ int nar::FileKeeper::openFdRdonly(const char * file) {
 nar::FileKeeper::~FileKeeper() {
 	closeFd(_fd);
 	emptyMap();
-    free(_file);
 	_fds.clear();
 }
 
@@ -98,7 +95,7 @@ unsigned long nar::FileKeeper::getFileSize(){
 std::string nar::FileKeeper::getFileName(){
 	std::string fName(_file);
 	std::size_t found = fName.find_last_of("/\\");
-	return fName.substr(found+1);
+	return str.substr(found+1);
 }
 
 void nar::FileKeeper::setFileMap(std::vector<std::string> & filenames) {

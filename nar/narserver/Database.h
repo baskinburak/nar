@@ -20,7 +20,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <mysql_driver.h>
-#include <nar/dbstructs.h>
+#include <nar/narserver/dbstructs.h>
 
 
 using namespace nar;

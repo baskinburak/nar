@@ -51,7 +51,7 @@ std::cout << "HERE?3" << std::endl;
 	char * writable = new char[stringify.size() + 1];
 	std::copy(stringify.begin(), stringify.end(), writable);
 	writable[stringify.size()] = '\0';std::cout << "HERE?4" << std::endl;
-	std::cout << writable << std::endl;
+	std::cout << writable << std::cout;
 	serverSck->send(writable, stringify.size());
 }
 
@@ -73,7 +73,7 @@ void nar::task::PushFile::recvJson(rapidjson::Document &msg, nar::ClientSocket *
 }
 
 void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
-std::cout << "HERE?XXX" << std::endl;
+
 	nar::FileKeeper file(file_path);
 	unsigned long file_size = file.getFileSize();
 

@@ -44,7 +44,6 @@ namespace nar {
 
 			void setFileName(char * file);			// to change file name which filekeeper holds
 			void setFileName(std::string file);
-			std::string getFileName();
 
 				// creates file descriptor of the given file
 
