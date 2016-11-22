@@ -18,12 +18,12 @@
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
-#include <cppconn/statement.h>
+#include <cppconn/prepared_statement.h>
 #include <mysql_driver.h>
 #include <nar/narserver/dbstructs.h>
 
 
-using namespace nar;
+
 namespace nar {
 
 
@@ -35,13 +35,13 @@ namespace nar {
             sql::Connection * _con;
             sql::Driver * _driver;
         public:
-            Database();
+            Database()=default;
             ~Database();
 
 
-            void setUser();
-            void setPass();
-            void setDbname();
+            void setUser(std::string user);
+            void setPass(std::string pass);
+            void setDbname(std::string dbname);
             void connect();
             std::string getUser();
             std::string getPass();
@@ -56,7 +56,7 @@ namespace nar {
             void updateUserName(struct User & user);
             void updateUserQuota(struct User & user);
             void updateUserDiskSpace(struct User & user);
-            void updateUserQuota(struct User & user);
+            void updateUserCryptedKey(struct User & user);
             void updateUser(struct User & user);
             void updateChunkFile(struct Chunk & chunk);
             void updateChunkSize(struct Chunk & chunk);
@@ -73,18 +73,18 @@ namespace nar {
             void deleteChunk(struct Chunk & chunk);
             void deleteFile(struct File & file);
             void deleteMachine(struct Machine & machine);
-            void deleteUserToFile(struct UserToFiles & userToFiles);
+            void deleteUserToFile(struct UserToFile & userToFiles);
             void deleteChunkToMachine(struct ChunkToMachine & chunkToMachine);
 
-            User getUser(std::string name);
-            User getUser(long long int user_id);
-            Machine getMachine(long long int user_id);
-            Machine getMachine(std::string machine_id);
-            std::vector<struct File> getUserFiles(long long int user_id);
-            File getFile(long long int file_id);
-            std::vector<struct Chunks> getChunk(long long int file_id);
-            Chunk getChunk(long long int chunk_id);
-            std::vector<struct Machine> getMachine(long long int chunk_id);
+            struct User getUser(std::string name);
+            struct User getUser(sql::SQLString user_id);
+            struct Machine getMachine(sql::SQLString user_id);
+            struct Machine getMachine(std::string machine_id);
+            std::vector<struct File> getUserFiles(sql::SQLString user_id);
+            struct File getFile(sql::SQLString file_id);
+            std::vector<struct Chunk> getChunks(sql::SQLString file_id);
+            struct Chunk getChunk(sql::SQLString chunk_id);
+            std::vector<struct Machine> getMachines(sql::SQLString chunk_id);
 
 
     };

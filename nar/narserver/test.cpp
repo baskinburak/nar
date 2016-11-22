@@ -1,23 +1,3 @@
-/* Copyright 2008, 2010, Oracle and/or its affiliates. All rights reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; version 2 of the License.
-
-There are special exceptions to the terms and conditions of the GPL
-as it is applied to this software. View the full text of the
-exception in file EXCEPTIONS-CONNECTOR-C++ in the directory of this
-software distribution.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-*/
 
 /* Standard C++ includes */
 #include <stdlib.h>
@@ -35,51 +15,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <mysql_driver.h>
-
+#include <nar/narserver/Database.h>
 using namespace std;
-
+using namespace nar;
 int main(void)
 {
-cout << endl;
-cout << "Running 'SELECT 'Hello World!' "<< "AS _message'..." << endl;
+    Database db;
+    db.setUser(string("root"));
+    db.setPass(string("123"));
+    db.setDbname(string("nar"));
+    db.connect();
 
-try {
-  sql::Driver *driver;
-  sql::Connection *con;
-  sql::Statement *stmt;
-  sql::ResultSet *res;
+    struct User user;  //insert user success
+    user.user_id = sql::SQLString("1");
+    user.user_name = string("test");
+    user.quota = sql::SQLString("10000");
+    user.disk_space = sql::SQLString("10000");
+    user.cryptedKey = string("asdkajsbdkasnd0");
+    //db.insertUser(user);
+    user.user_name = string("dayim");
+    //db.updateUser(user);
+    //struct User test = db.getUser(user.user_id);
+    //cout<<test.user_id<<" "<<test.user_name<<endl;
+    struct Machine machine;
+    machine.machine_id = string("test makinasi");
+    machine.user_id = sql::SQLString("1");
+    machine.machine_quota = sql::SQLString("5000");
+    machine.machine_diskSpace = sql::SQLString("5000");
+    struct File file;
+    file.file_id = sql::SQLString("2");
+    file.file_name = string("test file2");
+    file.file_size = sql::SQLString("300");
+    file.file_type = string("file");
+    //db.insertFile(file);
+    struct UserToFile utff;
+    utff.user_id = user.user_id;
+    utff.file_id = file.file_id;
+    vector<struct File> vec = db.getUserFiles(user.user_id);
+    cout<<vec[0].file_id<<" "<<vec[1].file_id<<endl;
+    //db.insertUserToFile(utff);
+    //db.insertMachine(machine);
+    //db.deleteMachine(machine);
+    //db.deleteUser(user);
 
-  /* Create a connection */
-  driver = get_driver_instance();
-
-  con = driver->connect("tcp://127.0.0.1:3306", "root", "123");
-
-  /* Connect to the MySQL test database */
-
-  con->setSchema("nar");
-  stmt = con->createStatement();
-  res = stmt->executeQuery("show tables;");
-  while (res->next()) {
-    cout << "\t... MySQL replies: ";
-    /* Access column data by alias or column name */
-    //cout << res->getString("_message") << endl;
-    cout << "\t... MySQL says it again: ";
-    /* Access column data by numeric offset, 1 is the first column */
-    cout << res->getString(1) << endl;
-  }
-  delete res;
-  delete stmt;
-  delete con;
-
-} catch (sql::SQLException &e) {
-  cout << "# ERR: SQLException in " << __FILE__;
-  cout << "(" << __FUNCTION__ << ") on line "<< __LINE__ << endl;
-  cout << "# ERR: " << e.what();
-  cout << " (MySQL error code: " << e.getErrorCode();
-  cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-}
-
-cout << endl;
-
-return EXIT_SUCCESS;
+    return 0;
 }

@@ -1,41 +1,42 @@
 #ifndef NAR_DBSTRUCTS_H
 #define NAR_DBSTRUCTS_H
+
 namespace nar {
     struct User{
-        long long int user_id;
+        sql::SQLString  user_id;
         std::string user_name;
-        long long int quota;
-        long long int disk_space;
+        sql::SQLString  quota;
+        sql::SQLString  disk_space;
         std::string cryptedKey;
     };
 
     struct Machine{
         std::string machine_id;
-        long long int user_id;
-        long long int machine_quota;
-        long long int machine_diskspace;
+        sql::SQLString  user_id;
+        sql::SQLString  machine_quota;
+        sql::SQLString machine_diskSpace;
     };
 
-    struct UserToFiles{
-        long long int user_id;
-        long long int file_id;
+    struct UserToFile{
+        sql::SQLString user_id;
+        sql::SQLString file_id;
     };
 
     struct File{
-        long long int file_id;
+        sql::SQLString file_id;
         std::string file_name;
-        long long int file_size;
+        sql::SQLString file_size;
         std::string file_type;
     };
 
     struct Chunk{
-        long long int chunk_id;
-        long long int file_id;
-        long long int chunk_size;
+        sql::SQLString chunk_id;
+        sql::SQLString file_id;
+        sql::SQLString chunk_size;
     };
 
     struct ChunkToMachine {
-        long long int chunk_id;
+        sql::SQLString chunk_id;
         std::string machine_id;
     };
 
