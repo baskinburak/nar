@@ -35,52 +35,56 @@ namespace nar {
             sql::Connection * _con;
             sql::Driver * _driver;
         public:
-            Database(std::string user,std::string pass,std::string dbname);
+            Database();
             ~Database();
 
 
             void setUser();
             void setPass();
             void setDbname();
+            void connect();
             std::string getUser();
             std::string getPass();
             std::string getDbname();
-            void insertUser(User & user);
-            void insertChunk(Chunk & chunk);
-            void insertFile(File & file);
-            void insertMachine(Machine & machine);
-            void insertUserToFile(UserToFile & usertofile);
-            void insertChunkToPeer(ChunkToPeer & chunktopeer);
+            void insertUser(struct User & user);
+            void insertChunk(struct Chunk & chunk);
+            void insertFile(struct File & file);
+            void insertMachine(struct Machine & machine);
+            void insertUserToFile(struct UserToFile & userToFile);
+            void insertChunkToMachine(struct ChunkToMachine & chunkToMachine);
 
-            void updateUserName(User & user);
-            void updateUserQuota(User & user);
-            void updateUserDiskSpace(User & user);
-            void updateUserQuota(User & user);
-            void updateUser(User & user);
-            void updateChunkFile(Chunk & chunk);
-            void updateChunkSize(Chunk & chunk);
-            void updateChunk(Chunk & chunk);
-            void updateFile(File & file);
-            void updateMachine();
-            void updateUserToFile();
-            void updateChunkToPeer();
+            void updateUserName(struct User & user);
+            void updateUserQuota(struct User & user);
+            void updateUserDiskSpace(struct User & user);
+            void updateUserQuota(struct User & user);
+            void updateUser(struct User & user);
+            void updateChunkFile(struct Chunk & chunk);
+            void updateChunkSize(struct Chunk & chunk);
+            void updateChunk(struct Chunk & chunk);
+            void updateFile(struct File & file);
+            void updateFileName(struct File & file);
+            void updateFileSize(struct File & file);
+            void updateFileType(struct File & file);
+            void updateMachine(struct Machine & machine);
+            void updateMachineQuota(struct Machine & machine);
+            void updateMachineDiskSpace(struct Machine & machine);
 
-            void deleteUser();
-            void deleteChunk();
-            void deleteFile();
-            void deleteMachine();
-            void deleteUserToFile();
-            void deleteChunkToPeer();
+            void deleteUser(struct User & user);
+            void deleteChunk(struct Chunk & chunk);
+            void deleteFile(struct File & file);
+            void deleteMachine(struct Machine & machine);
+            void deleteUserToFile(struct UserToFiles & userToFiles);
+            void deleteChunkToMachine(struct ChunkToMachine & chunkToMachine);
 
-            User getUserInfo(std::string name);
-            User getUserInfo(long long int user_id);
+            User getUser(std::string name);
+            User getUser(long long int user_id);
             Machine getMachine(long long int user_id);
             Machine getMachine(std::string machine_id);
-            UserToFiles getUserFiles(long long int user_id);
+            std::vector<struct File> getUserFiles(long long int user_id);
             File getFile(long long int file_id);
-            Chunk getChunk(long long int file_id);
+            std::vector<struct Chunks> getChunk(long long int file_id);
             Chunk getChunk(long long int chunk_id);
-            ChunkToPeer getPeer(long long int chunk_id);
+            std::vector<struct Machine> getMachine(long long int chunk_id);
 
 
     };
