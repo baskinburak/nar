@@ -35,7 +35,7 @@ namespace nar {
         long long int chunk_size;
     };
 
-    struct ChunkToPeer {
+    struct ChunkToMachine {
         long long int chunk_id;
         std::string machine_id;
     };
