@@ -10,6 +10,7 @@
 #include <nar/lib/rapidjson/allocators.h>
 #include <nar/lib/rapidjson/stringbuffer.h>
 #include <nar/lib/rapidjson/writer.h>
+#include <nar/lib/nlohJson/json.hpp>
 
 namespace nar {
     namespace task {

@@ -39,7 +39,7 @@ void nar::task::PushFile::getJsonPayload(rapidjson::Document &payload, std::stri
 }
 
 void nar::task::PushFile::sendJson(rapidjson::Document &msg,nar::ClientSocket *serverSck ){
-
+std::cout << "HERE2" << std::endl;
 	rapidjson::StringBuffer buffer;
     buffer.Clear();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -47,15 +47,16 @@ void nar::task::PushFile::sendJson(rapidjson::Document &msg,nar::ClientSocket *s
     std::string stringify(buffer.GetString());
 	stringify.insert(0,std::to_string(stringify.size())+" ");
 
-
-char * writable = new char[stringify.size() + 1];
+std::cout << "HERE?3" << std::endl;
+	char * writable = new char[stringify.size() + 1];
 	std::copy(stringify.begin(), stringify.end(), writable);
-	writable[stringify.size()] = '\0';
-
+	writable[stringify.size()] = '\0';std::cout << "HERE?4" << std::endl;
+	std::cout << writable << std::cout;
 	serverSck->send(writable, stringify.size());
 }
 
 void nar::task::PushFile::recvJson(rapidjson::Document &msg, nar::ClientSocket *serverSck ){
+	std::cout << "HERE!" << std::endl;
 	char *buffer = new char[1024];
 	serverSck->recv(buffer, 10);
 	buffer[10] = '\0';
@@ -64,12 +65,15 @@ void nar::task::PushFile::recvJson(rapidjson::Document &msg, nar::ClientSocket *
 	int jLen = std::stoi( buff.substr(0,split) );
 	for(int i = 0; i < 10 - split-1; ++i) buffer[i] = buff[10-split-1];
 	serverSck->recv(buffer+10-split-1,jLen-10+split+1 );								// RECV BROKEN
-	msg.Parse(std::string(buffer).c_str());
-	serverSck->send(buffer, 100);
+	
+	std::cout << buffer << std::endl;
+
+	/*msg.Parse(std::string(buffer).c_str());
+	serverSck->send(buffer, 100);*/
 }
 
 void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
-
+std::cout << "HERE?XXX" << std::endl;
 	nar::FileKeeper file(file_path);
 	unsigned long file_size = file.getFileSize();
 
@@ -87,9 +91,9 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 	msg.AddMember("payload:", payload, msg.GetAllocator());
 
 	nar::ClientSocket *serverSck = establishServerConnection(globals); // Connect to Server
-	
+	std::cout << "HERE?1" << std::endl;
 	sendJson(msg,serverSck); 							// Send Push File REQ
-
+	
 	rapidjson::Document response;
 
 	recvJson(response, serverSck);
