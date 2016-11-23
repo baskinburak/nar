@@ -1,5 +1,6 @@
 #include <nar/narnode/Task/PushFile.h>
 #include <nar/narnode/FileKeeper/FileKeeper.h>
+#include <nar/narnode/utility.h>
 #include <iostream>
 
 
@@ -7,8 +8,10 @@ static const char* kTypeNames[] =
     { "Null", "False", "True", "Object", "Array", "String", "Number" };
 
 //nar::ClientSocket *establishConnection( std::string peerIp, int peerPort);
-nar::ClientSocket *nar::task::PushFile::establishServerConnection(nar::Global* globals){
-	nar::ClientSocket *serverSck  = new nar::ClientSocket(globals->get_narServerIp(),globals->get_narServerPort());		// Get Connection With Server
+nar::Socket *nar::task::PushFile::establishServerConnection(nar::Global* globals){
+	nar::Socket *serverSck = new nar::Socket();
+	serverSck->create();
+	serverSck->connect(globals->get_narServerIp(),globals->get_narServerPort());
 	return serverSck;
 }
 
@@ -38,8 +41,8 @@ void nar::task::PushFile::getJsonPayload(rapidjson::Document &payload, std::stri
 
 }
 
-void nar::task::PushFile::sendJson(rapidjson::Document &msg,nar::ClientSocket *serverSck ){
-std::cout << "HERE2" << std::endl;
+void nar::task::PushFile::sendJson(rapidjson::Document &msg,nar::Socket *serverSck ){
+
 	rapidjson::StringBuffer buffer;
     buffer.Clear();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -47,33 +50,40 @@ std::cout << "HERE2" << std::endl;
     std::string stringify(buffer.GetString());
 	stringify.insert(0,std::to_string(stringify.size())+" ");
 
-std::cout << "HERE?3" << std::endl;
 	char * writable = new char[stringify.size() + 1];
 	std::copy(stringify.begin(), stringify.end(), writable);
-	writable[stringify.size()] = '\0';std::cout << "HERE?4" << std::endl;
+	writable[stringify.size()] = '\0';
 	std::cout << writable << std::endl;
 	serverSck->send(writable, stringify.size());
+
 }
 
-void nar::task::PushFile::recvJson(rapidjson::Document &msg, nar::ClientSocket *serverSck ){
-	std::cout << "HERE!" << std::endl;
+void nar::task::PushFile::recvJson(nlohmann::json &req, nar::Socket *serverSck ){
+
 	char *buffer = new char[1024];
-	serverSck->recv(buffer, 10);
-	buffer[10] = '\0';
-	std::string buff(buffer);
-	int split = buff.find(" ");
-	int jLen = std::stoi( buff.substr(0,split) );
-	for(int i = 0; i < 10 - split-1; ++i) buffer[i] = buff[10-split-1];
-	serverSck->recv(buffer+10-split-1,jLen-10+split+1 );								// RECV BROKEN
-	
-	std::cout << buffer << std::endl;
+	nar::Socket sk = *serverSck;
+	std::string json_string = nar::get_message( sk );	
+	std::cout << json_string << std::endl;
+	req.parse(json_string);
 
-	/*msg.Parse(std::string(buffer).c_str());
-	serverSck->send(buffer, 100);*/
 }
+
+void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serverSck){
+	
+	std::cout << "HERE?4" << std::endl;
+	auto chunkSize = msg["payload"]["chunk-size"].get<int>();
+		std::cout << "HERE?5" << std::endl;
+	std::string fileId = msg["file-id"];
+	std::cout << "File id: " <<fileId << std::endl; 
+	/*for(nlohmann::json::iterator it = j.begin(); it != j.end(); ++it){
+		
+	}*/
+	 
+}
+
 
 void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
-std::cout << "HERE?XXX" << std::endl;
+
 	nar::FileKeeper file(file_path);
 	unsigned long file_size = file.getFileSize();
 
@@ -90,14 +100,15 @@ std::cout << "HERE?XXX" << std::endl;
 	msg.AddMember("header:", header, msg.GetAllocator());
 	msg.AddMember("payload:", payload, msg.GetAllocator());
 
-	nar::ClientSocket *serverSck = establishServerConnection(globals); // Connect to Server
-	std::cout << "HERE?1" << std::endl;
+	nar::Socket *serverSck = establishServerConnection(globals); // Connect to Server
+
 	sendJson(msg,serverSck); 							// Send Push File REQ
 	
-	rapidjson::Document response;
+	nlohmann::json response;
 
 	recvJson(response, serverSck);
-		
+	
+	distributeFile(response, serverSck);
 }
 
 

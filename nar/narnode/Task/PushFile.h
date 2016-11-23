@@ -2,7 +2,7 @@
 #define NAR_PUSHFILE_H
 
 #include <nar/narnode/Task/ITask.h>
-#include <nar/lib/Socket/ClientSocket.h>
+#include <nar/lib/Socket/Socket.h>
 #include <nar/narnode/global.h>
 #include <string>
 
@@ -17,12 +17,13 @@ namespace nar {
         class PushFile : public nar::task::ITask {
             private:
                 std::string file_path;
-				nar::ClientSocket *establishServerConnection(nar::Global* globals);
+				nar::Socket *establishServerConnection(nar::Global* globals);
 				void getJsonHeader(rapidjson::Document &header );
-				//nar::ClientSocket *establishPeerConnection( std::string peerIp, int peerPort);
+				//nar::Socket *establishPeerConnection( std::string peerIp, int peerPort);
 				void getJsonPayload(rapidjson::Document &payload, std::string fileName, unsigned long fileSize,std::string dir);
-				void sendJson(rapidjson::Document &msg,nar::ClientSocket *serverSck );
-				void recvJson(rapidjson::Document &msg, nar::ClientSocket *serverSck );
+				void sendJson(rapidjson::Document &msg,nar::Socket *serverSck );
+				void recvJson(nlohmann::json &msg, nar::Socket *serverSck );
+				void distributeFile(nlohmann::json &msg, nar::Socket *serverSck);
             public:
                 PushFile(std::string fp): file_path(fp) { }
                 void run(int unx_sockfd, nar::Global* globals);

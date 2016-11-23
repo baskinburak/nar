@@ -1,6 +1,5 @@
 #ifndef NAR_UTILITY_H
 #define NAR_UTILITY_H
-#include <iostream>
 #include <string>
 #include <nar/lib/Socket/Socket.h>
 
