@@ -143,7 +143,7 @@ void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Sock
 	unsigned long chunkSize = (*it)["chunk-size"].get<int>();    	// MAKE IT UNSIGNED LONG
 
 	char *chunk = new char[chunkSize];
-	unsigned long len = file.getBytes(fOffset,  chunkSize,chunk);
+	unsigned long len = file.getBytes(fOffset, chunk, chunkSize);
 	
 	peerSck->send(chunk, len);
 	fOffset += len;
