@@ -12,6 +12,7 @@
 void nar::Socket::close() const{
     std::cout << "socket closed" << std::endl;
     ::close(m_sock);
+    m_sock = -1;
 }
 
 void nar::Socket::error(const char* msg, int errNo) const {

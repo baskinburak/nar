@@ -17,7 +17,7 @@
 #include <nar/narnode/Task/LS.h>
 #include <nar/narnode/Task/PullFile.h>
 #include <nar/narnode/global.h>
-
+#include <nar/lib/json.hpp>
 
 void handle_cli_ipc(int sockfd, nar::Global* globals) {
     char buf[129];

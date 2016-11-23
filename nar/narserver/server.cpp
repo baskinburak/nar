@@ -46,6 +46,7 @@ bool handshake(nar::Socket& skt, bool& keepalive) {
     resp["header"]["channel"] = "sp";
     resp["header"]["status-code"] = 200;
     resp["header"]["reply-to"] = "handshake";
+    resp["payload"]["keepalive"] = keepalive;
 
     std::string response(resp.dump());
     std::string len = std::to_string((int)response.size());
@@ -55,11 +56,24 @@ bool handshake(nar::Socket& skt, bool& keepalive) {
     return true;
 }
 
+bool file_push_request(json& jsn, nar::Socket& skt) {
+    unsigned long filesize = jsn["payload"]["file-size"];
+    std::string filename = jsn["payload"]["file-name"];
+    std::string directory = jsn["payload"]["directory"];
+
+    
+}
+
+
 void handle_connection(nar::Socket skt, int id) {
     bool keepalive;
     if(handshake(skt, keepalive)) {
         do {
             std::string request = nar::get_message(skt);
+            auto jsn = json::parse(request);
+            if(jsn["header"]["action"] == "file_push_request") {
+                file_push_request(jsn, skt);
+            }
             std::cout << request << std::endl;
         } while(keepalive);
         

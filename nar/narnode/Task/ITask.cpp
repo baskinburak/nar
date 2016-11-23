@@ -25,8 +25,22 @@ bool nar::task::ITask::handshake(nar::Socket& skt, nar::Global* globals) {
     int stat = jsn["header"]["status-code"];
     std::string repl = jsn["header"]["reply-to"];
 
+    bool kpalive = jsn["payload"]["keepalive"];
+    if(kpalive) {
+        keepalive = kpalive;
+        keepalive_skt = skt;
+    }
+    
+
     std::cout << stat << std::endl;
     std::cout << repl << std::endl;
 
     return repl == "handshake" && stat == 200;
+}
+
+void nar::task::ITask::keepalive(nar::Global* globals) {
+    while(keepalive && keepalive_skt.is_valid()) {
+        std::string req = nar::get_message(keepalive_skt);
+        std::cout << req << std::endl;
+    }
 }
