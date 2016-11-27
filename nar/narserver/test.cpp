@@ -26,29 +26,29 @@ int main(void)
     db.setDbname(string("nar"));
     db.connect();
 
-    struct User user;  //insert user success
-    user.user_id = sql::SQLString("1");
+    nar::User user;  //insert user success
+    user.user_id = 1;
     user.user_name = string("test");
-    user.quota = sql::SQLString("10000");
-    user.disk_space = sql::SQLString("10000");
+    user.quota = 10000;
+    user.disk_space = 10000;
     user.cryptedKey = string("asdkajsbdkasnd0");
     //db.insertUser(user);
-    user.user_name = string("dayim");
+    //user.user_name = string("dayim");
     //db.updateUser(user);
     //struct User test = db.getUser(user.user_id);
     //cout<<test.user_id<<" "<<test.user_name<<endl;
-    struct Machine machine;
+    nar::Machine machine;
     machine.machine_id = string("test makinasi");
-    machine.user_id = sql::SQLString("1");
-    machine.machine_quota = sql::SQLString("5000");
-    machine.machine_diskSpace = sql::SQLString("5000");
-    struct File file;
-    file.file_id = sql::SQLString("2");
+    machine.user_id = 1;
+    machine.machine_quota = 5000;
+    machine.machine_diskSpace = 5000;
+    nar::File file;
+    file.file_id = 2;
     file.file_name = string("test file2");
-    file.file_size = sql::SQLString("300");
+    file.file_size = 300;
     file.file_type = string("file");
     //db.insertFile(file);
-    struct UserToFile utff;
+    nar::UserToFile utff;
     utff.user_id = user.user_id;
     utff.file_id = file.file_id;
     vector<struct File> vec = db.getUserFiles(user.user_id);
