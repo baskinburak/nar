@@ -74,7 +74,7 @@ bool nar::task::PushFile::sendJson(nlohmann::json &req,nar::Socket *serverSck ){
 	std::copy(stringify.begin(), stringify.end(), writable);
 	writable[stringify.size()] = '\0';
 	std::cout << writable << std::endl;
-	return serverSck->send(writable, stringify.size());
+	return serverSck->send(writable, stringify.size());					// Free writable
 }
 
 

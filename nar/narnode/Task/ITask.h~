@@ -7,7 +7,7 @@ namespace nar {
     namespace task {
         class ITask {
             public:
-                static bool handshake(nar::Socket& skt, nar::Global* globals);
+                bool handshake(nar::Socket& skt, nar::Global* globals);
                 virtual void run(int unx_sockfd, nar::Global* globals) = 0;
         };
     }

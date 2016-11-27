@@ -87,6 +87,35 @@ bool nar::Socket::bind ( const int port )
   return true;
 }
 
+int nar::Socket::bind ( )
+{
+
+  if ( ! is_valid() )
+    {
+      return false;
+    }
+
+
+
+  m_addr.sin_family = AF_INET;
+  m_addr.sin_addr.s_addr = INADDR_ANY;
+  m_addr.sin_port = htons ( 0 );
+
+  int bind_return = ::bind ( m_sock,
+			     ( struct sockaddr * ) &m_addr,
+			     sizeof ( m_addr ) );
+
+  int tmp = errno;
+  if ( bind_return == -1 )
+    {
+      error("Binding the Socket",tmp);
+      return false;
+    }
+
+  return bind_return;
+}
+
+
 
 bool nar::Socket::listen() const
 {

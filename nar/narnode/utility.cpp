@@ -9,7 +9,7 @@
 std::string nar::get_message(nar::Socket& skt) {
     char buf[1025];
     int received = skt.recv(buf, 1024);
-    if(received <= 0) throw nar::Exception("damn son");
+    if(received <= 0) throw nar::Exception("Connection Lost");
     int len = 0;
     int prev_len = 0;
     int idx = 0;

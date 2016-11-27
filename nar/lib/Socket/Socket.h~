@@ -26,7 +26,6 @@ class Socket
   // Server initialization
   bool create();
   bool bind ( const int port );
-  int bind();  
   bool listen() const;
   bool accept ( Socket& , const sockaddr_in *addr = NULL ) const;
 
@@ -57,8 +56,6 @@ class Socket
   void setSckDescriptor(int sckFd){
 	m_sock = sckFd;
   }
-
-
 
  private:
 
