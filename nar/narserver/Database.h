@@ -21,6 +21,7 @@
 #include <cppconn/prepared_statement.h>
 #include <mysql_driver.h>
 #include <nar/narserver/dbstructs.h>
+#include <nar/narserver/spestruct.h>
 
 
 
@@ -37,6 +38,15 @@ namespace nar {
         public:
             Database()=default;
             ~Database();
+
+
+
+            nar::db::User turnUser(nar::User & user);
+            nar::db::File turnFile(nar::File & file);
+            nar::db::Chunk turnChunk(nar::Chunk & chunk);
+            nar::db::UserToFile turnUserToFile(nar::UserToFile & userToFile);
+            nar::db::ChunkToMachine turnChunkToMachine(nar::ChunkToMachine & chunkToMachine);
+            nar::db::Machine turnMachine(nar::Machine & machine);
 
 
             void setUser(std::string user);
@@ -77,14 +87,14 @@ namespace nar {
             void deleteChunkToMachine(struct ChunkToMachine & chunkToMachine);
 
             struct User getUser(std::string name);
-            struct User getUser(sql::SQLString user_id);
-            struct Machine getMachine(sql::SQLString user_id);
+            struct User getUser(long long int userId);
+            struct Machine getMachine(long long int userId);
             struct Machine getMachine(std::string machine_id);
-            std::vector<struct File> getUserFiles(sql::SQLString user_id);
-            struct File getFile(sql::SQLString file_id);
-            std::vector<struct Chunk> getChunks(sql::SQLString file_id);
-            struct Chunk getChunk(sql::SQLString chunk_id);
-            std::vector<struct Machine> getMachines(sql::SQLString chunk_id);
+            std::vector<struct File> getUserFiles(long long int user_id);
+            struct File getFile(long long int file_id);
+            std::vector<struct Chunk> getChunks(long long int file_id);
+            struct Chunk getChunk(long long int  chunk_id);
+            std::vector<struct Machine> getMachines(long long int chunk_id);
 
 
     };

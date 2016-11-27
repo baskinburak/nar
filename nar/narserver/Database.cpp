@@ -1,4 +1,4 @@
-#include "Database.h"
+#include <nar/narserver/Database.h>
 
 
 nar::Database::~Database()
@@ -12,6 +12,54 @@ void nar::Database::connect()
     _driver = get_driver_instance();
     _con = _driver -> connect("tcp://127.0.0.1:3306", _user.c_str(), _pass.c_str());
     _con -> setSchema(_dbname.c_str());
+}
+
+
+
+
+nar::db::User nar::Database::turnUser(nar::User & user){
+    nar::db::User uk;
+    uk.user_id = std::to_string(user.user_id);
+    uk.user_name = user.user_name;
+    uk.quota = std::to_string(user.quota);
+    uk.disk_space = std::to_string(user.disk_space);
+    uk.cryptedKey = user.cryptedKey;
+    return uk;
+}
+nar::db::File nar::Database::turnFile(nar::File & file){
+    nar::db::File fk;
+    fk.file_id = std::to_string(file.file_id);
+    fk.file_name = file.file_name;
+    fk.file_size = std::to_string(file.file_size);
+    fk.file_type = file.file_type;
+    return fk;
+}
+nar::db::Chunk nar::Database::turnChunk(nar::Chunk & chunk){
+    nar::db::Chunk ck;
+    ck.chunk_id = std::to_string(chunk.chunk_id);
+    ck.file_id = std::to_string(chunk.file_id);
+    ck.chunk_size = std::to_string(chunk.chunk_size);
+    return ck;
+}
+nar::db::UserToFile nar::Database::turnUserToFile(nar::UserToFile & userToFile){
+    nar::db::UserToFile usk;
+    usk.user_id = std::to_string(userToFile.user_id);
+    usk.file_id = std::to_string(userToFile.file_id);
+    return usk;
+}
+nar::db::ChunkToMachine nar::Database::turnChunkToMachine(nar::ChunkToMachine & chunkToMachine){
+    nar::db::ChunkToMachine ctm;
+    ctm.chunk_id = std::to_string(chunkToMachine.chunk_id);
+    ctm.machine_id = chunkToMachine.machine_id;
+    return ctm;
+}
+nar::db::Machine nar::Database::turnMachine(nar::Machine & machine){
+    nar::db::Machine mk;
+    mk.machine_id = machine.machine_id;
+    mk.user_id = std::to_string(machine.user_id);
+    mk.machine_quota = std::to_string(machine.machine_quota);
+    mk.machine_diskSpace = std::to_string(machine.machine_diskSpace);
+    return mk;
 }
 
 void nar::Database::setUser(std::string user)
@@ -44,8 +92,9 @@ std::string nar::Database::getDbname()
     return _dbname;
 }
 
-void nar::Database::insertUser(struct User &user)
+void nar::Database::insertUser(struct User &us)
 {
+    nar::db::User user = turnUser(us);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO Users(User_id, User_name, "
                                          "Quota, Disk_space, CryptedKey) "
@@ -61,8 +110,9 @@ void nar::Database::insertUser(struct User &user)
     delete prep_stmt;
 }
 
-void nar::Database::insertChunk(struct Chunk &chunk)
+void nar::Database::insertChunk(struct Chunk &ch)
 {
+    nar::db::Chunk chunk = turnChunk(ch);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO Chunks(Chunk_id, File_id, Chunk_size) "
                                             "VALUES(?, ?, ?);");
@@ -75,8 +125,9 @@ void nar::Database::insertChunk(struct Chunk &chunk)
     delete prep_stmt;
 }
 
-void nar::Database::insertFile(struct File &file)
+void nar::Database::insertFile(struct File &fi)
 {
+    nar::db::File file = turnFile(fi);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO Files(File_id, File_name, File_size, File_type) "
                                             "VALUES(?, ?, ?, ?);");
@@ -90,8 +141,9 @@ void nar::Database::insertFile(struct File &file)
     delete prep_stmt;
 }
 
-void nar::Database::insertMachine(struct Machine &machine)
+void nar::Database::insertMachine(struct Machine &ma)
 {
+    nar::db::Machine machine = turnMachine(ma);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO Machines(Machine_id, User_id, Machine_quota, Machine_diskSpace) "
                                             "VALUES(?, ?, ?, ?);");
@@ -105,8 +157,9 @@ void nar::Database::insertMachine(struct Machine &machine)
     delete prep_stmt;
 }
 
-void nar::Database::insertUserToFile(struct UserToFile &userToFile)
+void nar::Database::insertUserToFile(struct UserToFile &use)
 {
+    nar::db::UserToFile userToFile = turnUserToFile(use);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO UserToFile(User_id, File_id) "
                                             "VALUES(?, ?);");
@@ -118,13 +171,14 @@ void nar::Database::insertUserToFile(struct UserToFile &userToFile)
     delete prep_stmt;
 }
 
-void nar::Database::insertChunkToMachine(struct ChunkToMachine &chunktopeer)
+void nar::Database::insertChunkToMachine(struct ChunkToMachine &chu)
 {
+    nar::db::ChunkToMachine chunktomachine = turnChunkToMachine(chu);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO ChunkToMachine(Chunk_id, Machine_id) "
                                             "VALUES(?, ?);");
-    prep_stmt -> setBigInt(1, chunktopeer.chunk_id);
-    prep_stmt -> setString(2, chunktopeer.machine_id);
+    prep_stmt -> setBigInt(1, chunktomachine.chunk_id);
+    prep_stmt -> setString(2, chunktomachine.machine_id);
 
     prep_stmt -> execute();
 
@@ -144,20 +198,21 @@ nar::User nar::Database::getUser(std::string name)
     res = prep_stmt -> executeQuery();
 
     delete prep_stmt;
-    struct User a;
+    nar::User a;
     while(res->next()){
-        a.user_id = res->getString("User_id");
+        a.user_id = std::stoi(res->getString("User_id").asStdString());
         a.user_name = res->getString("User_name");
-        a.quota = res->getString("Quota");
-        a.disk_space = res->getString("Disk_space");
+        a.quota = std::stoi(res->getString("Quota").asStdString());
+        a.disk_space = std::stoi(res->getString("Disk_space").asStdString());
         a.cryptedKey = res->getString("CryptedKey");
     }
     delete res;
     return a;
 }
 
-nar::User nar::Database::getUser(sql::SQLString user_id)
+nar::User nar::Database::getUser(long long int userId)
 {
+    sql::SQLString user_id = std::to_string(userId);
     sql::PreparedStatement *prep_stmt;
         sql::ResultSet *res;
     prep_stmt = _con -> prepareStatement("SELECT User_id,User_name,Quota,Disk_space,CryptedKey "
@@ -169,20 +224,21 @@ nar::User nar::Database::getUser(sql::SQLString user_id)
     res = prep_stmt -> executeQuery();
 
     delete prep_stmt;
-        struct User a;
+    nar::User a;
     while(res->next()){
-        a.user_id = res->getString("User_id");
+        a.user_id = std::stoi(res->getString("User_id").asStdString());
         a.user_name = res->getString("User_name");
-        a.quota = res->getString("Quota");
-        a.disk_space = res->getString("Disk_space");
+        a.quota = std::stoi(res->getString("Quota").asStdString());
+        a.disk_space = std::stoi(res->getString("Disk_space").asStdString());
         a.cryptedKey = res->getString("CryptedKey");
     }
     delete res;
     return a;
 }
 
-nar::Machine nar::Database::getMachine(sql::SQLString user_id)
+nar::Machine nar::Database::getMachine(long long int userId)
 {
+    sql::SQLString user_id = std::to_string(userId);
     sql::PreparedStatement *prep_stmt;
             sql::ResultSet *res;
     prep_stmt = _con -> prepareStatement("SELECT Machine_id, User_id, Machine_quota, Machine_diskSpace "
@@ -194,13 +250,13 @@ nar::Machine nar::Database::getMachine(sql::SQLString user_id)
     res = prep_stmt -> executeQuery();
 
     delete prep_stmt;
-            struct Machine a;
+    nar::Machine a;
     while (res->next()) {
 
         a.machine_id = res->getString("Machine_id");
-        a.user_id = res->getString("User_id");
-        a.machine_quota = res->getString("Machine_quota");
-        a.machine_diskSpace = res->getString("Machine_diskSpace");
+        a.user_id = std::stoi(res->getString("User_id").asStdString());
+        a.machine_quota = std::stoi(res->getString("Machine_quota").asStdString());
+        a.machine_diskSpace = std::stoi(res->getString("Machine_diskSpace").asStdString());
 
 
     }
@@ -222,13 +278,13 @@ nar::Machine nar::Database::getMachine(std::string machine_id)
 
     delete prep_stmt;
 
-    struct Machine a;
+    nar::Machine a;
     while (res->next()) {
 
         a.machine_id = res->getString("Machine_id");
-        a.user_id = res->getString("User_id");
-        a.machine_quota = res->getString("Machine_quota");
-        a.machine_diskSpace = res->getString("Machine_diskSpace");
+        a.user_id = std::stoi(res->getString("User_id").asStdString());
+        a.machine_quota = std::stoi(res->getString("Machine_quota").asStdString());
+        a.machine_diskSpace = std::stoi(res->getString("Machine_diskSpace").asStdString());
 
 
     }
@@ -236,8 +292,9 @@ nar::Machine nar::Database::getMachine(std::string machine_id)
     return a;
 }
 
-nar::File nar::Database::getFile(sql::SQLString file_id)
+nar::File nar::Database::getFile(long long int fileId)
 {
+    sql::SQLString file_id = std::to_string(fileId);
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet *res;
     prep_stmt = _con -> prepareStatement("SELECT File_id,File_name,File_size,File_type "
@@ -249,12 +306,12 @@ nar::File nar::Database::getFile(sql::SQLString file_id)
     res = prep_stmt -> executeQuery();
 
     delete prep_stmt;
-    struct File a;
+    nar::File a;
     while (res->next()) {
 
-        a.file_id = res->getString("File_id");
+        a.file_id = std::stoi(res->getString("File_id").asStdString());
         a.file_name = res->getString("File_name");
-        a.file_size = res->getString("File_size");
+        a.file_size = std::stoi(res->getString("File_size").asStdString());
         a.file_type = res->getString("File_type");
 
 
@@ -263,8 +320,9 @@ nar::File nar::Database::getFile(sql::SQLString file_id)
     return a;
 }
 
-nar::Chunk nar::Database::getChunk(sql::SQLString chunk_id)
+nar::Chunk nar::Database::getChunk(long long int chunkId)
 {
+    sql::SQLString chunk_id = std::to_string(chunkId);
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet  *res;
     prep_stmt = _con -> prepareStatement("SELECT *"
@@ -279,9 +337,9 @@ nar::Chunk nar::Database::getChunk(sql::SQLString chunk_id)
     struct Chunk a;
     while (res->next()) {
 
-        a.chunk_id = res->getString("Chunk_id");
-        a.file_id = res->getString("File_id");
-        a.chunk_size = res->getString("Chunk_size");
+        a.chunk_id = std::stoi(res->getString("Chunk_id").asStdString());
+        a.file_id = std::stoi(res->getString("File_id").asStdString());
+        a.chunk_size = std::stoi(res->getString("Chunk_size").asStdString());
 
 
     }
@@ -290,7 +348,8 @@ nar::Chunk nar::Database::getChunk(sql::SQLString chunk_id)
 
 }
 
-void nar::Database::updateUserName(struct User & user) {
+void nar::Database::updateUserName(struct User & us) {
+        nar::db::User user = turnUser(us);
 
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Users "
@@ -301,8 +360,8 @@ void nar::Database::updateUserName(struct User & user) {
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::updateUserQuota(struct User & user) {
-
+void nar::Database::updateUserQuota(struct User & us) {
+    nar::db::User user = turnUser(us);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Users "
                                         "SET Users.Quota = ? "
@@ -313,8 +372,8 @@ void nar::Database::updateUserQuota(struct User & user) {
     delete prep_stmt;
 }
 
-void nar::Database::updateUserDiskSpace(struct User & user) {
-
+void nar::Database::updateUserDiskSpace(struct User & us) {
+    nar::db::User user = turnUser(us);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Users "
                                         "SET Users.Disk_space = ? "
@@ -325,8 +384,8 @@ void nar::Database::updateUserDiskSpace(struct User & user) {
     delete prep_stmt;
 }
 
-void nar::Database::updateUserCryptedKey(struct User & user) {
-
+void nar::Database::updateUserCryptedKey(struct User & us) {
+    nar::db::User user = turnUser(us);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Users "
                                         "SET Users.CryptedKey = ? "
@@ -337,8 +396,8 @@ void nar::Database::updateUserCryptedKey(struct User & user) {
     delete prep_stmt;
 }
 
-void nar::Database::updateUser(struct User & user) {
-
+void nar::Database::updateUser(struct User & us) {
+    nar::db::User user = turnUser(us);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Users "
                                         "SET Users.User_name= ?,Users.Quota = ? ,Users.Disk_space = ? "
@@ -351,7 +410,8 @@ void nar::Database::updateUser(struct User & user) {
     delete prep_stmt;
 }
 
-void nar::Database::updateChunk(struct Chunk & chunk) {
+void nar::Database::updateChunk(struct Chunk & ch) {
+    nar::db::Chunk chunk = turnChunk(ch);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Chunks "
                                         "SET Chunks.File_id= ?,Chunks.Chunk_size = ? "
@@ -364,7 +424,8 @@ void nar::Database::updateChunk(struct Chunk & chunk) {
 }
 
 
-void nar::Database::updateChunkFile(struct Chunk & chunk) {
+void nar::Database::updateChunkFile(struct Chunk & ch) {
+    nar::db::Chunk chunk = turnChunk(ch);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Chunks "
                                         "SET Chunks.File_id= ? "
@@ -375,7 +436,8 @@ void nar::Database::updateChunkFile(struct Chunk & chunk) {
     delete prep_stmt;
 }
 
-void nar::Database::updateChunkSize(struct Chunk & chunk) {
+void nar::Database::updateChunkSize(struct Chunk & ch) {
+    nar::db::Chunk chunk = turnChunk(ch);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Chunks "
                                         "SET Chunks.Chunk_size = ?"
@@ -385,7 +447,8 @@ void nar::Database::updateChunkSize(struct Chunk & chunk) {
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::updateFile(struct File & file){
+void nar::Database::updateFile(struct File & fi){
+    nar::db::File file = turnFile(fi);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Files "
                                         "SET Files.File_name = ?, "
@@ -399,7 +462,8 @@ void nar::Database::updateFile(struct File & file){
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::updateFileName(struct File & file){
+void nar::Database::updateFileName(struct File & fi){
+    nar::db::File file = turnFile(fi);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Files "
                                         "SET Files.File_name = ? "
@@ -409,7 +473,8 @@ void nar::Database::updateFileName(struct File & file){
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::updateFileSize(struct File & file){
+void nar::Database::updateFileSize(struct File & fi){
+    nar::db::File file = turnFile(fi);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Files "
                                         "SET Files.File_size = ? "
@@ -420,7 +485,8 @@ void nar::Database::updateFileSize(struct File & file){
     delete prep_stmt;
 }
 
-void nar::Database::updateFileType(struct File & file){
+void nar::Database::updateFileType(struct File & fi){
+    nar::db::File file = turnFile(fi);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Files "
                                         "SET Files.File_type = ? "
@@ -431,7 +497,8 @@ void nar::Database::updateFileType(struct File & file){
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::updateMachine(struct Machine & machine){
+void nar::Database::updateMachine(struct Machine & ma){
+    nar::db::Machine machine = turnMachine(ma);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Machines "
                                         "SET Machines.Machine_quota = ? , Machines.Machine_diskSpace ? "
@@ -442,7 +509,8 @@ void nar::Database::updateMachine(struct Machine & machine){
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::updateMachineQuota(struct Machine & machine){
+void nar::Database::updateMachineQuota(struct Machine & ma){
+    nar::db::Machine machine = turnMachine(ma);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Machines "
                                         "SET Machines.Machine_quota = ? "
@@ -452,7 +520,8 @@ void nar::Database::updateMachineQuota(struct Machine & machine){
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::updateMachineDiskSpace(struct Machine & machine){
+void nar::Database::updateMachineDiskSpace(struct Machine & ma){
+    nar::db::Machine machine = turnMachine(ma);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Machines "
                                         "SET Machines.Machine_diskSpace ? "
@@ -462,14 +531,16 @@ void nar::Database::updateMachineDiskSpace(struct Machine & machine){
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::deleteUser(struct User & user){
+void nar::Database::deleteUser(struct User & us){
+    nar::db::User user = turnUser(us);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("DELETE FROM Users Where Users.User_id = ?;");
     prep_stmt->setBigInt(1,user.user_id);
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::deleteChunk(struct Chunk & chunk){
+void nar::Database::deleteChunk(struct Chunk & ch){
+    nar::db::Chunk chunk = turnChunk(ch);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("DELETE FROM Chunks "
                                         "WHERE Chunks.Chunk_id= ?;");
@@ -477,7 +548,8 @@ void nar::Database::deleteChunk(struct Chunk & chunk){
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::deleteFile(struct File & file){
+void nar::Database::deleteFile(struct File & fi){
+    nar::db::File file = turnFile(fi);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("DELETE FROM Files "
                                         "WHERE Files.File_id= ?;");
@@ -485,7 +557,8 @@ void nar::Database::deleteFile(struct File & file){
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::deleteMachine(struct Machine & machine){
+void nar::Database::deleteMachine(struct Machine & ma){
+    nar::db::Machine machine = turnMachine(ma);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("DELETE FROM Machines "
                                         "WHERE Machines.Machine_id= ?;");
@@ -493,16 +566,18 @@ void nar::Database::deleteMachine(struct Machine & machine){
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::deleteUserToFile(struct UserToFile & userToFiles){
+void nar::Database::deleteUserToFile(struct UserToFile & use){
+    nar::db::UserToFile userToFile = turnUserToFile(use);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("DELETE FROM UserToFile "
                                         "WHERE UserToFile.User_id= ? AND UserToFile.File_id = ?;");
-    prep_stmt->setBigInt(1,userToFiles.user_id);
-    prep_stmt->setBigInt(2,userToFiles.file_id);
+    prep_stmt->setBigInt(1,userToFile.user_id);
+    prep_stmt->setBigInt(2,userToFile.file_id);
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::deleteChunkToMachine(struct ChunkToMachine & chunkToMachine){
+void nar::Database::deleteChunkToMachine(struct ChunkToMachine & chu){
+    nar::db::ChunkToMachine chunkToMachine = turnChunkToMachine(chu);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("DELETE FROM ChunkToMachine "
                                         "WHERE ChunkToMachine.Chunk_id= ? AND ChunkToMachine.Machine_id = ?;");
@@ -511,7 +586,8 @@ void nar::Database::deleteChunkToMachine(struct ChunkToMachine & chunkToMachine)
     prep_stmt->execute();
     delete prep_stmt;
 }
-std::vector<nar::File>  nar::Database::getUserFiles(sql::SQLString user_id){
+std::vector<nar::File>  nar::Database::getUserFiles(long long int userId){
+    sql::SQLString user_id = std::to_string(userId);
     std::vector<nar::File> output;
     sql::PreparedStatement  *prep_stmt;
     sql::ResultSet *res;
@@ -524,9 +600,9 @@ std::vector<nar::File>  nar::Database::getUserFiles(sql::SQLString user_id){
     res = prep_stmt->executeQuery();
     while (res->next()) {
         nar::File a;
-        a.file_id = res->getString("File_id");
+        a.file_id = std::stoi(res->getString("File_id").asStdString());
         a.file_name = res->getString("File_name");
-        a.file_size = res->getString("File_size");
+        a.file_size = std::stoi(res->getString("File_size").asStdString());
         a.file_type = res->getString("File_type");
         output.push_back(a);
 
@@ -536,7 +612,8 @@ std::vector<nar::File>  nar::Database::getUserFiles(sql::SQLString user_id){
     return output;
 }
 
-std::vector<nar::Chunk>  nar::Database::getChunks(sql::SQLString file_id){
+std::vector<nar::Chunk>  nar::Database::getChunks(long long int fileId){
+    sql::SQLString file_id = std::to_string(fileId);
     std::vector<nar::Chunk> output;
     sql::PreparedStatement  *prep_stmt;
     sql::ResultSet *res;
@@ -547,9 +624,9 @@ std::vector<nar::Chunk>  nar::Database::getChunks(sql::SQLString file_id){
     res = prep_stmt->executeQuery();
     while (res->next()) {
         nar::Chunk a;
-        a.chunk_id = res->getString("Chunk_id");
-        a.file_id = res->getString("File_id");
-        a.chunk_size = res->getString("Chunk_size");
+        a.chunk_id = std::stoi(res->getString("Chunk_id").asStdString());
+        a.file_id = std::stoi(res->getString("File_id").asStdString());
+        a.chunk_size = std::stoi(res->getString("Chunk_size").asStdString());
         output.push_back(a);
 
     }
@@ -557,7 +634,8 @@ std::vector<nar::Chunk>  nar::Database::getChunks(sql::SQLString file_id){
     delete res;
     return output;
 }
-std::vector<nar::Machine>  nar::Database::getMachines(sql::SQLString chunk_id){
+std::vector<nar::Machine>  nar::Database::getMachines(long long int chunkId){
+    sql::SQLString chunk_id = std::to_string(chunkId);
     std::vector<nar::Machine> output;
     sql::PreparedStatement  *prep_stmt;
     sql::ResultSet *res;
@@ -570,10 +648,10 @@ std::vector<nar::Machine>  nar::Database::getMachines(sql::SQLString chunk_id){
     res = prep_stmt->executeQuery();
     while (res->next()) {
         nar::Machine a;
-        a.machine_id = res->getString("File_id");
-        a.user_id = res->getString("File_name");
-        a.machine_quota = res->getString("File_size");
-        a.machine_diskSpace = res->getString("File_type");
+        a.machine_id = res->getString("Machine_id").asStdString();
+        a.user_id = std::stoi(res->getString("User_id").asStdString());
+        a.machine_quota = std::stoi(res->getString("Machine_quota").asStdString());
+        a.machine_diskSpace = std::stoi(res->getString("Machine_diskSpace").asStdString());
         output.push_back(a);
 
     }
