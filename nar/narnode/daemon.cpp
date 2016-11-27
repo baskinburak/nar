@@ -19,6 +19,12 @@
 #include <nar/narnode/global.h>
 #include <nar/lib/json.hpp>
 
+void keepalive(nar::Global* globals) {
+    while(true) {
+        std::cout << "asdf" << std::endl;
+    }
+}
+
 void handle_cli_ipc(int sockfd, nar::Global* globals) {
     char buf[129];
     int len = nar::get_int_sckt(sockfd);
@@ -52,6 +58,9 @@ int main() {
     nar::Global* globals = new nar::Global();
     globals->set_username(std::string("nar_admin"));
     
+
+    std::thread keepalv(keepalive, globals);
+    keepalv.detach();
 
     while(true) {
         int sockfd = cli_server.acceptConnection();

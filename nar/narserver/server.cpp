@@ -11,79 +11,152 @@
 #include <nar/lib/json.hpp>
 #include <nar/narserver/Database.h>
 #include <nar/narserver/dbstructs.h>
+#include <nar/narserver/sockinfo.h>
+#include <cstdlib>
+#include <ctime>
+#include <iterator>
 
 using namespace nlohmann;
 
-std::map<std::string, nar::Socket*> keepalives;
-std::map<nar::Socket*, std::string> reverse_keepalives;
+std::map<std::string, nar::SockInfo*> keepalives;
 nar::Database db;
+std::map<std::string, bool> activetokens;
+std::string charlist("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&'()*+,-./:;<=>?@[]^_`{|}~");
 
-bool handshake(nar::Socket& skt, bool& keepalive) {
-    std::string request = nar::get_message(skt);
-    std::cout << "received: " << request << std::endl;
-    auto jsn = json::parse(request.c_str());
-    std::string action = jsn["header"]["action"];
-    if(action != "handshake")
-        return false;
+std::string generate_secure_token() {
+    int TOKENLEN = 32;
+    std::string token;
+    token.resize(TOKENLEN);
+    do {
+        for(int i=0; i<TOKENLEN; i++) {
+            token.push_back(charlist[std::rand()%charlist.size()]);
+        }
+    } while(activetokens.find(token) != activetokens.end());
+    return token;
+}
 
-    std::string username = jsn["payload"]["username"];
-    if(keepalives.find(username) == keepalives.end()) {
-        keepalive = true;
-        keepalives[username] = &skt;
-        reverse_keepalives[&skt] = username;
-    } else {
-        nar::Socket* keep_sck = keepalives[username];
-        if(!keep_sck->is_active()) {
-            keepalives[username] = &skt;
-            reverse_keepalives[&skt] = username;
-            std::map<nar::Socket*, std::string>::iterator it = reverse_keepalives.find(keep_sck);
-            reverse_keepalives.erase(it);
-            keepalive = true;
+namespace nar {
+    namespace action {
+        bool handshake(nar::SockInfo* inf, json& jsn) {
+            std::string username = jsn["payload"]["username"];
+
+            inf->authenticate(username);
+
+            json resp;
+            resp["header"]["channel"] = "sp";
+            resp["header"]["status-code"] = 200;
+            resp["header"]["reply-to"] = "handshake";
+
+            std::string response(resp.dump());
+
+            response = std::to_string((int)response.size()) + std::string(" ") + response;
+            (inf->getSck())->send((char*) response.c_str(), (int)response.size());
+            return true;
+        }
+
+        bool keepalive(nar::SockInfo* inf, json& jsn) {
+            json resp;
+            resp["header"]["channel"] = "sp";
+            resp["header"]["reply-to"] = "keepalive";
+            if(inf->isAuthenticated()) {        
+                inf->elevateKeepalive();
+                keepalives[inf->getAuthenticationHash()] = inf;
+                resp["header"]["status-code"] = 200;
+            } else {
+                resp["header"]["status-code"] = 300;
+            }
+
+            std::string response(resp.dump());
+
+            response = std::to_string((int)response.size()) + std::string(" ") + response;
+            (inf->getSck())->send((char*) response.c_str(), (int)response.size());
+            return true;
+        }
+
+        bool file_push_request(nar::SockInfo* inf, json& jsn) {
+            json resp;
+            resp["header"]["channel"] = "sp";
+            resp["header"]["reply-to"] = "file_push_request";
+            if(inf->isAuthenticated()) {
+                if(keepalives.size() == 0) {
+                    resp["header"]["status-code"] = 301; // no valid peer
+                } else {
+                    std::map<std::string, nar::SockInfo*>::iterator it = keepalives.begin();
+                    int selected_peer = std::rand() % ((int)keepalives.size());
+                    std::advance(it, selected_peer);
+                    int cnt = 0;
+                    for(; (*it).first == inf->getAuthenticationHash() && cnt<keepalives.size(); it++, cnt++) {
+                        if(it == keepalives.end())
+                            it = keepalives.begin();
+                    }
+
+                    if(cnt == keepalives.size()) {
+                        resp["header"]["status-code"] = 301; // no valid peer
+                    } else {
+                        json peer_msg;
+                        peer_msg["header"]["channel"] = "sp";
+                        peer_msg["header"]["action"] = "wait_chunk_request";
+                        peer_msg["payload"]["token"] = generate_secure_token();
+                        nar::SockInfo peer_sock = (*it).second;
+                        std::string peer_msg(peer_msg.dump);
+                        peer_msg = std::to_string((int)peer_msg.size() + std::string(" ") + peer_msg);
+                        (peer_sock->getSck())->send((char*) peer_msg.c_str(), (int)peer_msg.size());
+
+
+    
+                        std::string peer_ip = (peer_sock->getSck())->get_dest_ip();
+
+
+                        resp["header"]["status-code"] = 200;
+                        std::string filename = jsn["payload"]["file-name"];
+                        unsigned long filesize = jsn["payload"]["file-size"];
+                        std::string directory = jsn["payload"]["directory"];
+                        std::cout << filename << std::endl;
+                        std::cout << filesize << std::endl;
+                        std::cout << directory << std::endl << std::endl;
+                    }
+                }
+                
+            } else {
+                resp["header"]["status-code"] = 300;
+            }
+
+            std::string response(resp.dump());
+
+            response = std::to_string((int)response.size()) + std::string(" ") + response;
+            (inf->getSck())->send((char*) response.c_str(), (int)response.size());
+            return true;
+            
+        }
+    }
+}
+
+void handle_connection(nar::Socket* skt) {
+    nar::SockInfo* inf = new nar::SockInfo(skt);
+    while(true) {
+        std::string msg = nar::get_message(*skt);
+        std::cout << msg << std::endl;
+        auto jsn = json::parse(msg.c_str());
+        std::cout << jsn["header"]["action"] << std::endl;
+        if(jsn["header"]["action"] == "handshake") {
+            nar::action::handshake(inf, jsn);
+        } else if(jsn["header"]["action"] == "keepalive") {
+            nar::action::keepalive(inf, jsn);
+            break;
+        } else if(jsn["header"]["action"] == "file_push_request") {
+            nar::action::file_push_request(inf, jsn);
         }
     }
 
-    json resp;
-    resp["header"]["channel"] = "sp";
-    resp["header"]["status-code"] = 200;
-    resp["header"]["reply-to"] = "handshake";
-    resp["payload"]["keepalive"] = keepalive;
-
-    std::string response(resp.dump());
-    std::string len = std::to_string((int)response.size());
-    skt.send((char*) len.c_str(), (int) len.size());
-    skt.send((char*) " ", 1);
-    skt.send((char*) response.c_str(), (int)response.size());
-    return true;
-}
-
-bool file_push_request(json& jsn, nar::Socket& skt) {
-    unsigned long filesize = jsn["payload"]["file-size"];
-    std::string filename = jsn["payload"]["file-name"];
-    std::string directory = jsn["payload"]["directory"];
-
-    
-}
-
-
-void handle_connection(nar::Socket skt, int id) {
-    bool keepalive;
-    if(handshake(skt, keepalive)) {
-        do {
-            std::string request = nar::get_message(skt);
-            auto jsn = json::parse(request);
-            if(jsn["header"]["action"] == "file_push_request") {
-                file_push_request(jsn, skt);
-            }
-            std::cout << request << std::endl;
-        } while(keepalive);
-        
+    if(inf->isKeepalive()) {
     } else {
-        skt.close();
+        (inf->getSck())->close();
     }
 }
 
 int main(int argc, char *argv[])
 {
+    std::srand(std::time(NULL));
     db.setUser(std::string("root"));
     db.setPass(std::string("123"));
     db.setDbname(std::string("nar"));
@@ -92,12 +165,11 @@ int main(int argc, char *argv[])
     entry_skt.create();
     entry_skt.bind(12345);
     entry_skt.listen();
-    int i = 0;
     while(true) {
-        nar::Socket new_skt;
-        entry_skt.accept(new_skt, NULL);
+        nar::Socket* new_skt = new nar::Socket();
+        entry_skt.accept(*new_skt, NULL);
 
-        std::thread thr(&handle_connection, new_skt, i++);
+        std::thread thr(&handle_connection, new_skt);
         thr.detach();
     }    	
 	return 0;

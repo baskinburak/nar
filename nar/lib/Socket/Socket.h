@@ -50,6 +50,8 @@ class Socket
         return error == 0;
     }
 
+  std::string get_dest_ip();
+
  private:
 
   int m_sock;

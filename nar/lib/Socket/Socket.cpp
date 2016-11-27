@@ -12,7 +12,6 @@
 void nar::Socket::close() const{
     std::cout << "socket closed" << std::endl;
     ::close(m_sock);
-    m_sock = -1;
 }
 
 void nar::Socket::error(const char* msg, int errNo) const {
@@ -218,4 +217,13 @@ void nar::Socket::set_non_blocking ( const bool b )
   fcntl ( m_sock,
 	  F_SETFL,opts );
 
+}
+
+std::string nar::Socket::get_dest_ip() {
+    struct sockaddr_in addr;
+    getpeername(m_sock, (struct sockaddr*) &addr, sizeof(addr));
+    char *ip = inet_ntoa(addr.sin_addr);
+    std::string res(ip);
+    free(ip);
+    return res;
 }
