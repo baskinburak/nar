@@ -97,10 +97,10 @@ namespace nar {
                         peer_msg["header"]["channel"] = "sp";
                         peer_msg["header"]["action"] = "wait_chunk_request";
                         peer_msg["payload"]["token"] = generate_secure_token();
-                        nar::SockInfo peer_sock = (*it).second;
-                        std::string peer_msg(peer_msg.dump);
-                        peer_msg = std::to_string((int)peer_msg.size() + std::string(" ") + peer_msg);
-                        (peer_sock->getSck())->send((char*) peer_msg.c_str(), (int)peer_msg.size());
+                        nar::SockInfo* peer_sock = (*it).second;
+                        std::string peer_str(peer_msg.dump());
+                        peer_str = std::to_string((int)peer_str.size()) + std::string(" ") + peer_str;
+                        (peer_sock->getSck())->send((char*) peer_str.c_str(), (int)peer_str.size());
 
 
     

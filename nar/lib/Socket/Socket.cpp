@@ -87,6 +87,35 @@ bool nar::Socket::bind ( const int port )
   return true;
 }
 
+int nar::Socket::bind ( )
+{
+
+  if ( ! is_valid() )
+    {
+      return false;
+    }
+
+
+
+  m_addr.sin_family = AF_INET;
+  m_addr.sin_addr.s_addr = INADDR_ANY;
+  m_addr.sin_port = htons ( 0 );
+
+  int bind_return = ::bind ( m_sock,
+			     ( struct sockaddr * ) &m_addr,
+			     sizeof ( m_addr ) );
+
+  int tmp = errno;
+  if ( bind_return == -1 )
+    {
+      error("Binding the Socket",tmp);
+      return false;
+    }
+
+  return bind_return;
+}
+
+
 
 bool nar::Socket::listen() const
 {
@@ -221,7 +250,8 @@ void nar::Socket::set_non_blocking ( const bool b )
 
 std::string nar::Socket::get_dest_ip() {
     struct sockaddr_in addr;
-    getpeername(m_sock, (struct sockaddr*) &addr, sizeof(addr));
+    socklen_t len = sizeof(addr);
+    getpeername(m_sock, (struct sockaddr*) &addr, &len);
     char *ip = inet_ntoa(addr.sin_addr);
     std::string res(ip);
     free(ip);

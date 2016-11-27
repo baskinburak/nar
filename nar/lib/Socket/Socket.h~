@@ -26,7 +26,6 @@ class Socket
   // Server initialization
   bool create();
   bool bind ( const int port );
-  int bind();  
   bool listen() const;
   bool accept ( Socket& , const sockaddr_in *addr = NULL ) const;
 
@@ -51,16 +50,12 @@ class Socket
         return error == 0;
     }
 
-  std::string get_dest_ip();
-
   int getSckDescriptor(){
 	return m_sock;
   }
   void setSckDescriptor(int sckFd){
 	m_sock = sckFd;
   }
-
-
 
  private:
 
