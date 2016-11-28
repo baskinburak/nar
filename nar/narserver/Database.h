@@ -56,7 +56,7 @@ namespace nar {
             void setPass(std::string pass);
             void setDbname(std::string dbname);
             void connect();
-            std::string getUser();
+            std::string getUserNameOfDatabase();
             std::string getPass();
             std::string getDbname();
             void insertDirectory(struct Directory & directory);
@@ -112,6 +112,7 @@ namespace nar {
 
             long long int getNextFileId();
             long long int getNextChunkId();
+            long long int getNextDirectoryId();
 
 
     };

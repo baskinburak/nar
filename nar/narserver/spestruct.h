@@ -23,7 +23,7 @@ namespace nar {
             sql::SQLString  disk_space;
             std::string cryptedKey;
             sql::SQLString dir_id;
-            sql::SQLString change_time
+            sql::SQLString change_time;
         };
 
         struct Machine{
@@ -31,13 +31,13 @@ namespace nar {
             sql::SQLString  user_id;
             sql::SQLString  machine_quota;
             sql::SQLString machine_diskSpace;
-            sql::SQLString change_time
+            sql::SQLString change_time;
         };
 
         struct UserToFile{
             sql::SQLString user_id;
             sql::SQLString file_id;
-            sql::SQLString change_time
+            sql::SQLString change_time;
         };
 
         struct File{
@@ -45,7 +45,7 @@ namespace nar {
             std::string file_name;
             sql::SQLString file_size;
             std::string file_type;
-            sql::SQLString change_time
+            sql::SQLString change_time;
         };
 
         struct Chunk{
