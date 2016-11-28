@@ -22,6 +22,7 @@
 #include <mysql_driver.h>
 #include <nar/narserver/dbstructs.h>
 #include <nar/narserver/spestruct.h>
+#include <time.h>
 
 
 
@@ -47,6 +48,8 @@ namespace nar {
             nar::db::UserToFile turnUserToFile(nar::UserToFile & userToFile);
             nar::db::ChunkToMachine turnChunkToMachine(nar::ChunkToMachine & chunkToMachine);
             nar::db::Machine turnMachine(nar::Machine & machine);
+            nar::db::Directory turnDirectory(nar::Directory & directory);
+            nar::db::DirectoryTo turnDirectoryTo(nar::DirectoryTo & directoryTo);
 
 
             void setUser(std::string user);
@@ -56,10 +59,12 @@ namespace nar {
             std::string getUser();
             std::string getPass();
             std::string getDbname();
+            void insertDirectory(struct Directory & directory);
             void insertUser(struct User & user);
             void insertChunk(struct Chunk & chunk);
             void insertFile(struct File & file);
             void insertMachine(struct Machine & machine);
+            void insertDirectoryTo(struct DirectoryTo & directoryTo);
             void insertUserToFile(struct UserToFile & userToFile);
             void insertChunkToMachine(struct ChunkToMachine & chunkToMachine);
 
@@ -68,6 +73,9 @@ namespace nar {
             void updateUserDiskSpace(struct User & user);
             void updateUserCryptedKey(struct User & user);
             void updateUser(struct User & user);
+            void updateDirectory(struct Directory & directory);
+            void updateDirectoryName(struct Directory & directory);
+            void updateDirectorySize(struct Directory & directory);
             void updateChunkFile(struct Chunk & chunk);
             void updateChunkSize(struct Chunk & chunk);
             void updateChunk(struct Chunk & chunk);
@@ -85,7 +93,12 @@ namespace nar {
             void deleteMachine(struct Machine & machine);
             void deleteUserToFile(struct UserToFile & userToFiles);
             void deleteChunkToMachine(struct ChunkToMachine & chunkToMachine);
+            void deleteDirectoryTo(struct DirectoryTo & directoryTo);
+            void deleteDirectory(struct Directory & directory);
 
+            struct Directory getDirectory(long long int dirId);
+            std::vector<nar::File> getDirectoryFile(long long int dirId);
+            std::vector<nar::Directory> getDirectoryDir(long long int dirId);
             struct User getUser(std::string name);
             struct User getUser(long long int userId);
             struct Machine getMachine(long long int userId);
@@ -95,6 +108,10 @@ namespace nar {
             std::vector<struct Chunk> getChunks(long long int file_id);
             struct Chunk getChunk(long long int  chunk_id);
             std::vector<struct Machine> getMachines(long long int chunk_id);
+
+
+            long long int getNextFileId();
+            long long int getNextChunkId();
 
 
     };

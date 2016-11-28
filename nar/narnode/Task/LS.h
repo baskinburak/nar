@@ -7,11 +7,13 @@
 namespace nar {
     namespace task {
         class LS : public nar::task::ITask {
+            private:
+                std::string _dir;
             public:
-                LS() { }
+                LS(std::string dir):_dir(dir) { }
                 void run(int unx_sockfd, nar::Global* globals);
         };
     }
 }
 
-#endif
+#endif  //NAR_LS_H
