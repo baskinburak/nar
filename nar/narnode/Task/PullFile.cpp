@@ -116,7 +116,7 @@ void nar::task::PullFile::comeTogether(nlohmann::json j_resp, nar::Socket *serve
         std::cout << "connected!" << std::endl;
         //chunk size,chunk id,token
         nlohmann::json j_for_mypeer;
-        //constructJsonforPeer(j_for_mypeer);
+        constructJsonforPeer(j_for_mypeer, );
         //after token matched, pull files!
     }
 }
@@ -131,10 +131,11 @@ void nar::task::PullFile::run(int unx_sockfd, nar::Global* globals) {
     nar::Socket *server_sck = connectToServer(globals);
 
     std::cout << "connection to server, done!" << std::endl;
-
+    /*
     if(ITask::handshake(*server_sck, globals)) {
         std::cout << "handshake done" << std::endl;
     }
+    */
 
     std::cout << "run pull file" << std::endl;
 
