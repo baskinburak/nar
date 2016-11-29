@@ -59,7 +59,7 @@ void nar_push_file(std::string file_name) {
     ipc_client.closeConnection();
 }
 
-void nar_ls() {
+void nar_ls(std::string dir_name) {
 /*
 {
     "action": "ls"
@@ -149,7 +149,14 @@ int main(int argc, char* argv[]){
         std::string file_name(argv[2]);
         nar_push_file(file_name);
     } else if(first_arg == std::string("ls")) {
-        nar_ls();
+        if( argc <3 ) {
+            nar_ls(std::string(""));
+        }
+        else if(argc<4){
+            std::string dir_name(argv[2]);
+            nar_ls(dir_name);
+        }
+
     } else if(first_arg == std::string("pull")) {
         if(argc < 3) {
             return 0;

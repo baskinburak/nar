@@ -13,7 +13,7 @@ REQ
     },
     "payload": {
         "user_name": name,
-        "file_name": file,
+        "dir_name": file,
     }
 
 }
@@ -30,12 +30,18 @@ RES
                             "2":{"file_id":file_id2, "file_name":file_name2,
                         "file_size":file_size2,"file_type":file_type2},
                     ...]
+        "dir-list": ["1":{"dir_id":dir_id1, "dir_name":dir_name1,
+                        "dir_size":dir_size1,"dir_type":dir_type1},
+                            "2":{"dir_id":dir_id2, "dir_name":dir_name2,
+                        "dir_size":dir_size2,"dir_type":dir_type2},
+                    ...]
     }
 }
 
 
 
 */
+void nar::task::LS::createReq(){}
 void nar::task::LS::run(int unx_sockfd, nar::Global* globals) {
     std::cout << "ls" << std::endl;
 }

@@ -9,6 +9,7 @@ namespace nar {
         class LS : public nar::task::ITask {
             private:
                 std::string _dir;
+                void createReq();
             public:
                 LS(std::string dir):_dir(dir) { }
                 void run(int unx_sockfd, nar::Global* globals);
