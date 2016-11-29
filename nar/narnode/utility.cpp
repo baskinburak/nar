@@ -5,6 +5,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <string>
+#include <algorithm>
+#include <nar/narnode/FileKeeper/FileKeeper.h>
 
 std::string nar::get_message(nar::Socket& skt) {
     char buf[1025];
@@ -94,6 +96,88 @@ void nar::send_int_sckt(int sockfd, int val) {
         throw nar::Exception("nar::sent_int_sckt - Send error");
     }    
 }
+
+int nar::readdata(nar::Socket &sock, char *buf, int buflen)
+{
+     char *pbuf = ( char *) buf;
+
+    while (buflen > 0)
+    {
+        int num = sock.recv( pbuf, buflen);
+        if (num < 1)
+        {
+            /*if (WSAGetLastError() == WSAEWOULDBLOCK)
+            {
+                // optional: use select() to check for timeout to fail the read
+                continue;
+            }*/
+            return 0;
+        }
+        else if (num == 0)
+            return 0;
+
+        pbuf += num;
+        buflen -= num;
+    }
+
+    return 1;
+}
+
+int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize ){
+
+	char *buffer = new char[1024];
+
+    do
+    {
+        int num = std::min(fileSize, sizeof(buffer));
+        if (! nar::readdata(skt,buffer, num) ) {
+		   std::cout << "Read Data Failed from peer Skt" << std::endl;             
+		   return 0;
+		}
+        int offset = 0;
+        do
+        {
+            size_t written = nar::FileKeeper::writeToFile( filefd,  num, buffer);
+            if (written < 1)
+			{
+				std::cout << "Write to file failed " << std::endl;
+                return 0;
+			}
+            offset += written;
+        }
+        while (offset < num);
+        fileSize -= num;
+    }
+    while (fileSize > 0);
+	return 1;
+}
+
+
+/*
+bool senddata(nar::Socket &sock, void *buf, int buflen)
+{
+    unsigned char *pbuf = (unsigned char *) buf;
+
+    while (buflen > 0)
+    {
+        int num = sock.send( pbuf, buflen, 0);
+        if (num == SOCKET_ERROR)
+        {
+            if (WSAGetLastError() == WSAEWOULDBLOCK)
+            {
+                // optional: use select() to check for timeout to fail the send
+                continue;
+            }
+            return false;
+        }
+
+        pbuf += num;
+        buflen -= num;
+    }
+
+    return true;
+}
+*/
 
 void nar::send_string_sckt(int sockfd, std::string str, int len) {
     int idx = 0;
