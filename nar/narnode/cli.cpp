@@ -63,6 +63,7 @@ void nar_ls(std::string dir_name) {
 /*
 {
     "action": "ls"
+    "dir": dir
 }
 */
     rapidjson::Document doc;
@@ -72,7 +73,11 @@ void nar_ls(std::string dir_name) {
     rapidjson::Value action;
     action.SetString("ls");
 
+    rapidjson::Value dir;
+    dir.SetString(dir_name.c_str(), dir_name.size(), allocator);
+
     doc.AddMember("action", action, allocator);
+    doc.AddMember("dir", dir, allocator);
 
     rapidjson::StringBuffer buffer;
     buffer.Clear();
@@ -149,10 +154,10 @@ int main(int argc, char* argv[]){
         std::string file_name(argv[2]);
         nar_push_file(file_name);
     } else if(first_arg == std::string("ls")) {
-        if( argc <3 ) {
+        if(argc < 3) {
             nar_ls(std::string(""));
         }
-        else if(argc<4){
+        else if(argc < 4){
             std::string dir_name(argv[2]);
             nar_ls(dir_name);
         }

@@ -106,7 +106,7 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 			}
 		}
 		serverReq.clear();
-		std::cout << "HEREEEEE" << serverReq << std::endl; 
+		std::cout << "HEREEEEE" << serverReq.dump() << std::endl; 
 	}
 	
 	return;

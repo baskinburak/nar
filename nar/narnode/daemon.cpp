@@ -37,7 +37,7 @@ void handle_cli_ipc(int sockfd, nar::Global* globals) {
         nar::task::PushFile task(doc["file"].GetString());
         task.run(sockfd, globals);
     } else if(action == std::string("ls")) {
-        nar::task::LS task;
+        nar::task::LS task(doc["dir"].GetString());
         task.run(sockfd, globals);
     } else if(action == std::string("pull")) { //todo
         nar::task::PullFile task(doc["file"].GetString());
