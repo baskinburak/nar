@@ -48,22 +48,22 @@ void handle_cli_ipc(int sockfd, nar::Global* globals) {
 }
 
 void setServerConnection(nar::Socket &skt, nar::Global *globals){
-	
+
 	skt.create();
 	skt.connect(globals->get_narServerIp(),globals->get_narServerPort());
-	
+
 	while(!nar::task::ITask::handshake(skt, globals));
 
 	nar::send_int_sckt(skt.getSckDescriptor(), 51);
 	std::string str(" {\"header\":{\"action\": \"keepalive\",\"channel\": \"ps\"}}");
 	nar::send_string_sckt(skt.getSckDescriptor(), str, str.size()); 	// KeepAlive Message
-	nar::get_message( skt);
-	
+	std::cout << nar::get_message( skt) << std::endl;
+
 	return;
 }
 
 std::pair < nar::Socket *, int >  wait_chunk(){
-	
+
 	nar::Socket *tmp = new nar::Socket();
 	/*int m_sock = socket ( AF_INET,SOCK_STREAM, 0 );
 	int on = 1;
@@ -76,9 +76,9 @@ std::pair < nar::Socket *, int >  wait_chunk(){
 
 void keepAlive( nar::Socket *skt, nar::Global *globals){
 	//std::map <std::string, nar::Socket*> peerList;
-	std::map <std::string, std::pair< std::pair< std::string, unsigned long > ,std::pair < nar::Socket *, int > > > peerList; // token-> <chunkid,chunksize>,<socket,port>	
+	std::map <std::string, std::pair< std::pair< std::string, unsigned long > ,std::pair < nar::Socket *, int > > > peerList; // token-> <chunkid,chunksize>,<socket,port>
 	setServerConnection(*skt,globals);
-	
+
 	//std::string serverReq;
 	nlohmann::json serverReq;
 	while(1){
@@ -93,7 +93,7 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 				std::pair< std::string, unsigned long > p1 = std::make_pair(serverReq["payload"]["chunk-id"].get<std::string>(),serverReq["payload"]["chunk-size"].get<unsigned long>());std::cout << "Begin" << std::endl;
 				std::pair< nar::Socket *, int > p2 = wait_chunk();
 				peerList[serverReq["payload"]["token"]] = std::make_pair(p1,p2);
-				
+
 			}
 		}
 		catch ( nar::Exception ex){
@@ -106,9 +106,9 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 			}
 		}
 		serverReq.clear();
-		std::cout << "HEREEEEE" << serverReq.dump() << std::endl; 
+		std::cout << "HEREEEEE" << serverReq.dump() << std::endl;
 	}
-	
+
 	return;
 }
 
@@ -117,12 +117,12 @@ int main() {
     cli_server.initialize();
     nar::Global* globals = new nar::Global();
     globals->set_username(std::string("nar_admin"));
-	
+
 	// 				Create KeepAlive Task
-	nar::Socket serverSck;     
+	nar::Socket serverSck;
 	std::thread keepalvThread(keepAlive,&serverSck,globals);
 	keepalvThread.detach();
-	// 				Create KeepAlive Task     
+	// 				Create KeepAlive Task
 
     while(true) {
         int sockfd = cli_server.acceptConnection();
