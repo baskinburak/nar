@@ -7,8 +7,10 @@
 #include <cstdlib>
 #include <nar/narnode/IPC/ipcclient.h>
 #include <fstream>
+#include <nar/lib/json.hpp>
 #define NAR_IPC_FILE "/tmp/nar_ipc"
 
+using namespace nlohmann;
 
 void nar_push_file(std::string file_name) {
 /*
@@ -139,6 +141,28 @@ void nar_pull_file(std::string file_name) {
     ipc_client.closeConnection();
 }
 
+void nar_register(std::string uname) {
+/*
+{
+    "action": "register",
+    "username": username
+}
+*/
+
+    json jsn;
+    jsn["action"] = "register";
+    jsn["username"] = uname;
+
+    nar::IPCClient ipc_client(NAR_IPC_FILE);
+    ipc_client.connectServer();
+    ipc_client.sendRequest(jsn.dump());
+    std::string response;
+    while((response = ipc_client.getResponse()) != "END") {
+        std::cout << response << std::endl;
+    }
+    ipc_client.closeConnection();
+}
+
 int main(int argc, char* argv[]){
     if(argc < 2) {
         return 0;
@@ -169,6 +193,11 @@ int main(int argc, char* argv[]){
 
         std::string file_name(argv[2]);
         nar_pull_file(file_name);
+    } else if(first_arg == std::string("register")) {
+        std::string uname;
+        std::cout << "Enter a username: ";
+        std::cin >> uname;
+        nar_register(uname);
     }
 
     return 0;

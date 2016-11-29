@@ -18,6 +18,7 @@
 #include <nar/narnode/Task/PullFile.h>
 #include <nar/narnode/global.h>
 #include <nar/lib/nlohJson/json.hpp>
+#include <nar/narnode/Task/Register.h>
 #include <utility>
 
 void handle_cli_ipc(int sockfd, nar::Global* globals) {
@@ -42,6 +43,9 @@ void handle_cli_ipc(int sockfd, nar::Global* globals) {
     } else if(action == std::string("pull")) { //todo
         nar::task::PullFile task(doc["file"].GetString());
         task.run(sockfd, globals);
+    } else if(action == std::string("register")) {
+        nar::task::Register task(doc["username"].GetString());
+        task.run(sockfd, globals);
     }
 
     close(sockfd);
@@ -58,7 +62,7 @@ void setServerConnection(nar::Socket &skt, nar::Global *globals){
 	std::string str(" {\"header\":{\"action\": \"keepalive\",\"channel\": \"ps\"}}");
 	nar::send_string_sckt(skt.getSckDescriptor(), str, str.size()); 	// KeepAlive Message
 	nar::get_message( skt);
-	
+	std::cout << "zuzu" << std::endl;
 	return;
 }
 

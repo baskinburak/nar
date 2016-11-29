@@ -82,7 +82,6 @@ std::string get_configFolder() {
     read_start();
     std::string fold = configFolder;
     read_end();
-    return fold;
 }
 
 
