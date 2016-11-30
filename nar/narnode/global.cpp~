@@ -78,7 +78,7 @@ void nar::Global::set_configFolder(std::string fold) {
     write_end();
 }
 
-std::string nar::Global::get_configFolder() {
+std::string nar::get_configFolder() {
     read_start();
     std::string fold = configFolder;
     read_end();

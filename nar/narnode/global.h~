@@ -19,7 +19,7 @@ namespace nar {
             void write_start();
             void write_end();
         public:
-            Global() {set_curdir("~/nar"); set_narServerIp(std::string("127.0.0.1")); set_narServerPort(12345); set_configFolder("~/.nar");}
+            Global() {set_curdir("~/nar"); set_narServerIp(std::string("127.0.0.1")); set_narServerPort(12345); set_configFolder("~/.nar")}
             std::string get_username();
             void set_username(std::string uname);
             std::string get_curdir();

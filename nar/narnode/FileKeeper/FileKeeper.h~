@@ -14,6 +14,12 @@
 #include <string.h>
 #include <iostream>
 
+#include "FileEncrypt.h"
+#include "FileFragment.h"
+#include "FileCompress.h"
+#include "FileDecrypt.h"
+#include "FileDefragment.h"
+#include "FileDecompress.h"
 namespace nar {
 	class FileKeeper {
 		private:
