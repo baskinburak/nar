@@ -8,6 +8,7 @@
 #include <cstring>
 #include <vector>
 #include <map>
+#include <algorithm>
 /*
   Include directly the different
   headers from cppconn/ and mysql_driver.h + mysql_util.h
@@ -113,7 +114,7 @@ namespace nar {
             long long int getNextFileId();
             long long int getNextChunkId();
             long long int getNextDirectoryId();
-
+            struct Directory findDirectoryId(std::string user_name,std::string dir_name);
 
     };
 

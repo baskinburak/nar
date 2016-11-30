@@ -3,8 +3,9 @@
 /*
 
 STATUS CODES
-200 -> [SUCC] Request successuf.
-301 -> [FAIL] Directory does not exist.
+200 -> [SUCC] Request successul.
+301 -> [FAIL] User does not exist.
+302 -> [FAIL] Directory does not exist.
 REQ
 {
     "header": {

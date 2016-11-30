@@ -952,3 +952,70 @@ std::vector<nar::Machine>  nar::Database::getMachines(long long int chunkId){
     delete res;
     return output;
 }
+nar::Directory nar::Database::findDirectoryId(std::string user_name,std::string dir_name){
+    sql::PreparedStatement *prep_stmt;
+    sql::ResultSet *res;
+    std::vector<std::string> names;
+    std::size_t found;
+    std::size_t last_found;
+    std::string temp;
+    std::string sql_string = "";
+    unsigned int count = 1;
+    sql::SQLString query;
+    if(dir_name[dir_name.length()-1] == '/'){
+        dir_name = dir_name.substr(0,dir_name.length()-1);
+    }
+
+    //names.push_back(std::string("/"));
+
+
+    if(dir_name[0] == '/'){
+        found = dir_name.find("/",1);
+        last_found = 1;
+    }
+    else{
+        found = dir_name.find("/");
+        last_found = 0;
+    }
+    while(found != std::string::npos){
+        temp = dir_name.substr(last_found,found-last_found);
+        last_found = found+1;
+        found = dir_name.find("/",last_found);
+        names.push_back(temp);
+    }
+    temp = dir_name.substr(last_found);
+    names.push_back(temp);
+    nar::Directory result_dir;
+    sql_string+=std::string(" SELECT Item_id FROM DirectoryTo WHERE ForD = 1 AND Dir_id IN (select Dir_id from Users where user_name= ? )");
+    for(int i=0;i<names.size()-1;i++){
+            sql_string =std::string(" SELECT Dir_id From Directories WHERE Dir_name = ? AND Dir_id IN ( ")+sql_string +std::string(")");
+            sql_string = std::string(" SELECT Item_id FROM DirectoryTo WHERE ForD = 1 AND Dir_id IN (")+sql_string+std::string(")");
+    }
+    sql_string =std::string(" SELECT Dir_id, Dir_name, Dir_size, UNIX_TIMESTAMP(Change_time) As Time From Directories WHERE Dir_name = ? AND Dir_id IN ( ")+sql_string +std::string(")");
+    sql_string = sql_string +(";");
+    query = sql::SQLString(sql_string);
+    std::reverse(names.begin(),names.end());
+    prep_stmt = _con->prepareStatement(query);
+    for(int i= 0;i<names.size();i++){
+
+        prep_stmt->setString(count, sql::SQLString(names[i]));
+        count++;
+    }
+    prep_stmt->setString(count, sql::SQLString(user_name));
+
+    res = prep_stmt->executeQuery();
+    while(res->next()){
+        result_dir.dir_id = std::stoll(res->getString("Dir_id").asStdString());
+        result_dir.dir_name = res->getString("Dir_name").asStdString();
+        result_dir.dir_size = std::stoll(res->getString("Dir_size").asStdString());
+        struct tm tm;
+        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
+        time_t t = mktime(&tm);
+        result_dir.change_time = t;
+    }
+    delete prep_stmt;
+    delete res;
+    return result_dir;
+
+
+}

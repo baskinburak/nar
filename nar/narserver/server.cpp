@@ -58,7 +58,7 @@ namespace nar {
             json resp;
             resp["header"]["channel"] = "sp";
             resp["header"]["reply-to"] = "keepalive";
-            if(inf->isAuthenticated()) {        
+            if(inf->isAuthenticated()) {
                 inf->elevateKeepalive();
                 keepalives[inf->getAuthenticationHash()] = inf;
                 resp["header"]["status-code"] = 200;
@@ -103,7 +103,7 @@ namespace nar {
                         (peer_sock->getSck())->send((char*) peer_str.c_str(), (int)peer_str.size());
 
 
-    
+
                         std::string peer_ip = (peer_sock->getSck())->get_dest_ip();
 
 
@@ -116,7 +116,7 @@ namespace nar {
                         std::cout << directory << std::endl << std::endl;
                     }
                 }
-                
+
             } else {
                 resp["header"]["status-code"] = 300;
             }
@@ -126,7 +126,7 @@ namespace nar {
             response = std::to_string((int)response.size()) + std::string(" ") + response;
             (inf->getSck())->send((char*) response.c_str(), (int)response.size());
             return true;
-            
+
         }
         bool file_pull_request(nar::SockInfo* inf, json& jsn) {
             json resp;
@@ -158,7 +158,7 @@ namespace nar {
                         (peer_sock->getSck())->send((char*) peer_str.c_str(), (int)peer_str.size());
 
 
-    
+
                         std::string peer_ip = (peer_sock->getSck())->get_dest_ip();
 
 
@@ -171,7 +171,7 @@ namespace nar {
                         std::cout << directory << std::endl << std::endl;
                     }
                 }
-                
+
             } else {
                 resp["header"]["status-code"] = 300;
             }
@@ -181,8 +181,77 @@ namespace nar {
             response = std::to_string((int)response.size()) + std::string(" ") + response;
             (inf->getSck())->send((char*) response.c_str(), (int)response.size());
             return true;
-            
+
         }
+        bool get_user_dir_info(nar::SockInfo* inf, json& jsn) {
+            json resp;
+            resp["header"]["channel"] = "sp";
+            resp["header"]["reply-to"] = "get_user_dir_info";
+            if(inf->isAuthenticated()) {
+                std::string user_name = resp["payload"]["user_name"].get<std::string>();
+                std::string dir_name =resp["payload"]["dir_name"].get<std::string>();
+                nar::User us= ::db.getUser(user_name);
+                std::vector<nar::File> files;
+                std::vector<nar::Directory> dirs;
+                if(dir_name.compare(std::string("")) == 0){
+                    files = ::db.getDirectoryFile(us.dir_id);
+                    dirs = ::db.getDirectoryDir(us.dir_id);
+                } else {
+                    nar::Directory dir = ::db.findDirectoryId(user_name,dir_name);
+                    if(dir.dir_id != -1){
+                        files = ::db.getDirectoryFile(dir.dir_id);
+                        dirs = ::db.getDirectoryDir(dir.dir_id);
+                    }
+                    else {
+                        resp["header"]["status-code"] = 302;
+                    }
+                }
+                if(files.size() == 0){
+                    //resp["payload"]["file_list"] = []
+                }
+                else {
+                    json holder;
+                    for(int i = 0;i<files.size();i++) {
+
+                        std::string a = std::string("file")+std::to_string(i);
+                        holder[a]["file_id"] = files[i].file_id;
+                        holder[a]["file_name"] = files[i].file_name;
+                        holder[a]["file_size"] = files[i].file_size;
+                        holder[a]["file_change_time"] = files[i].change_time;
+                        //resp["payload"]["file_list"] = [];
+
+                    }
+                    resp["payload"]["file_list"] = holder ;
+                }
+                if(dirs.size() == 0){
+                    //resp["payload"]["file_list"] = []
+                }
+                else {
+                    json holder;
+                    for(int i = 0;i<dirs.size();i++) {
+
+                        std::string a = std::string("dir")+std::to_string(i);
+                        holder[a]["dir_id"] = dirs[i].dir_id;
+                        holder[a]["dir_name"] = dirs[i].dir_name;
+                        holder[a]["dir_size"] = dirs[i].dir_size;
+                        holder[a]["dir_change_time"] = dirs[i].change_time;
+                        //resp["payload"]["file_list"] = [];
+
+                    }
+                    resp["payload"]["dir_list"] = holder ;
+                }
+
+
+
+            } else {
+                resp["header"]["status-code"] = 301;
+            }
+            std::string response(resp.dump());
+
+            response = std::to_string((int)response.size()) + std::string(" ") + response;
+            (inf->getSck())->send((char*) response.c_str(), (int)response.size());
+            return true;
+       }
     }
 }
 
@@ -200,6 +269,8 @@ void handle_connection(nar::Socket* skt) {
             break;
         } else if(jsn["header"]["action"] == "file_push_request") {
             nar::action::file_push_request(inf, jsn);
+        } else if(jsn["header"]["action"] == "get_user_dir_info") {
+             nar::action::get_user_dir_info(inf, jsn);
         }
     }
 
@@ -226,6 +297,6 @@ int main(int argc, char *argv[])
 
         std::thread thr(&handle_connection, new_skt);
         thr.detach();
-    }    	
+    }
 	return 0;
 }
