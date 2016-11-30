@@ -45,6 +45,11 @@ void nar::IPCClient::sendRequest(std::string str) {
 
     
     nar::send_string_sckt(sockfd, str, len);
+
+    ok = nar::get_string_sckt(sockfd, 2);
+
+    if(ok != std::string("OK"))
+        throw nar::Exception("narIPCClient::sendRequest - Receive 2 OK error.");
     
 }
 
@@ -52,13 +57,25 @@ std::string nar::IPCClient::getResponse() {
     char buf[129];
     int l;
     int len = nar::get_int_sckt(sockfd);
+    std::cout <<"len: " << len << std::endl;
+
 
     nar::send_string_sckt(sockfd, std::string("OK"), 2);
 
     std::string result = nar::get_string_sckt(sockfd, len);
+
+    nar::send_string_sckt(sockfd, std::string("OK"), 2);
     return result;
 }
 
 void nar::IPCClient::closeConnection() {
     close(sockfd);
+}
+
+void nar::IPCClient::printLoop() {
+    std::string response;
+    while((response = getResponse()) != std::string("END")) {
+        std::cout << response << std::endl;
+    }
+    closeConnection();
 }

@@ -25,11 +25,7 @@
 
 void handle_cli_ipc(int sockfd, nar::Global* globals) {
     char buf[129];
-    int len = nar::get_int_sckt(sockfd);
-    nar::send_string_sckt(sockfd, std::string("OK"), 2);
-    std::string json = nar::get_string_sckt(sockfd, len);
-
-    std::cout << json << std::endl;
+    std::string json = nar::receive_ipc_message(sockfd);
 
     rapidjson::Document doc;
     doc.Parse(json.c_str());
@@ -59,10 +55,7 @@ void setServerConnection(nar::Socket &skt, nar::Global *globals){
 	skt.connect(globals->get_narServerIp(),globals->get_narServerPort());
 
 	while(!nar::task::ITask::handshake(skt, globals));
-
-	nar::send_int_sckt(skt.getSckDescriptor(), 51);
-	std::string str(" {\"header\":{\"action\": \"keepalive\",\"channel\": \"ps\"}}");
-	nar::send_string_sckt(skt.getSckDescriptor(), str, str.size()); 	// KeepAlive Message
+    nar::send_message(skt, std::string("{\"header\":{\"action\": \"keepalive\",\"channel\": \"ps\"}}"));
 	nar::get_message( skt);
 	return;
 }

@@ -183,15 +183,51 @@ namespace nar {
             return true;
             
         }
+
+        bool register_user(nar::SockInfo* inf, json& jsn) {
+            /*
+                {
+                    "header": {
+                        "channel": "sp",
+                        "reply-to": "register",
+                        "status-code": ???
+                    }, "payload": {
+                    }
+                }
+            */
+            json resp;
+            resp["header"]["channel"] = "sp";
+            resp["header"]["reply-to"] = "register";
+            
+
+            std::string username = jsn["payload"]["username"];
+            std::string aes = jsn["payload"]["aes"];
+            nar::User usr = ::db.getUser(username);
+            if(usr.user_id != -1) {
+                resp["header"]["status-code"] = 301; // username already exists
+                nar::send_message(*(inf->getSck()), std::string(resp.dump()));
+                return false;    
+            }
+
+            usr.user_name = username;
+            usr.quota = 0;
+            usr.disk_space = 0;
+            usr.cryptedKey = aes;
+            ::db.insertUser(usr);
+            resp["header"]["status-code"] = 200; // success
+            nar::send_message(*(inf->getSck()), std::string(resp.dump()));
+            return true;
+        }
     }
 }
 
 void handle_connection(nar::Socket* skt) {
     nar::SockInfo* inf = new nar::SockInfo(skt);
     while(true) {
-        std::string msg = nar::get_message(*skt);
+        std::string msg = nar::trim(nar::get_message(*skt));
         std::cout << msg << std::endl;
         auto jsn = json::parse(msg.c_str());
+        std::cout << "zu" << std::endl;
         std::cout << jsn["header"]["action"] << std::endl;
         if(jsn["header"]["action"] == "handshake") {
             nar::action::handshake(inf, jsn);
@@ -200,6 +236,8 @@ void handle_connection(nar::Socket* skt) {
             break;
         } else if(jsn["header"]["action"] == "file_push_request") {
             nar::action::file_push_request(inf, jsn);
+        } else if(jsn["header"]["action"] == "register") {
+            nar::action::register_user(inf, jsn);
         }
     }
 

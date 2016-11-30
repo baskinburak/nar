@@ -14,6 +14,7 @@ namespace nar {
             void sendRequest(std::string str);
             std::string getResponse();
             void closeConnection();
+            void printLoop();
     };
 }
 

@@ -54,11 +54,8 @@ void nar_push_file(std::string file_name) {
     nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(stringify);
-    std::string response;
-    while( (response = ipc_client.getResponse()) != "END") {
-        std::cout << response << std::endl;
-    }
-    ipc_client.closeConnection();
+
+    ipc_client.printLoop();
 }
 
 void nar_ls(std::string dir_name) {
@@ -92,11 +89,8 @@ void nar_ls(std::string dir_name) {
     nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(stringify);
-    std::string response;
-    while( (response = ipc_client.getResponse()) != "END") {
-        std::cout << response << std::endl;
-    }
-    ipc_client.closeConnection();
+
+    ipc_client.printLoop();
 }
 
 void nar_pull_file(std::string file_name) {
@@ -134,11 +128,8 @@ void nar_pull_file(std::string file_name) {
     nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(stringify);
-    std::string response;
-    while( (response = ipc_client.getResponse()) != "END") {
-        std::cout << response << std::endl;
-    }
-    ipc_client.closeConnection();
+
+    ipc_client.printLoop();
 }
 
 void nar_register(std::string uname) {
@@ -156,11 +147,9 @@ void nar_register(std::string uname) {
     nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(jsn.dump());
-    std::string response;
-    while((response = ipc_client.getResponse()) != "END") {
-        std::cout << response << std::endl;
-    }
-    ipc_client.closeConnection();
+
+
+    ipc_client.printLoop();
 }
 
 int main(int argc, char* argv[]){

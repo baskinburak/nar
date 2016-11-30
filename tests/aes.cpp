@@ -1,35 +1,33 @@
+#include <crypto++/gcm.h>
 #include <crypto++/aes.h>
-#include <crypto++/modes.h>
 #include <crypto++/filters.h>
+#include <crypto++/osrng.h>
+#include <stdio.h>
 #include <iostream>
 int main() {
-    byte key[CryptoPP::AES::MAX_KEYLENGTH];
-    byte iv[CryptoPP::AES::BLOCKSIZE];
+    std::cout << CryptoPP::AES::DEFAULT_KEYLENGTH << std::endl;
 
-    memset(key, 0x00, CryptoPP::AES::MAX_KEYLENGTH);
-    memset(iv, 0x00, CryptoPP::AES::BLOCKSIZE);
+    CryptoPP::AutoSeededRandomPool pool;
 
-    std::string plaintext("123456781234567812345678123456781234567812345678");
-    std::string crypted;
+    byte key[CryptoPP::AES::DEFAULT_KEYLENGTH];
+    pool.GenerateBlock(key, sizeof(key));
+    for(int i=0; i<sizeof(key); i++)
+        printf("\\x%02X", key[i]);
+    std::cout << std::endl;
+    byte iv[CryptoPP::AES::BLOCKSIZE * 16];
+    pool.GenerateBlock(iv, sizeof(iv));
 
-    CryptoPP::AES::Encryption aesEnc(key, CryptoPP::AES::MAX_KEYLENGTH);
-    CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEnc(aesEnc, iv);
+    const int TAG_SIZE = 12;
 
-    CryptoPP::StreamTransformationFilter stfEnc(cbcEnc, new CryptoPP::StringSink(crypted));
-    stfEnc.Put(reinterpret_cast<const unsigned char*>(plaintext.c_str()),plaintext.size());
-    stfEnc.MessageEnd();
+    std::string pdata("yarak fatih ahuasdu");
+    std::string cipher, encoded;
 
-    std::cout << crypted;
+    CryptoPP::GCM<CryptoPP::AES>::Encryption enc;
+    enc.SetKeyWithIV(key, sizeof(key), iv, sizeof(iv));
 
-    CryptoPP::AES::Decryption aesDec(key, CryptoPP::AES::MAX_KEYLENGTH);
-    CryptoPP::CBC_Mode_ExternalCipher::Decryption cbcDec(aesDec, iv);
+    CryptoPP::StringSource ss1(pdata, true, new CryptoPP::AuthenticatedEncryptionFilter(enc, new CryptoPP::StringSink(cipher), false, TAG_SIZE));
 
-    std::string decrypted;
-
-    CryptoPP::StreamTransformationFilter stfDec(cbcDec, new CryptoPP::StringSink(decrypted));
-    stfDec.Put(reinterpret_cast<const unsigned char*>(crypted.c_str()), crypted.size());
-    stfDec.MessageEnd();
-
+    std::cout << cipher;
   //  std::cout << crypted.size() << std::endl;
 
    // std::cout << decrypted << std::endl;

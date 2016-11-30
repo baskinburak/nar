@@ -7,10 +7,15 @@
 namespace nar {
     class FileCryptor {
         private:
-            nar::FileKeeper file;
+            nar::FileKeeper* file;
+            nar::FileKeeper* cryptedfile;
+            std::string key;
+            std::string generateUniqueFilename();
         public:
-            FileCryptor(FileKeeper& keep) : file(keep) {}
+            FileCryptor(nar::FileKeeper* keep, std::string a);
+            ~FileCryptor();
             int getBytes(size_t start, size_t buffersize, char* buffer);
+            void crypt();
     };
 }
 

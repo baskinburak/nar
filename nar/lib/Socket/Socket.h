@@ -34,7 +34,7 @@ class Socket
   bool connect ( const std::string host, const int port );
 
   // Data Transimission
-  bool send ( char * offset, int length ) const;
+  bool send ( const char * offset, int length ) const;
   int recv ( char * offset, int length ) const;
 
 

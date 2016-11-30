@@ -2,6 +2,10 @@
 #include <iostream>
 #include <nar/lib/Socket/Socket.h>
 #include <nar/lib/json.hpp>
+#include <crypto++/filters.h>
+#include <crypto++/aes.h>
+#include <crypto++/osrng.h>
+#include <nar/narnode/utility.h>
 
 using namespace nlohmann;
 
@@ -22,10 +26,30 @@ void nar::task::Register::run(int unx_sockfd, nar::Global* globals) {
     conn->create();
     conn->connect((globals->get_narServerIp()).c_str(), globals->get_narServerPort());
 
-    //ITask::handshake(*conn, );
+    byte key[CryptoPP::AES::DEFAULT_KEYLENGTH];
+    CryptoPP::AutoSeededRandomPool pool;
+    pool.GenerateBlock(key, sizeof(key));
+    
+    std::string hex = nar::byte_to_hex(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
+    std::cout << hex << " " << hex.size() << std::endl;
 
     json jsn;
     
+    jsn["header"]["action"] = "register";
+    jsn["header"]["channel"] = "ps";
+    jsn["payload"]["username"] = username;
+    jsn["payload"]["aes"] = hex;
 
-    std::cout << "register " << username << std::endl;
+    nar::send_message(*conn, jsn.dump());
+
+    auto response = json::parse(nar::get_message(*conn));
+    std::cout << response.dump() << std::endl;
+    if(response["header"]["status-code"] == 200) {
+        nar::send_ipc_message(unx_sockfd, std::string("Register successful"));
+    } else {
+        nar::send_ipc_message(unx_sockfd, std::string("ERROR ") + std::to_string((int)response["header"]["status-code"]));
+    }
+
+    nar::send_ipc_message(unx_sockfd, std::string("END"));
+    std::string conf = globals->get_configFolder();
 }

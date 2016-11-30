@@ -1,3 +1,0 @@
-#include <nar/narnode/FileKeeper/FileCryptor.h>
-
-nar::FileCryptor::

@@ -36,6 +36,7 @@ namespace nar {
 			
 			int openFdRdonly(const char * file);		// opens file descriptor on read only mode
 			static int openFdWrtonly(const char * file);
+            int openAllWays(const char * file);
 
 			void setFileName(char * file);			// to change file name which filekeeper holds
 			void setFileName(std::string file);

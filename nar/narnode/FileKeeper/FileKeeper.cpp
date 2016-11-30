@@ -1,15 +1,16 @@
 #include "FileKeeper.h"
 #include <cstring>
+#include <cstdlib>
 
 nar::FileKeeper::FileKeeper(char * file){
 	_file = file;
-	_fd = openFdRdonly(_file);
+	_fd = openAllWays(_file);
 }
 
 nar::FileKeeper::FileKeeper(std::string file){
 	_file = (char*) malloc(sizeof(char)*(file.size()+1));
     std::strcpy(_file, file.c_str());
-	_fd = openFdRdonly(_file);
+	_fd = openAllWays(_file);
 }
 
 void nar::FileKeeper::emptyMap() {
@@ -44,6 +45,15 @@ int nar::FileKeeper::openFdWrtonly(const char * file) {
 		return -1;
 	}
 	return fd;
+}
+
+int nar::FileKeeper::openAllWays(const char * file) {
+    int fd = open(file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if(fd < 0) {
+        printf("something is wrong with openAllWays");
+        return -1;
+    }
+    return fd;
 }
 
 nar::FileKeeper::~FileKeeper() {
@@ -101,7 +111,7 @@ int nar::FileKeeper::getBytes(size_t start,size_t buffersize, char * buffer) {
 }
 
 int nar::FileKeeper::writeToFile(int fd, size_t buffersize, char * buffer) {
-	int w_value = write( fd,  buffer, buffersize);
+	int w_value = write(fd,  buffer, buffersize);
 	if(w_value < 0) {		// reads from the file desciptor
 		printf("something is wrong with read() in FileKeeper getBytes %s \n" , strerror(errno));
 		return -1;

@@ -156,7 +156,7 @@ bool nar::Socket::accept ( Socket& new_socket, const sockaddr_in * addr  ) const
 }
 
 
-bool nar::Socket::send ( char * offset, int length ) const
+bool nar::Socket::send (const char * offset, int length ) const
 {
   int len = ::send ( m_sock, offset, length, MSG_NOSIGNAL );
   int tmp = errno;

@@ -3,7 +3,7 @@ SRC_FILES := $(shell find ../../ ! -name "aes.cpp" ! -name "test.cpp" ! -name "s
 all: narserver
 
 narserver: *.cpp
-	g++ -std=c++11 -o narserver server.cpp $(SRC_FILES) -I../../ -lpthread -lmysqlcppconn
+	g++ -std=c++11 -o narserver server.cpp $(SRC_FILES) -I../../ -lpthread -lmysqlcppconn -lcrypto++
 
 clean:
 	rm -f narserver

@@ -92,7 +92,7 @@ int nar::get_int_sckt(int sockfd) {
 void nar::send_int_sckt(int sockfd, int val) {
     std::string val_str = std::to_string(val);
 
-    if(send(sockfd, val_str.c_str(), val_str.size(), 0) == -1) {
+    if(send(sockfd, val_str.c_str(), (int)val_str.size(), 0) == -1) {
         throw nar::Exception("nar::sent_int_sckt - Send error");
     }    
 }
@@ -189,4 +189,60 @@ void nar::send_string_sckt(int sockfd, std::string str, int len) {
         }
         idx += ret;
     }
+}
+
+std::string nar::byte_to_hex(byte* arr, int len) {
+    std::string res;
+    for(int i=0; i<len; i++) {
+        std::cout << hexmap[((arr[i] & 0xf0) >> 4)] << hexmap[arr[i] & 0xf];
+        res.push_back(hexmap[(arr[i] & 0xf0) >> 4]);
+        res.push_back(hexmap[arr[i] & 0xf]);
+    }
+    std::cout << " end" << std::endl;
+    return res;   
+}
+
+byte* nar::hex_to_byte(std::string hex) {
+    byte* res = new byte[hex.size()/2];
+    for(int i=0; i<hex.size()/2; i++) {
+        if(hex[i<<1] >= '0' && hex[i<<1] <= '9')
+            res[i] = ((hex[i<<1] - '0') << 4);
+        else if(hex[i<<1] >= 'a' && hex[i<<1] <= 'e')
+            res[i] = ((hex[i<<1] - 'a') << 4);
+
+        if(hex[(i<<1) + 1] >= '0' &&  hex[(i<<1) + 1] <= '9')
+            res[i] += hex[(i<<1) + 1] - '0';
+        else if(hex[(i<<1) + 1] >= 'a' &&  hex[(i<<1) + 1] <= 'e')
+            res[i] += hex[(i<<1) + 1] - 'a';
+    }
+    return res;
+}
+
+void nar::send_message(nar::Socket& skt, std::string message) {
+    message = std::to_string((int)message.size()) + std::string(" ") + message;
+    skt.send((char*)message.c_str(), (int)message.size());
+}
+
+void nar::send_ipc_message(int sockfd, std::string message) {
+    int len = message.size();
+    send_int_sckt(sockfd, len);
+    std::string ok = get_string_sckt(sockfd, 2);
+    send_string_sckt(sockfd, message, len);
+    ok = get_string_sckt(sockfd, 2);
+}
+
+std::string nar::trim(std::string inp) {
+    size_t first = inp.find_first_not_of(' ');
+    if(std::string::npos == first)
+        return inp;
+    size_t last = inp.find_last_not_of(' ');
+    return inp.substr(first, (last-first+1));
+}
+
+std::string nar::receive_ipc_message(int sockfd) {
+    int len = get_int_sckt(sockfd);
+    send_string_sckt(sockfd, std::string("OK"), 2);
+    std::string message = get_string_sckt(sockfd, len);
+    send_string_sckt(sockfd, std::string("OK"), 2);
+    return message;
 }
