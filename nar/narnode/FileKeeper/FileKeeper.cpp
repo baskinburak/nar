@@ -37,6 +37,15 @@ int nar::FileKeeper::openFdRdonly(const char * file) {
 	return fd;
 }
 
+int nar::FileKeeper::openFdWrtonly(const char * file) {
+	int fd = open(file,O_WRONLY | O_CREAT); 			// CREATE AND WRITE
+	if( fd < 0) {
+		printf("something is wrong with open() in FileKeeper constructor with string %s \n" , strerror(errno));
+		return -1;
+	}
+	return fd;
+}
+
 nar::FileKeeper::~FileKeeper() {
 	closeFd(_fd);
 	emptyMap();
@@ -90,6 +99,16 @@ int nar::FileKeeper::getBytes(size_t start,size_t buffersize, char * buffer) {
 
 	return r_value;
 }
+
+int nar::FileKeeper::writeToFile(int fd, size_t buffersize, char * buffer) {
+	int w_value = write( fd,  buffer, buffersize);
+	if(w_value < 0) {		// reads from the file desciptor
+		printf("something is wrong with read() in FileKeeper getBytes %s \n" , strerror(errno));
+		return -1;
+	}
+	return w_value;
+}
+
 unsigned long nar::FileKeeper::getFileSize(){
 	unsigned long fsize;
 	fsize = lseek(_fd, 0, SEEK_END);
