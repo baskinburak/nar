@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-static const char* kTypeNames[] = 
+static const char* kTypeNames[] =
     { "Null", "False", "True", "Object", "Array", "String", "Number" };
 
 //nar::ClientSocket *establishConnection( std::string peerIp, int peerPort);
@@ -17,13 +17,13 @@ nar::Socket *nar::task::PushFile::establishServerConnection(nar::Global* globals
 nar::Socket *nar::task::PushFile::establishPeerConnection(std::string peerIp, int peerPort){
 	nar::Socket *peerSck = new nar::Socket();
 	peerSck->create();
-	if(peerSck->connect(peerIp ,peerPort)) 
+	if(peerSck->connect(peerIp ,peerPort))
 	return peerSck;
 	return NULL;
 }
 
 void nar::task::PushFile::getJsonHeader(rapidjson::Document &header ){
-	
+
     header.SetObject();
     rapidjson::Document::AllocatorType& allocator = header.GetAllocator();
 
@@ -38,12 +38,12 @@ void nar::task::PushFile::getJsonPayload(rapidjson::Document &payload, std::stri
 	fName.SetString(fileName.c_str(), fileName.size(),allocator);
 	rapidjson::Value fSize(fileSize);
 
-	rapidjson::Value dirName; 
+	rapidjson::Value dirName;
 	dirName.SetString(dir.c_str(), dir.size(),allocator);
 
     payload.AddMember("file-size", fSize, allocator);
     payload.AddMember("file-name", fName, allocator);
-    payload.AddMember("directory", dirName, allocator);	
+    payload.AddMember("directory", dirName, allocator);
 	//payload.AddMember("file-size",)
 
 }
@@ -62,6 +62,7 @@ void nar::task::PushFile::sendJson(rapidjson::Document &msg,nar::Socket *serverS
 	writable[stringify.size()] = '\0';
 	std::cout << writable << std::endl;
 	serverSck->send(writable, stringify.size());
+    delete [] writable;
 
 }
 
@@ -80,7 +81,7 @@ bool nar::task::PushFile::sendJson(nlohmann::json &req,nar::Socket *serverSck ){
 
 void nar::task::PushFile::recvJson(nlohmann::json &req, nar::Socket *serverSck ){
 
-	std::string json_string = nar::get_message( *serverSck );	
+	std::string json_string = nar::get_message( *serverSck );
 	std::cout << json_string << std::endl;
 	req = nlohmann::json::parse(json_string);
 }
@@ -96,7 +97,7 @@ void nar::task::PushFile::getPeerInfo(std::string peerId, nar::Socket *serverSck
 nar::Socket *nar::task::PushFile::sendTokenToPeer(nlohmann::json::iterator &it, nar::Socket *serverSck){
 
 	nar::Socket *peerSck;
-	std::string peerId = (*it)["payload"]["peer-id"].get<std::string>(); 
+	std::string peerId = (*it)["payload"]["peer-id"].get<std::string>();
 	getPeerInfo(peerId, serverSck);
 	nlohmann::json resp;
 	recvJson(resp,serverSck);
@@ -105,7 +106,7 @@ nar::Socket *nar::task::PushFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 	std::string peerIp = resp["payload"]["peer-ip"];
 
 	peerSck = establishPeerConnection(peerIp,peerPort);
-	
+
 
 	while(peerSck == NULL){
 		nlohmann::json req;
@@ -132,11 +133,11 @@ nar::Socket *nar::task::PushFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 		req["header"]["action"] = "peer_authentication_request";
 		req["payload"]["token"] = (*it)["token"].get<std::string>();
 
-		
+
 		recvJson(resp,serverSck);							// WHAT TO GET HERE
-		
+
 		return peerSck;
-		
+
 }
 
 void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, nar::FileKeeper &file, size_t &fOffset){
@@ -144,13 +145,13 @@ void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Sock
 
 	char *chunk = new char[chunkSize];
 	unsigned long len = file.getBytes(fOffset,  chunkSize,chunk);
-	
+
 	peerSck->send(chunk, len);
 	fOffset += len;
 }
 
 void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serverSck, nar::FileKeeper &file){
-	
+
 	int chunkSize = msg["payload"]["chunk-size"].get<int>();
 	std::string fileId = msg["payload"]["file-id"];
 	std::cout << "File id: " <<fileId << std::endl;
@@ -168,11 +169,11 @@ void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serve
 
 		int peerPort = resp["payload"]["peer-port"];
 		std::string peerIp = resp["payload"]["peer-ip"];
-		
+
 		nar::Socket *peerSck = establishPeerConnection(peerIp,port);
 		resp.clear();
 		resp["payload"][]*/
-		
+
 		nar::Socket *peerSck = sendTokenToPeer(it,serverSck);
 		pushFileToPeer(it,peerSck, file , fOffset);
 	}
@@ -184,7 +185,7 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 	nar::FileKeeper file(file_path);
 	unsigned long file_size = file.getFileSize();
 
-	rapidjson::Document msg;	
+	rapidjson::Document msg;
 	rapidjson::Document::AllocatorType& allocator = msg.GetAllocator();
 	msg.SetObject();
 
@@ -199,19 +200,17 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 
 	nar::Socket *serverSck = establishServerConnection(globals); // Connect to Server
 
-    
+
 
     /*if(ITask::handshake(*serverSck, globals)) {
         std::cout << "handshake done" << std::endl;
     }*/
 
 	sendJson(msg,serverSck); 							// Send Push File REQ
-	
+
 	nlohmann::json response;
 
 	recvJson(response, serverSck);
-	
+
 	distributeFile(response, serverSck, file);
 }
-
-
