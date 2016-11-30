@@ -128,6 +128,61 @@ namespace nar {
             return true;
             
         }
+        bool file_pull_request(nar::SockInfo* inf, json& jsn) {
+            json resp;
+            resp["header"]["channel"] = "sp";
+            resp["header"]["reply-to"] = "file_pull_request";
+            if(inf->isAuthenticated()) {
+                if(keepalives.size() == 0) {
+                    resp["header"]["status-code"] = 301; // no valid peer
+                } else {
+                    std::map<std::string, nar::SockInfo*>::iterator it = keepalives.begin();
+                    int selected_peer = std::rand() % ((int)keepalives.size());
+                    std::advance(it, selected_peer);
+                    int cnt = 0;
+                    for(; (*it).first == inf->getAuthenticationHash() && cnt<keepalives.size(); it++, cnt++) {
+                        if(it == keepalives.end())
+                            it = keepalives.begin();
+                    }
+
+                    if(cnt == keepalives.size()) {
+                        resp["header"]["status-code"] = 301; // no valid peer
+                    } else {
+                        json peer_msg;
+                        peer_msg["header"]["channel"] = "sp";
+                        peer_msg["header"]["action"] = "wait_chunk_request";
+                        peer_msg["payload"]["token"] = generate_secure_token();
+                        nar::SockInfo* peer_sock = (*it).second;
+                        std::string peer_str(peer_msg.dump());
+                        peer_str = std::to_string((int)peer_str.size()) + std::string(" ") + peer_str;
+                        (peer_sock->getSck())->send((char*) peer_str.c_str(), (int)peer_str.size());
+
+
+    
+                        std::string peer_ip = (peer_sock->getSck())->get_dest_ip();
+
+
+                        resp["header"]["status-code"] = 200;
+                        std::string filename = jsn["payload"]["file-name"];
+                        unsigned long filesize = jsn["payload"]["file-size"];
+                        std::string directory = jsn["payload"]["directory"];
+                        std::cout << filename << std::endl;
+                        std::cout << filesize << std::endl;
+                        std::cout << directory << std::endl << std::endl;
+                    }
+                }
+                
+            } else {
+                resp["header"]["status-code"] = 300;
+            }
+
+            std::string response(resp.dump());
+
+            response = std::to_string((int)response.size()) + std::string(" ") + response;
+            (inf->getSck())->send((char*) response.c_str(), (int)response.size());
+            return true;
+            
+        }
     }
 }
 

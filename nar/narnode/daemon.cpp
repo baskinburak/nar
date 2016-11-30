@@ -239,13 +239,13 @@ int main() {
     cli_server.initialize();
     nar::Global* globals = new nar::Global();
     globals->set_username(std::string("nar_admin"));
-	
+	/*
 	// 				Create KeepAlive Task
 	nar::Socket serverSck;     
 	std::thread keepalvThread(keepAlive,&serverSck,globals);
 	keepalvThread.detach();
 	// 				Create KeepAlive Task     
-
+	*/
     while(true) {
         int sockfd = cli_server.acceptConnection();
         std::thread ipc_thread(handle_cli_ipc, sockfd, globals);
