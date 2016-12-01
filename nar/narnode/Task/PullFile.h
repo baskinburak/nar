@@ -29,6 +29,10 @@ namespace nar {
                 void comeTogether(nlohmann::json j_resp, nar::Socket *serverSck);
                 nar::Socket* connectToPeer(std::string peer_ip, int peer_port);
                 void constructJsonforPeer(nlohmann::json &j, std::string dirname);
+                void constructJsonforNewPeer(nlohmann::json::iterator &it, nlohmann::json &j, std::string peer_id);
+                void getPeerInfo(std::string peerId, nar::Socket *serverSck);
+                nar::Socket* sendTokenToPeer(nlohmann::json::iterator &it, nar::Socket *serverSck);
+                void pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, int chunk_id);
 
                 PullFile(std::string fn): file_name(fn) { }
                 void run(int unx_sockfd, nar::Global* globals);
