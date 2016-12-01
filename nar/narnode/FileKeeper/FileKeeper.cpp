@@ -110,7 +110,7 @@ int nar::FileKeeper::getBytes(size_t start,size_t buffersize, char * buffer) {
 	return r_value;
 }
 
-int nar::FileKeeper::writeToFile(int fd, size_t buffersize, char * buffer) {
+int nar::FileKeeper::writeToFile(int fd, size_t buffersize, const char * buffer) {
 	int w_value = write(fd,  buffer, buffersize);
 	if(w_value < 0) {		// reads from the file desciptor
 		printf("something is wrong with read() in FileKeeper getBytes %s \n" , strerror(errno));
@@ -182,4 +182,8 @@ void nar::FileKeeper::printMap() {
 	for(;it!= _fds.end();++it) {
 		std::cout<<it->first<<" - > "<<it->second<<std::endl;
 	}
+}
+
+int nar::FileKeeper::getFd() {
+    return _fd;
 }

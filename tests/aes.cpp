@@ -6,6 +6,7 @@
 #include <iostream>
 int main() {
     std::cout << CryptoPP::AES::DEFAULT_KEYLENGTH << std::endl;
+    std::cout << CryptoPP::AES::BLOCKSIZE << std::endl;
 
     CryptoPP::AutoSeededRandomPool pool;
 

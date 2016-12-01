@@ -7,6 +7,8 @@
 #include <string>
 #include <algorithm>
 #include <nar/narnode/FileKeeper/FileKeeper.h>
+#include <string>
+#include <sstream>
 
 std::string nar::get_message(nar::Socket& skt) {
     char buf[1025];
@@ -194,11 +196,9 @@ void nar::send_string_sckt(int sockfd, std::string str, int len) {
 std::string nar::byte_to_hex(byte* arr, int len) {
     std::string res;
     for(int i=0; i<len; i++) {
-        std::cout << hexmap[((arr[i] & 0xf0) >> 4)] << hexmap[arr[i] & 0xf];
         res.push_back(hexmap[(arr[i] & 0xf0) >> 4]);
         res.push_back(hexmap[arr[i] & 0xf]);
     }
-    std::cout << " end" << std::endl;
     return res;   
 }
 
@@ -207,13 +207,13 @@ byte* nar::hex_to_byte(std::string hex) {
     for(int i=0; i<hex.size()/2; i++) {
         if(hex[i<<1] >= '0' && hex[i<<1] <= '9')
             res[i] = ((hex[i<<1] - '0') << 4);
-        else if(hex[i<<1] >= 'a' && hex[i<<1] <= 'e')
-            res[i] = ((hex[i<<1] - 'a') << 4);
+        else if(hex[i<<1] >= 'a' && hex[i<<1] <= 'f')
+            res[i] = ((hex[i<<1] - 'a' + 10) << 4);
 
         if(hex[(i<<1) + 1] >= '0' &&  hex[(i<<1) + 1] <= '9')
             res[i] += hex[(i<<1) + 1] - '0';
-        else if(hex[(i<<1) + 1] >= 'a' &&  hex[(i<<1) + 1] <= 'e')
-            res[i] += hex[(i<<1) + 1] - 'a';
+        else if(hex[(i<<1) + 1] >= 'a' &&  hex[(i<<1) + 1] <= 'f')
+            res[i] += hex[(i<<1) + 1] - 'a' + 10;
     }
     return res;
 }
