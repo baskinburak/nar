@@ -70,12 +70,12 @@ std::pair < nar::Socket *, int >  wait_chunk(){
 
 	if(!tmp->listen()) std::cout << "Listen Error" << std::endl;
 
-	
+
 	struct sockaddr_in sin;
 	socklen_t len = sizeof(sin);
 	if (getsockname(tmp->getSckDescriptor(), (struct sockaddr *)&sin, &len) == -1)
     	std::cout << "getsockname failed" << std::endl;
-	
+
     int port = ntohs(sin.sin_port);
 	std::cout << "Port: " << port << std::endl;
 
@@ -138,9 +138,9 @@ void getChunkFromPeer(nar::Socket* skt, std::string chunkId, unsigned long chunk
 	int res =	wait_on_sock( sckDescriptor, 200 , 1, 0);
 	std::cout << "It got out boi with " << res  << std::endl;
 
-	nar::Socket peerSkt; 
+	nar::Socket peerSkt;
 	if(!skt->accept(peerSkt)) std::cout << "Error in accept" << std::endl;
-	
+
 	std::string msg = nar::get_message(peerSkt);
 	nlohmann::json peerReq;
 	peerReq = nlohmann::json::parse(msg);
@@ -153,14 +153,14 @@ void getChunkFromPeer(nar::Socket* skt, std::string chunkId, unsigned long chunk
 		delete skt;
 		return;
 	}
-	std::string path("/home/utku/NarStorage/");	
+	std::string path("/home/utku/NarStorage/");
 	path = path + chunkId;
 	std::cout << path << std::endl;
 	int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
 
 
 	if(! nar::readSckWriteFile(fd,peerSkt,chunkSize)) return;
-	
+
 	peerSkt.close();
 
 }
@@ -173,14 +173,14 @@ void createReqHeader( nlohmann::json &msg ,std::string action, std::string chann
 void createRespHeader( nlohmann::json &msg ,std::string reply, std::string channel, std::string status ){
 	msg["header"]["reply-to"] = reply;
 	msg["header"]["channel"] = channel;
-	msg["header"]["status"] = status;	
+	msg["header"]["status"] = status;
 }
 
 
 void keepAlive( nar::Socket *skt, nar::Global *globals){
-	std::map <std::string, std::pair< std::pair< std::string, unsigned long > ,std::pair < nar::Socket *, int > > > peerList; // token-> <chunkid,chunksize>,<socket,port>	
+	std::map <std::string, std::pair< std::pair< std::string, unsigned long > ,std::pair < nar::Socket *, int > > > peerList; // token-> <chunkid,chunksize>,<socket,port>
 	setServerConnection(*skt,globals);
-	
+
 	nlohmann::json serverReq;
 	while(1){
 		try {

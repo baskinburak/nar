@@ -34,6 +34,25 @@ int main(void)
     nar::File file;
     nar::UserToFile utff;
     nar::ChunkToMachine ctm;
+    dirTo.dir_id =3;
+    dirTo.item_id = 1;
+    dirTo.ForD = 0;
+        db.insertDirectoryTo(dirTo);
+        dirTo.item_id = 2;
+        dirTo.ForD = 0;
+            db.insertDirectoryTo(dirTo);
+    /*dir.dir_name = string("fatih");
+    dir.dir_size = 12345;
+    db.insertDirectory(dir);
+    dir.dir_name = string("dogu");
+    dir.dir_size = 12345;
+    db.insertDirectory(dir);
+    dir.dir_name = string("baskin");
+    dir.dir_size = 12345;
+    db.insertDirectory(dir);
+    dir.dir_name = string("utku");
+    dir.dir_size = 12345;
+    db.insertDirectory(dir);*/
 //    user.user_id = 1;
     /*user.user_name = string("test1");
     db.insertUser(user);
@@ -78,8 +97,27 @@ int main(void)
     for(int i= 0;i<a.size();i++){
         cout<<b[i].dir_name<<endl;
     }*/
-    dir.dir_id = 1;
-    db.deleteDirectory(dir);
+    //dir.dir_id = 1;
+    //db.deleteDirectory(dir);
+    /*dirTo.dir_id =3;
+    dirTo.item_id = 5;
+    dirTo.ForD = 1;
+    db.insertDirectoryTo(dirTo);
+    dirTo.dir_id =5;
+    dirTo.item_id = 6;
+    dirTo.ForD = 1;
+    db.insertDirectoryTo(dirTo);
+    dirTo.dir_id =6;
+    dirTo.item_id =7;
+    dirTo.ForD = 1;
+    db.insertDirectoryTo(dirTo);
+    dirTo.dir_id =7;
+    dirTo.item_id = 8;
+    dirTo.ForD = 1;
+    db.insertDirectoryTo(dirTo);*/
+    //SELECT Dir_id, Dir_name, Dir_size, UNIX_TIMESTAMP(Change_time) As Time From Directories WHERE Dir_name = utku AND Dir_id IN (  SELECT Item_id FROM DirectoryTo WHERE ForD = 1 AND Dir_id IN ( SELECT Dir_id From Directories WHERE Dir_name = baskin AND Dir_id IN (  SELECT Item_id FROM DirectoryTo WHERE ForD = 1 AND Dir_id IN ( SELECT Dir_id From Directories WHERE Dir_name = dogu AND Dir_id IN (  SELECT Item_id FROM DirectoryTo WHERE ForD = 1 AND Dir_id IN ( SELECT Dir_id From Directories WHERE Dir_name = fatih AND Dir_id IN (  SELECT Item_id FROM DirectoryTo WHERE ForD = 1 AND Dir_id IN ( SELECT Dir_id From Directories WHERE Dir_name = / AND Dir_id IN (  SELECT Item_id FROM DirectoryTo WHERE ForD = 1 AND Dir_id IN (select Dir_id from Users where user_name= test1 ))))))))));
+    //dir = db.findDirectoryId(std::string("test1"),std::string("fatih/dogu/baskin/utku/"));
+    //std::cout<<dir.dir_id<<std::endl;
 //    user.quota = 10000;
 //    user.disk_space = 10000;
 //    user.cryptedKey = string("asdkajsbdkasnd0");
