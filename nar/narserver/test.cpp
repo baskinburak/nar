@@ -34,6 +34,13 @@ int main(void)
     nar::File file;
     nar::UserToFile utff;
     nar::ChunkToMachine ctm;
+    dirTo.dir_id =3;
+    dirTo.item_id = 1;
+    dirTo.ForD = 0;
+        db.insertDirectoryTo(dirTo);
+        dirTo.item_id = 2;
+        dirTo.ForD = 0;
+            db.insertDirectoryTo(dirTo);
     /*dir.dir_name = string("fatih");
     dir.dir_size = 12345;
     db.insertDirectory(dir);

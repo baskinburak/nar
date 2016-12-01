@@ -188,8 +188,8 @@ namespace nar {
             resp["header"]["channel"] = "sp";
             resp["header"]["reply-to"] = "get_user_dir_info";
             if(inf->isAuthenticated()) {
-                std::string user_name = resp["payload"]["user_name"].get<std::string>();
-                std::string dir_name =resp["payload"]["dir_name"].get<std::string>();
+                std::string user_name = jsn["payload"]["user_name"].get<std::string>();
+                std::string dir_name =  jsn["payload"]["dir_name"].get<std::string>();
                 nar::User us= ::db.getUser(user_name);
                 std::vector<nar::File> files;
                 std::vector<nar::Directory> dirs;
@@ -240,7 +240,8 @@ namespace nar {
                     }
                     resp["payload"]["dir_list"] = holder ;
                 }
-
+                std::string  test = resp.dump();
+                std::cout<<test<<std::endl;
 
 
             } else {
@@ -250,6 +251,7 @@ namespace nar {
 
             response = std::to_string((int)response.size()) + std::string(" ") + response;
             (inf->getSck())->send((char*) response.c_str(), (int)response.size());
+            std::cout<<"success"<<std::endl;
             return true;
        }
     }
@@ -271,6 +273,7 @@ void handle_connection(nar::Socket* skt) {
             nar::action::file_push_request(inf, jsn);
         } else if(jsn["header"]["action"] == "get_user_dir_info") {
              nar::action::get_user_dir_info(inf, jsn);
+
         }
     }
 
