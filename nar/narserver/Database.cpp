@@ -262,10 +262,8 @@ nar::User nar::Database::getUser(std::string name)
         a.disk_space = std::stoll(res->getString("Disk_space").asStdString());
         a.cryptedKey = res->getString("CryptedKey").asStdString();
         a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
     }
     delete res;
     return a;
@@ -295,10 +293,8 @@ nar::User nar::Database::getUser(long long int userId)
         a.disk_space = std::stoll(res->getString("Disk_space").asStdString());
         a.cryptedKey = res->getString("CryptedKey").asStdString();
         a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
     }
     delete res;
     return a;
@@ -327,10 +323,8 @@ nar::Machine nar::Database::getMachine(long long int userId)
         a.user_id = std::stoll(res->getString("User_id").asStdString());
         a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
         a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
 
     }
     delete res;
@@ -360,10 +354,8 @@ nar::Machine nar::Database::getMachine(std::string machine_id)
         a.user_id = std::stoll(res->getString("User_id").asStdString());
         a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
         a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
 
     }
     delete res;
@@ -393,10 +385,8 @@ nar::File nar::Database::getFile(long long int fileId)
         a.file_name = res->getString("File_name").asStdString();
         a.file_size = std::stoll(res->getString("File_size").asStdString());
         a.file_type = res->getString("File_type").asStdString();
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
 
     }
     delete res;
@@ -425,10 +415,8 @@ nar::Chunk nar::Database::getChunk(long long int chunkId)
         a.chunk_id = std::stoll(res->getString("Chunk_id").asStdString());
         a.file_id = std::stoll(res->getString("File_id").asStdString());
         a.chunk_size = std::stoll(res->getString("Chunk_size").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
 
     }
     delete res;
@@ -748,10 +736,8 @@ nar::Directory nar::Database::getDirectory(long long int dirId){
         a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
         a.dir_name = res->getString("Dir_name").asStdString();
         a.dir_size = std::stoll(res->getString("Dir_size").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
     }
 
 }
@@ -775,10 +761,7 @@ std::vector<nar::File> nar::Database::getDirectoryFile(long long int dirId){
         a.file_name = res->getString("File_name").asStdString();
         a.file_size = std::stoll(res->getString("File_size").asStdString());
         a.file_type = res->getString("File_type").asStdString();
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+        a.change_time = res->getUInt64("Time");
 
         output.push_back(a);
     }
@@ -806,10 +789,8 @@ std::vector<nar::Directory> nar::Database::getDirectoryDir(long long int dirId){
         a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
         a.dir_name = res->getString("Dir_name").asStdString();
         a.dir_size = std::stoll(res->getString("Dir_size").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
 
         output.push_back(a);
     }
@@ -883,10 +864,8 @@ std::vector<nar::File>  nar::Database::getUserFiles(long long int userId){
         a.file_name = res->getString("File_name").asStdString();
         a.file_size = std::stoll(res->getString("File_size").asStdString());
         a.file_type = res->getString("File_type").asStdString();
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
         output.push_back(a);
 
     }
@@ -911,10 +890,8 @@ std::vector<nar::Chunk>  nar::Database::getChunks(long long int fileId){
         a.chunk_id = std::stoll(res->getString("Chunk_id").asStdString());
         a.file_id = std::stoll(res->getString("File_id").asStdString());
         a.chunk_size = std::stoll(res->getString("Chunk_size").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
         output.push_back(a);
 
     }
@@ -941,10 +918,8 @@ std::vector<nar::Machine>  nar::Database::getMachines(long long int chunkId){
         a.user_id = std::stoll(res->getString("User_id").asStdString());
         a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
         a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        a.change_time = t;
+
+        a.change_time = res->getUInt64("Time");
         output.push_back(a);
 
     }
@@ -1008,10 +983,8 @@ nar::Directory nar::Database::findDirectoryId(std::string user_name,std::string 
         result_dir.dir_id = std::stoll(res->getString("Dir_id").asStdString());
         result_dir.dir_name = res->getString("Dir_name").asStdString();
         result_dir.dir_size = std::stoll(res->getString("Dir_size").asStdString());
-        struct tm tm;
-        strptime(res->getString("Time").c_str(), "%H:%M:%S", &tm);
-        time_t t = mktime(&tm);
-        result_dir.change_time = t;
+
+        result_dir.change_time = res->getUInt64("Time");
     }
     delete prep_stmt;
     delete res;

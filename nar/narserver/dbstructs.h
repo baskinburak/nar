@@ -9,7 +9,7 @@ namespace nar {
         long long int dir_id;
         std::string dir_name;
         long long int dir_size;
-        time_t change_time;
+        long long int change_time;
     };
 
     struct DirectoryTo{
@@ -26,7 +26,7 @@ namespace nar {
         long long int disk_space;
         std::string cryptedKey;
         long long int dir_id;
-        time_t change_time;
+        long long int change_time;
     };
 
     struct Machine{
@@ -35,7 +35,7 @@ namespace nar {
         long long int user_id;
         long long int  machine_quota;
         long long int machine_diskSpace;
-        time_t change_time;
+        long long int change_time;
     };
 
     struct UserToFile{
@@ -49,7 +49,7 @@ namespace nar {
         std::string file_name;
         long long int file_size;
         std::string file_type;
-        time_t change_time;
+        long long int change_time;
     };
 
     struct Chunk{
@@ -57,7 +57,7 @@ namespace nar {
         long long int chunk_id;
         long long int file_id;
         long long int chunk_size;
-        time_t change_time;
+        long long int change_time;
     };
 
     struct ChunkToMachine {

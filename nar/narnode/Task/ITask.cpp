@@ -11,9 +11,7 @@ bool nar::task::ITask::handshake(nar::Socket& skt, nar::Global* globals) {
     jsn["payload"]["username"] = username;
     std::string stringify = jsn.dump();
     std::string len = std::to_string((int)stringify.size());
-    skt.send((char*)len.c_str(), len.size());
-    skt.send((char*)" ", 1);
-    skt.send((char*)stringify.c_str(), stringify.size());
+    nar::send_message(skt, stringify);
     std::string resp = nar::get_message(skt);
     jsn = json::parse(resp);
     int stat = jsn["header"]["status-code"];

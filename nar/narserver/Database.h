@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <time.h>
 /*
   Include directly the different
   headers from cppconn/ and mysql_driver.h + mysql_util.h
@@ -23,7 +24,7 @@
 #include <mysql_driver.h>
 #include <nar/narserver/dbstructs.h>
 #include <nar/narserver/spestruct.h>
-#include <time.h>
+
 
 
 

@@ -197,7 +197,7 @@ namespace nar {
             json resp;
             resp["header"]["channel"] = "sp";
             resp["header"]["reply-to"] = "register";
-            
+
 
             std::string username = jsn["payload"]["username"];
             std::string aes = jsn["payload"]["aes"];
@@ -205,7 +205,7 @@ namespace nar {
             if(usr.user_id != -1) {
                 resp["header"]["status-code"] = 301; // username already exists
                 nar::send_message(*(inf->getSck()), std::string(resp.dump()));
-                return false;    
+                return false;
             }
 
             usr.user_name = username;
@@ -222,7 +222,7 @@ namespace nar {
             resp["header"]["channel"] = "sp";
             resp["header"]["reply-to"] = "get_user_dir_info";
             if(inf->isAuthenticated()) {
-                std::string user_name = jsn["payload"]["user_name"].get<std::string>();
+                std::string user_name = inf->getAuthenticationHash();
                 std::string dir_name =  jsn["payload"]["dir_name"].get<std::string>();
                 nar::User us= ::db.getUser(user_name);
                 std::vector<nar::File> files;
@@ -252,6 +252,7 @@ namespace nar {
                         holder[a]["file_name"] = files[i].file_name;
                         holder[a]["file_size"] = files[i].file_size;
                         holder[a]["file_change_time"] = files[i].change_time;
+                        //std::cout<<files[i].change_time<<std::endl;
                         //resp["payload"]["file_list"] = [];
 
                     }
@@ -300,16 +301,22 @@ void handle_connection(nar::Socket* skt) {
         std::cout << "zu" << std::endl;
         std::cout << jsn["header"]["action"] << std::endl;
         if(jsn["header"]["action"] == "handshake") {
+            std::cout<<"<hand"<<std::endl;
             nar::action::handshake(inf, jsn);
+            std::cout<<"hand>"<<std::endl;
         } else if(jsn["header"]["action"] == "keepalive") {
+            std::cout<<"<alive"<<std::endl;
             nar::action::keepalive(inf, jsn);
+            std::cout<<"alive>"<<std::endl;
             break;
         } else if(jsn["header"]["action"] == "file_push_request") {
             nar::action::file_push_request(inf, jsn);
         } else if(jsn["header"]["action"] == "register") {
             nar::action::register_user(inf, jsn);
         } else if(jsn["header"]["action"] == "get_user_dir_info") {
-             nar::action::get_user_dir_info(inf, jsn);
+            std::cout<<"<ls"<<std::endl;
+            nar::action::get_user_dir_info(inf, jsn);
+            std::cout<<"ls>"<<std::endl;
         }
     }
 

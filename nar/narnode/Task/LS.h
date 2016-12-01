@@ -7,6 +7,9 @@
 #include <nar/lib/Socket/Socket.h>
 #include <iostream>
 #include <string>
+#include <time.h>
+#include <stdio.h>
+
 namespace nar {
     namespace task {
         class LS : public nar::task::ITask {
@@ -16,6 +19,7 @@ namespace nar {
                 void getResJson(nlohmann::json &js,nar::Socket* con_socket);
                 Socket * createServerConnection(nar::Global* globals);
                 bool sendReqJson(nlohmann::json &jreq, nar::Socket* con_socket);
+                char* masctime(const struct tm *timeptr);
             public:
                 LS(std::string dir):_dir(dir) { }
                 void run(int unx_sockfd, nar::Global* globals);
