@@ -26,13 +26,14 @@ namespace nar {
                 nar::Socket* connectToServer(nar::Global* globals);
                 void sendRequestJson(nlohmann::json &j, nar::Socket *server_sck);
                 void getResultJson(nlohmann::json &j_resp, nar::Socket *serverSck);
-                void comeTogether(nlohmann::json j_resp, nar::Socket *serverSck);
+                void comeTogether(nlohmann::json &j_resp, nar::Socket *serverSck);
                 nar::Socket* connectToPeer(std::string peer_ip, int peer_port);
                 void constructJsonforPeer(nlohmann::json &j, std::string dirname);
                 void constructJsonforNewPeer(nlohmann::json::iterator &it, nlohmann::json &j, std::string peer_id);
                 void getPeerInfo(std::string peerId, nar::Socket *serverSck);
-                nar::Socket* sendTokenToPeer(nlohmann::json::iterator &it, nar::Socket *serverSck);
-                void pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, int chunk_id);
+                nar::Socket* sendTokenToPeer(nlohmann::json::iterator &it, nar::Socket *serverSck,unsigned long chunkSize);
+                void pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, int chunkSize);
+                void getResultJsonFake(nlohmann::json &j_resp, nar::Socket *serverSck);
 
                 PullFile(std::string fn): file_name(fn) { }
                 void run(int unx_sockfd, nar::Global* globals);
