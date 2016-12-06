@@ -29,8 +29,8 @@ namespace nar {
 				void distributeFile(nlohmann::json &msg, Socket *serverSck, FileKeeper &file);
 				void getPeerInfo(std::string peerId, nar::Socket *serverSck);
 
-				Socket *sendTokenToPeer(nlohmann::json::iterator &it, Socket *serverSck);
-				void pushFileToPeer(nlohmann::json::iterator &it, Socket *peerSck, FileKeeper &file, size_t &fOffset);
+				Socket *sendTokenToPeer(nlohmann::json::iterator &it, Socket *serverSck, int cSize);
+				void pushFileToPeer(nlohmann::json::iterator &it, Socket *peerSck, FileKeeper &file, size_t &fOffset,int cSize);
             public:
                 PushFile(std::string fp): file_path(fp) { }
                 void run(int unx_sockfd, nar::Global* globals);

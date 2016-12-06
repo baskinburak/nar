@@ -18,6 +18,7 @@ namespace nar {
     std::string byte_to_hex(byte* arr, int size);
     byte* hex_to_byte(std::string hex);
     void send_message(nar::Socket& skt, std::string message);
+    void send_message(nar::Socket* skt, std::string message);
     void send_ipc_message(int sockfd, std::string message);
     std::string receive_ipc_message(int sockfd);
     std::string trim(std::string);

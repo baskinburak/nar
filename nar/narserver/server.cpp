@@ -29,7 +29,7 @@ std::string generate_secure_token() {
     token.resize(TOKENLEN);
     do {
         for(int i=0; i<TOKENLEN; i++) {
-            token.push_back(charlist[std::rand()%charlist.size()]);
+            token[i] = charlist[std::rand()%charlist.size()];
         }
     } while(activetokens.find(token) != activetokens.end());
     return token;
@@ -73,56 +73,165 @@ namespace nar {
             return true;
         }
 
+		bool getPeerPort(nar::SockInfo* active,std::string token){
+			std::cout << "IMA1" << std::endl;
+			json req;
+			req = json::parse(get_message( *(active->getSck())) );
+						std::cout << "IMA2" << std::endl;
+			std::string peerId = req["payload"]["peer-id"];
+					std::cout << "IMA3" << std::endl; 
+			nar::SockInfo *peerSck = keepalives[peerId];
+						std::cout << "IMA4" << std::endl;
+
+			json reqR;
+			reqR["header"]["channel"] = "sp";
+            reqR["header"]["action"] = "peer_port_request";
+			reqR["payload"]["token"] = token;
+			send_message( peerSck->getSck() , reqR.dump());
+						std::cout << "IMA5" << std::endl;
+			json respR;
+			std::string tmp = get_message( *(peerSck->getSck()));
+			std::cout << tmp << std::endl;
+			respR = json::parse(tmp );			std::cout << "IMA6" << std::endl;
+			int peerPort = respR["payload"]["port"];			std::cout << "IMA7" << std::endl;
+			
+			json respA;
+			respA["header"]["reply-to"] = "peer_connection_request";
+            respA["header"]["channel"] = "sp";
+			respA["header"]["status-code"] = 200;
+			respA["payload"]["peer-ip"] = (peerSck->getSck())->get_dest_ip();
+			respA["payload"]["peer-id"] = peerId;
+			respA["payload"]["peer-port"] = peerPort;			
+			send_message( active->getSck() , respA.dump());
+		}
+
+		bool sendPeerList(nar::SockInfo* inf, int status, unsigned long cSize, int fId, std::string peerId, std::string cId, std::string token){
+			json resp;
+			resp["header"]["channel"] = "sp";
+            resp["header"]["reply-to"] = "file_push_request";
+			resp["header"]["status-code"] = 200;
+			resp["payload"]["chunk-size"] = cSize;
+			resp["payload"]["file-id"] = fId;
+			json arr;
+			arr["peer_id"] = peerId;
+			arr["chunk_id"] = cId;
+			arr["token"] = token;
+
+			resp["payload"]["peer-list"] = { arr };
+			std::string rspMsg(resp.dump());
+			send_message( inf->getSck() , rspMsg);
+			return true;
+		}
+
+		void insertFileToDb(std::string fName,unsigned long fSize, std::string fDir) {
+			nar::File fi;
+			fi.file_name = fName;
+			fi.file_size = 100;
+			::db.insertFile(fi);
+			//nar::User user = ::db.getUser(nar::globals->get_username());
+			
+		}
+
         bool file_push_request(nar::SockInfo* inf, json& jsn) {
             json resp;
             resp["header"]["channel"] = "sp";
             resp["header"]["reply-to"] = "file_push_request";
+			std::string fName = jsn["payload"]["file-name"];
+			unsigned long fSize = jsn["payload"]["file-size"];
+			std::string fDir = jsn["payload"]["directory"];
+			int fId = ::db.getNextFileId();
+			std::string cId = std::to_string(::db.getNextChunkId());
+			std::cout << "Here!" << std::endl;
+			//insertFileToDb(fName,fSize,fDir);
+
+
+
             if(inf->isAuthenticated()) {
-                if(keepalives.size() == 0) {
+                if(keepalives.size() < 2) {
+								std::cout << "Here2" << std::endl;
                     resp["header"]["status-code"] = 301; // no valid peer
                 } else {
+					
                     std::map<std::string, nar::SockInfo*>::iterator it = keepalives.begin();
-                    int selected_peer = std::rand() % ((int)keepalives.size());
+                    int selected_peer = std::rand() % ((int)keepalives.size()-1);
                     std::advance(it, selected_peer);
                     int cnt = 0;
-                    for(; (*it).first == inf->getAuthenticationHash() && cnt<keepalives.size(); it++, cnt++) {
+					
+                    /*for(; (*it).first == inf->getAuthenticationHash() && cnt<keepalives.size(); it++, cnt++) {
+						std::cout << "HereXXX" << std::endl;
                         if(it == keepalives.end())
                             it = keepalives.begin();
-                    }
+						std::cout << "HereYYY" << std::endl;
+                    }*/
 
+					for(; it->first == inf->getAuthenticationHash(); it++) {				// COMPLEXITY?
+
+						if(  std::distance( it, keepalives.end() ) == 1 ) {
+							it = keepalives.begin();
+						}								
+					}
+
+
+					
                     if(cnt == keepalives.size()) {
+									std::cout << "Here4" << std::endl;
                         resp["header"]["status-code"] = 301; // no valid peer
                     } else {
-                        json peer_msg;
+						std::string token =  generate_secure_token();
+                        
+						json peer_msg;
                         peer_msg["header"]["channel"] = "sp";
-                        peer_msg["header"]["action"] = "wait_chunk_request";
-                        peer_msg["payload"]["token"] = generate_secure_token();
-                        nar::SockInfo* peer_sock = (*it).second;
-                        std::string peer_str(peer_msg.dump());
-                        peer_str = std::to_string((int)peer_str.size()) + std::string(" ") + peer_str;
-                        (peer_sock->getSck())->send((char*) peer_str.c_str(), (int)peer_str.size());
+                        peer_msg["header"]["action"] = "wait_chunk_push_request";
+                        peer_msg["payload"]["token"] = token;
+						std::cout << token  << " " << token.size() << std::endl;
+						peer_msg["payload"]["chunk-id"] = std::to_string(::db.getNextChunkId());
+						peer_msg["payload"]["chunk-size"] = fSize;
 
+						std::map<std::string, nar::SockInfo*>::iterator it2 = keepalives.begin();
+						for(;it2 != keepalives.end(); ++it2) {
+							if(it2->first != inf->getAuthenticationHash())
+								break;
+						}
 
+	                    nar::SockInfo* peer_sock = (*it2).second;
+						std::string peer_str(peer_msg.dump());				
+                        //peer_str = std::to_string((int)peer_str.size()) + std::string(" ") + peer_str;
+                        //(peer_sock->getSck())->send((char*) peer_str.c_str(), (int)peer_str.size());
+						std::cout << "\n"<< peer_str << std::endl;						
+						send_message( peer_sock->getSck() , peer_str);						std::cout << "yama" << std::endl;
+						json rspX = json::parse(get_message( *(peer_sock->getSck())) ); 						std::cout << "yama" << std::endl;
+						std::cout << rspX << std::endl;
+                        //std::string peer_ip = (peer_sock->getSck())->get_dest_ip();						std::cout << "yama" << std::endl;
+						
 
-                        std::string peer_ip = (peer_sock->getSck())->get_dest_ip();
-
-
+//						(nar::SockInfo* inf, int status, unsigned long cSize, int fId, std::string peerId, int cId, std::string token)
+						sendPeerList( inf, 200 , fSize,  fId,  it2->first, cId, token);
+						std::cout << "prrrt" << std::endl;
+						
+						getPeerPort(inf,token);
+				
+						/*
                         resp["header"]["status-code"] = 200;
                         std::string filename = jsn["payload"]["file-name"];
                         unsigned long filesize = jsn["payload"]["file-size"];
                         std::string directory = jsn["payload"]["directory"];
                         std::cout << filename << std::endl;
                         std::cout << filesize << std::endl;
-                        std::cout << directory << std::endl << std::endl;
+                        std::cout << directory << std::endl << std::endl;*/
+
+						
+
                     }
                 }
 
             } else {
                 resp["header"]["status-code"] = 300;
+							std::cout << "Here6" << std::endl;
             }
-
+						std::cout << "Here7" << std::endl;
             std::string response(resp.dump());
-
+			//while(1);
+			
             response = std::to_string((int)response.size()) + std::string(" ") + response;
             (inf->getSck())->send((char*) response.c_str(), (int)response.size());
             return true;
@@ -305,12 +414,14 @@ void handle_connection(nar::Socket* skt) {
             nar::action::keepalive(inf, jsn);
             break;
         } else if(jsn["header"]["action"] == "file_push_request") {
+						std::cout << "Here8" << std::endl;
             nar::action::file_push_request(inf, jsn);
         } else if(jsn["header"]["action"] == "register") {
             nar::action::register_user(inf, jsn);
         } else if(jsn["header"]["action"] == "get_user_dir_info") {
              nar::action::get_user_dir_info(inf, jsn);
         }
+					std::cout << "Here9" << std::endl;
     }
 
     if(inf->isKeepalive()) {

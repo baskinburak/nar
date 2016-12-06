@@ -153,7 +153,7 @@ void getChunkFromPeer(nar::Socket* skt, std::string chunkId, unsigned long chunk
 		delete skt;
 		return;
 	}
-	std::string path("/home/utku/NarStorage/");
+	std::string path("/home/utku/NarStorage/c");
 	path = path + chunkId;
 	std::cout << path << std::endl;
 	int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
@@ -190,12 +190,17 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 			std::string action = serverReq["header"]["action"];
 			std::cout << "!!!!!!!!!!" << std::endl;
 
-			if(action == "wait_chunk_request"){
+			if(action == "wait_chunk_push_request"){
 				std::pair< std::string, unsigned long > p1 = std::make_pair(serverReq["payload"]["chunk-id"].get<std::string>(),serverReq["payload"]["chunk-size"].get<unsigned long>());
 				std::cout << "Begin" << std::endl;
 				std::pair< nar::Socket *, int > p2 = wait_chunk();
 				peerList[serverReq["payload"]["token"]] = std::make_pair(p1,p2);
-
+				nlohmann::json peer_msg;
+                peer_msg["header"]["channel"] = "sp";
+                peer_msg["header"]["reply-to"] = "wait_chunk_push_request";
+				peer_msg["header"]["status-code"] = 200;
+				std::string resp(peer_msg.dump());
+				nar::send_message( skt, resp);	
 			}
 			else if(action == "peer_port_request"){
 				std::string chunkId = peerList[serverReq["payload"]["token"]].first.first;
@@ -211,7 +216,7 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 				rsp["payload"]["port"] = port;
 				std::string rspStr(rsp.dump());
 
-				nar::send_string_sckt ( skt->getSckDescriptor(), rspStr,rspStr.size());
+				nar::send_message ( skt, rspStr);
 			}
 		}
 		catch ( nar::Exception ex){
@@ -231,11 +236,24 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 }
 
 int main() {
-    nar::IPCServer cli_server(std::string("/tmp/nar_ipc"));
+	std::string var[2];
+	var[0] = std::string("/tmp/nar_ipc");
+	var[1] = std::string("/tmp/nar_ipc2");
+	std::string usr[2];
+	usr[0] = std::string("doge");
+	usr[1] = std::string("peer2");
+	int peerNum;
+	std::cin >> peerNum;
+
+
+    nar::IPCServer cli_server(var[peerNum]);
     cli_server.initialize();
     nar::Global* globals = new nar::Global();
-    globals->set_username(std::string("nar_admin"));
+	std::string uname;
+	
+    globals->set_username(usr[peerNum]);		//std::string("nar_admin"));
 
+	
 	// 				Create KeepAlive Task
 	nar::Socket serverSck;
 	std::thread keepalvThread(keepAlive,&serverSck,globals);

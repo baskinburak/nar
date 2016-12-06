@@ -94,16 +94,16 @@ void nar::task::PushFile::getPeerInfo(std::string peerId, nar::Socket *serverSck
 	sendJson(req, serverSck);
 }
 
-nar::Socket *nar::task::PushFile::sendTokenToPeer(nlohmann::json::iterator &it, nar::Socket *serverSck){
+nar::Socket *nar::task::PushFile::sendTokenToPeer(nlohmann::json::iterator &it, nar::Socket *serverSck , int chunkSize){
 
-	nar::Socket *peerSck;
-	std::string peerId = (*it)["payload"]["peer-id"].get<std::string>();
-	getPeerInfo(peerId, serverSck);
+	nar::Socket *peerSck; std::cout << "Not here eitherX" << std::endl;
+	std::string peerId = (*it)["peer_id"].get<std::string>(); std::cout << "Not here eitherYYY" << std::endl;
+	getPeerInfo(peerId, serverSck);	std::cout << "Not here eitherZZ" << std::endl;
 	nlohmann::json resp;
-	recvJson(resp,serverSck);
-
-	int peerPort = resp["payload"]["peer-port"];
-	std::string peerIp = resp["payload"]["peer-ip"];
+	recvJson(resp,serverSck);	std::cout << "Not here eitherKKKK" << std::endl;
+	std::cout << "Not here eitherLLL" << std::endl;
+	int peerPort = resp["payload"]["peer-port"]; std::cout << "Not here eitherDDD" << std::endl;
+	std::string peerIp = resp["payload"]["peer-ip"]; std::cout << "Not here eitherOOO" << std::endl;
 
 	peerSck = establishPeerConnection(peerIp,peerPort);
 
@@ -129,19 +129,27 @@ nar::Socket *nar::task::PushFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 	}
 		nlohmann::json req;
 		resp.clear();
-		req["header"]["channel"] = "pp";
-		req["header"]["action"] = "peer_authentication_request";
-		req["payload"]["token"] = (*it)["token"].get<std::string>();
 
+std::cout << "Not here eitherTTTT" << std::endl;
 
-		recvJson(resp,serverSck);							// WHAT TO GET HERE
+		req["header"]["channel"] = "pp";std::cout << "Not here eitherzsdsfvsdf" << std::endl;
+		req["header"]["action"] = "chunk_send_request"; std::cout << "Not here eitherzsdsfvsdf" << std::endl;
+		req["payload"]["token"] = (*it)["token"].get<std::string>(); std::cout << "Not here eitherzsdsfvsdf" << std::endl;
+		req["payload"]["chunk-id"] = (*it)["chunk_id"].get<std::string>(); std::cout << "Not here eitherzsdsfvsdf" << std::endl;
+		req["payload"]["chunk-size"] = chunkSize; std::cout << "Not here eitherzsdsfvsdf" << std::endl;
+		std::cout << "Not here eitherasdasda" << std::endl;
+		send_message(peerSck, req.dump()); 
+
+		
+
+		//recvJson(resp,serverSck);							// WHAT TO GET HERE
 
 		return peerSck;
 
 }
 
-void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, nar::FileKeeper &file, size_t &fOffset){
-	unsigned long chunkSize = (*it)["chunk-size"].get<int>();    	// MAKE IT UNSIGNED LONG
+void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, nar::FileKeeper &file, size_t &fOffset,int _chunkSize){
+	unsigned long chunkSize = _chunkSize;    	// MAKE IT UNSIGNED LONG
 
 	char *chunk = new char[chunkSize];
 	unsigned long len = file.getBytes(fOffset,  chunkSize,chunk);
@@ -151,10 +159,10 @@ void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Sock
 }
 
 void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serverSck, nar::FileKeeper &file){
-
-	int chunkSize = msg["payload"]["chunk-size"].get<int>();
-	std::string fileId = msg["payload"]["file-id"];
-	std::cout << "File id: " <<fileId << std::endl;
+	std::cout << "Not here either" << std::endl;
+	int chunkSize = msg["payload"]["chunk-size"].get<int>();std::cout << "Not here either" << std::endl;
+	int fileId = msg["payload"]["file-id"];std::cout << "Not here either" << std::endl;
+	//std::cout << "File id: " <<fileId << std::endl;
 	size_t fOffset = 0;
 	for(nlohmann::json::iterator it = msg["payload"]["peer-list"].begin(); it != msg["payload"]["peer-list"].end(); ++it){
 		/*std::cout << "HELP5" << std::endl;
@@ -173,9 +181,13 @@ void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serve
 		nar::Socket *peerSck = establishPeerConnection(peerIp,port);
 		resp.clear();
 		resp["payload"][]*/
+		std::cout << "HERE MAYBE" << std::endl;
+		std::cout << (*it)["peer_id"] << std::endl;
 
-		nar::Socket *peerSck = sendTokenToPeer(it,serverSck);
-		pushFileToPeer(it,peerSck, file , fOffset);
+		nar::Socket *peerSck = sendTokenToPeer(it,serverSck,msg["payload"]["chunk-size"]);
+				std::cout << "Not MAYBE" << std::endl;
+		pushFileToPeer(it,peerSck, file , fOffset, msg["payload"]["chunk-size"]);
+				
 	}
 }
 
@@ -195,16 +207,16 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 	rapidjson::Document payload(&msg.GetAllocator());		// Create Payload
 	getJsonPayload(payload,file.getFileName(),file.getFileSize(),globals->get_curdir());
 
-	msg.AddMember("header:", header, msg.GetAllocator());
-	msg.AddMember("payload:", payload, msg.GetAllocator());
+	msg.AddMember("header", header, msg.GetAllocator());
+	msg.AddMember("payload", payload, msg.GetAllocator());
 
 	nar::Socket *serverSck = establishServerConnection(globals); // Connect to Server
 
 
 
-    /*if(ITask::handshake(*serverSck, globals)) {
+    if(ITask::handshake(*serverSck, globals)) {
         std::cout << "handshake done" << std::endl;
-    }*/
+    }
 
 	sendJson(msg,serverSck); 							// Send Push File REQ
 
@@ -213,4 +225,6 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 	recvJson(response, serverSck);
 
 	distributeFile(response, serverSck, file);
+	std::string endMsg("END");
+	nar::send_ipc_message(unx_sockfd, endMsg);
 }
