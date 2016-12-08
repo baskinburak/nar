@@ -223,6 +223,11 @@ void nar::send_message(nar::Socket& skt, std::string message) {
     skt.send((char*)message.c_str(), (int)message.size());
 }
 
+void nar::send_message(nar::Socket* skt, std::string message) {
+    message = std::to_string((int)message.size()) + std::string(" ") + message;
+    skt->send((char*)message.c_str(), (int)message.size());
+}
+
 void nar::send_ipc_message(int sockfd, std::string message) {
     int len = message.size();
     send_int_sckt(sockfd, len);

@@ -254,6 +254,6 @@ std::string nar::Socket::get_dest_ip() {
     getpeername(m_sock, (struct sockaddr*) &addr, &len);
     char *ip = inet_ntoa(addr.sin_addr);
     std::string res(ip);
-    free(ip);
+    //free(ip);															FIGURE THIS OUT
     return res;
 }
