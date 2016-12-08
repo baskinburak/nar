@@ -88,12 +88,14 @@ namespace nar {
             reqR["header"]["action"] = "peer_port_request";
 			reqR["payload"]["token"] = token;
 			send_message( peerSck->getSck() , reqR.dump());
-						std::cout << "IMA5" << std::endl;
+			std::cout << "IMA5" << std::endl;
 			json respR;
 			std::string tmp = get_message( *(peerSck->getSck()));
 			std::cout << tmp << std::endl;
-			respR = json::parse(tmp );			std::cout << "IMA6" << std::endl;
-			int peerPort = respR["payload"]["port"];			std::cout << "IMA7" << std::endl;
+			respR = json::parse(tmp );
+            std::cout << "IMA6" << std::endl;
+			int peerPort = respR["payload"]["port"];
+            std::cout << "IMA7" << std::endl;
 
 			json respA;
 			respA["header"]["reply-to"] = "peer_connection_request";
@@ -123,14 +125,50 @@ namespace nar {
 			return true;
 		}
 
-		void insertFileToDb(std::string fName,unsigned long fSize, std::string fDir) {
+		nar::File insertFileToDb(std::string fName,unsigned long fSize, std::string fDir,std::string uname) {
 			nar::File fi;
 			fi.file_name = fName;
 			fi.file_size = 100;
+            long long int f_id = ::db.getNextFileId();
 			::db.insertFile(fi);
+            nar::Directory dir = ::db.findDirectoryId(uname,fDir);
+            nar::DirectoryTo dt;
+            dt.dir_id = dir.dir_id;
+            dt.item_id = f_id;
+            dt.ForD = 0;
+            ::db.insertDirectoryTo(dt);
+            nar::User us = ::db.getUser(uname);
+            nar::UserToFile ust;
+            ust.user_id = us.user_id;
+            ust.file_id = f_id;
+            ::db.insertUserToFile(ust);
+            nar::File output = ::db.getFile(f_id);
+            return output;
 			//nar::User user = ::db.getUser(nar::globals->get_username());
 
 		}
+        std::vector<long long int> findPosUsers(std::string& file_name,std::string& dir_name,std::string& uname,long long int & f_id){
+            nar::Directory dir = ::db.findDirectoryId(uname,dir_name);
+            std::vector<nar::File> files = ::db.getDirectoryFile(dir.dir_id);
+            long long int file_id;
+            for(int i= 0;i<files.size();i++){
+                if(files[i].file_name.compare(file_name)== 0){
+                    file_id = files[i].file_id;
+                }
+            }
+            f_id = file_id;
+            std::vector<nar::User> users = ::db.getUserFromFile(file_id);
+            std::vector<long long int> output;
+            for(int i= 0;i<users.size();i++){
+                auto it = keepalives.find(users[i].user_name);
+                if(it!= keepalives.end()){
+                    output.push_back(users[i].user_id);
+                }
+            }
+            return output;
+
+
+        }
 
         bool file_push_request(nar::SockInfo* inf, json& jsn) {
             json resp;
@@ -139,42 +177,23 @@ namespace nar {
 			std::string fName = jsn["payload"]["file-name"];
 			unsigned long fSize = jsn["payload"]["file-size"];
 			std::string fDir = jsn["payload"]["directory"];
-			int fId = ::db.getNextFileId();
-			std::string cId = std::to_string(::db.getNextChunkId());
-			std::cout << "Here!" << std::endl;
-			//insertFileToDb(fName,fSize,fDir);
-
-
-
             if(inf->isAuthenticated()) {
                 if(keepalives.size() < 2) {
 								std::cout << "Here2" << std::endl;
                     resp["header"]["status-code"] = 301; // no valid peer
                 } else {
-
-                    std::map<std::string, nar::SockInfo*>::iterator it = keepalives.begin();
+			        nar::File file = insertFileToDb(fName,fSize,fDir,inf->getAuthenticationHash());
+                    auto it = keepalives.begin();
                     int selected_peer = std::rand() % ((int)keepalives.size()-1);
                     std::advance(it, selected_peer);
                     int cnt = 0;
-
-                    /*for(; (*it).first == inf->getAuthenticationHash() && cnt<keepalives.size(); it++, cnt++) {
-						std::cout << "HereXXX" << std::endl;
-                        if(it == keepalives.end())
-                            it = keepalives.begin();
-						std::cout << "HereYYY" << std::endl;
-                    }*/
-
 					for(; it->first == inf->getAuthenticationHash(); it++) {				// COMPLEXITY?
-
 						if(  std::distance( it, keepalives.end() ) == 1 ) {
 							it = keepalives.begin();
 						}
 					}
-
-
-
                     if(cnt == keepalives.size()) {
-									std::cout << "Here4" << std::endl;
+						std::cout << "Here4" << std::endl;
                         resp["header"]["status-code"] = 301; // no valid peer
                     } else {
 						std::string token =  generate_secure_token();
@@ -187,7 +206,7 @@ namespace nar {
 						peer_msg["payload"]["chunk-id"] = std::to_string(::db.getNextChunkId());
 						peer_msg["payload"]["chunk-size"] = fSize;
 
-						std::map<std::string, nar::SockInfo*>::iterator it2 = keepalives.begin();
+						auto it2 = keepalives.begin();
 						for(;it2 != keepalives.end(); ++it2) {
 							if(it2->first != inf->getAuthenticationHash())
 								break;
@@ -195,17 +214,14 @@ namespace nar {
 
 	                    nar::SockInfo* peer_sock = (*it2).second;
 						std::string peer_str(peer_msg.dump());
-                        //peer_str = std::to_string((int)peer_str.size()) + std::string(" ") + peer_str;
-                        //(peer_sock->getSck())->send((char*) peer_str.c_str(), (int)peer_str.size());
+
 						std::cout << "\n"<< peer_str << std::endl;
 						send_message( peer_sock->getSck() , peer_str);						std::cout << "yama" << std::endl;
 						json rspX = json::parse(get_message( *(peer_sock->getSck())) ); 						std::cout << "yama" << std::endl;
 						std::cout << rspX << std::endl;
-                        //std::string peer_ip = (peer_sock->getSck())->get_dest_ip();						std::cout << "yama" << std::endl;
 
 
-//						(nar::SockInfo* inf, int status, unsigned long cSize, int fId, std::string peerId, int cId, std::string token)
-						sendPeerList( inf, 200 , fSize,  fId,  it2->first, cId, token);
+						sendPeerList( inf, 200 , file.file_size,  file.file_id,  it2->first, std::to_string(file.file_id), token);
 						std::cout << "prrrt" << std::endl;
 
 						getPeerPort(inf,token);
@@ -243,11 +259,18 @@ namespace nar {
             json resp;
             resp["header"]["channel"] = "sp";
             resp["header"]["reply-to"] = "file_pull_request";
+            std::string file_name = jsn["payload"]["file_name"];
+            std::string dir = jsn["payload"]["directory"];
+
             if(inf->isAuthenticated())   {
                 if(keepalives.size() == 0) {
                     resp["header"]["status-code"] = 301; // no valid peer
                 } else {
-                    std::map<std::string, nar::SockInfo*>::iterator it = keepalives.begin();
+                    long long int file_id;
+                    std::string user_name = inf->getAuthenticationHash();
+                    std::vector< long long int > pos_user = findPosUsers(file_name,dir,user_name,file_id);
+                    nar::File desf = ::db.getFile(file_id);
+                    auto it = keepalives.begin();
                     int selected_peer = std::rand() % ((int)keepalives.size()-1);
                     std::advance(it, selected_peer);
                     std::cout << (*it).first << std::endl;
@@ -268,22 +291,32 @@ namespace nar {
                         resp["header"]["status-code"] = 301; // no valid peer
                         std::cout << "Error 301 attim!" << std::endl;
                     } else {
-                        std::cout << "amk" << std::endl;
                         json peer_msg;
                         peer_msg["header"]["channel"] = "sp";
                         peer_msg["header"]["action"] = "wait_chunk_pull_request";
-                        std::cout << "amk1" << std::endl;
-                        peer_msg["payload"]["token"] = token;
-                        int cId = ::db.getNextChunkId() - 1;
-                        peer_msg["payload"]["chunk-id"] = std::to_string(cId);
 
-                        nar::User u = ::db.getUser(inf->getAuthenticationHash());
-                        std::vector<nar::File> v = ::db.getUserFiles(u.user_id);
-                        peer_msg["payload"]["chunk-size"] = v[0].file_size;
+                        peer_msg["payload"]["file-id"] = file_id;
+                        peer_msg["payload"]["peer-list"] = json::array();
+                        for(int i=0;i<pos_user.size();i++){
+                                json per_peer;
+                                per_peer["peer_id"] = pos_user[i];
+                                per_peer["chunk_size"] = desf.file_size;
+                                per_peer["chunk_id"] = std::to_string(file_id);
+                                per_peer["token"] = token;
+                                peer_msg[i] = per_peer;
 
-                        std::cout << "amk2" << std::endl;
+
+                        }
+
+
+
+
+
+
+
+
+
                         nar::SockInfo* peer_sock = (*it).second;
-                        std::cout << "amk3" << std::endl;
                         std::string peer_str(peer_msg.dump());
                         //peer_str = std::to_string((int)peer_str.size()) + std::string(" ") + peer_str;
                         std::cout << "amk4" << std::endl;
@@ -305,7 +338,7 @@ namespace nar {
                         jreq["header"]["channel"] = "sp";
                         jreq["header"]["status-code"] = 200;
                         jreq["header"]["reply-to"] = "file_pull_request";
-                        jreq["payload"]["chunk-size"] = v[0].file_size;
+                        jreq["payload"]["chunk-size"] = desf.file_size;
 
                         json tmp;
                         /*std::map<std::string, nar::SockInfo*>::iterator it2 = keepalives.begin();
@@ -317,7 +350,7 @@ namespace nar {
                         }*/
 
                         tmp["peer_id"] = (it->first);
-                        tmp["chunk_id"] = std::to_string(cId);
+                        tmp["chunk_id"] = std::to_string(desf.file_id);
                         tmp["token"] = token;
 
                         jreq["payload"]["peer-list"] = { tmp };
