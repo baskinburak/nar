@@ -192,7 +192,7 @@ int nar::Socket::recv ( char * offset, int length ) const
     }
   else
     {
-      
+
       offset += status;
       length -= status;
       return status;
@@ -213,7 +213,7 @@ bool nar::Socket::connect ( const std::string host, const int port )
   if ( errno == EAFNOSUPPORT || status == 0 ){
     error("Connecting to a Wrong or Unsupported Address", errno);
     return false;
-  } 
+  }
 
   status = ::connect ( m_sock, ( sockaddr * ) &m_addr, sizeof ( m_addr ) );
 
@@ -254,6 +254,5 @@ std::string nar::Socket::get_dest_ip() {
     getpeername(m_sock, (struct sockaddr*) &addr, &len);
     char *ip = inet_ntoa(addr.sin_addr);
     std::string res(ip);
-    //free(ip);															FIGURE THIS OUT
     return res;
 }
