@@ -1,5 +1,7 @@
 #include <nar/narnode/Task/PullFile.h>
 #include <nar/narnode/FileKeeper/FileKeeper.h>
+#include <nar/narnode/FileKeeper/FileKeeper.h>
+#include <nar/narnode/FileKeeper/FileDecryptor.h>
 #include <nar/narnode/utility.h>
 #include <iostream>
 #include <unistd.h>
@@ -172,7 +174,7 @@ nar::Socket* nar::task::PullFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 	return peerSck;
 }
 
-void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, int chunkSize)
+void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, int chunkSize, std::string aes)
 {/*
     std::string fileName = (*it)["chunk-id"].get<std::string>();
     nar::FileKeeper file(fileName);
@@ -192,18 +194,22 @@ void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::So
     //std::string path("/home/utku/NarStorage/");
 	//path = path + chunkId;
 	//std::cout << path << std::endl;
-	int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
+	int fd = nar::FileKeeper::openFdWrtonly(path.c_str());
 
     std::cout << "chuSzi " << chunkSize << std::endl;
+
     std::cout << nar::readSckWriteFile(fd,*peerSck,chunkSize) << std::endl;
 
+    //decyrpt it
+    std::string destination = "/home/doguhan/Desktop/Maq";
+    nar::FileDecryptor fdec(destination, aes);
+    //nar::FileKeeper* f = fdec.decrypt("/home/doguhan/Desktop/Decrypted");
 
-	//if(! ) return;
-return;
+    return;
 
 }
 
-void nar::task::PullFile::comeTogether(nlohmann::json &j_resp, nar::Socket *serverSck)
+void nar::task::PullFile::comeTogether(nlohmann::json &j_resp, nar::Socket *serverSck,std::string aes)
 {
     unsigned long chunkSize = j_resp["payload"]["chunk-size"].get<int>();
     std::cout << j_resp.dump() << std::endl;
@@ -212,10 +218,27 @@ void nar::task::PullFile::comeTogether(nlohmann::json &j_resp, nar::Socket *serv
         std::cout << "(*it)" << std::endl;
         nar::Socket *peerSck = sendTokenToPeer(it, serverSck,chunkSize);
         std::cout << "are you here,in come1?" << std::endl;
-        pullFileFromPeer(it, peerSck,chunkSize); // 100 -> chunksize
+        pullFileFromPeer(it, peerSck,chunkSize,aes); // 100 -> chunksize
         //std::cout << "are you here,in come2?" << std::endl;
     }
     return;
+}
+
+std::string nar::task::PullFile::getAes(nar::Socket *serverSck)
+{
+    std::string res;
+    nlohmann::json j_for_aes;
+    j_for_aes["header"]["channel"] = "ps";
+    j_for_aes["header"]["action"] = "get_aes_request";
+
+    sendRequestJson(j_for_aes, serverSck);
+
+    nlohmann::json j_resp;
+    getResultJson(j_resp, serverSck);
+
+    std::string result = j_resp.dump();
+    res = j_resp["payload"]["aes"];
+    return res;
 }
 
 void nar::task::PullFile::run(int unx_sockfd, nar::Global* globals) {
@@ -238,12 +261,14 @@ void nar::task::PullFile::run(int unx_sockfd, nar::Global* globals) {
 
     std::cout << "run pull file" << std::endl;
 
+    std::string aes = getAes(server_sck);
+
     sendRequestJson(j_sent, server_sck);
 
     getResultJson(j_resp, server_sck); // and parse
     std::cout << j_resp << std::endl;
     std::cout << "finito" << std::endl;
-    comeTogether(j_resp,server_sck);  //pull all files from peers
+    comeTogether(j_resp,server_sck,aes);  //pull all files from peers
 
     std::string finMsg("END");
     nar::send_ipc_message(unx_sockfd,finMsg);

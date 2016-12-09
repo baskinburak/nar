@@ -127,8 +127,8 @@ void pushFileToPeer(unsigned long int chunkSize, nar::Socket *peerSck, nar::File
 	    	// MAKE IT UNSIGNED LONG
 
 	char *chunk = new char[chunkSize];
-	unsigned long len = file.getBytes(fOffset,  chunkSize,chunk);
-    std::cout << chunk << std::endl;
+	unsigned long len = file.getBytes(fOffset, chunkSize, chunk);
+    std::cout << "CHUNK" << chunk << std::endl;
 	peerSck->send(chunk, len);
 	fOffset += len;
 }
