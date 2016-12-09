@@ -4,7 +4,7 @@
 #include <nar/narnode/Task/ITask.h>
 #include <nar/lib/Socket/Socket.h>
 #include <nar/narnode/global.h>
-#include <nar/narnode/FileKeeper/FileKeeper.h>
+#include <nar/narnode/FileKeeper/FileCryptor.h>
 
 #include <string>
 
@@ -26,11 +26,12 @@ namespace nar {
 				void sendJson(rapidjson::Document &msg,nar::Socket *serverSck );
 				bool sendJson(nlohmann::json &msg,nar::Socket *serverSck );
 				void recvJson(nlohmann::json &msg, nar::Socket *serverSck );
-				void distributeFile(nlohmann::json &msg, Socket *serverSck, FileKeeper &file);
+				void distributeFile(nlohmann::json &msg, Socket *serverSck, FileCryptor &file);
 				void getPeerInfo(std::string peerId, nar::Socket *serverSck);
+				std::string getAesKey(nar::Socket *serverSck) ;
 
 				Socket *sendTokenToPeer(nlohmann::json::iterator &it, Socket *serverSck, int cSize);
-				void pushFileToPeer(nlohmann::json::iterator &it, Socket *peerSck, FileKeeper &file, size_t &fOffset,int cSize);
+				void pushFileToPeer(nlohmann::json::iterator &it, Socket *peerSck, FileCryptor &file, size_t &fOffset,int cSize);
             public:
                 PushFile(std::string fp): file_path(fp) { }
                 void run(int unx_sockfd, nar::Global* globals);

@@ -15,6 +15,7 @@ namespace nar {
             FileCryptor(nar::FileKeeper* keep, std::string a);
             ~FileCryptor();
             int getBytes(size_t start, size_t buffersize, char* buffer);
+			unsigned long getFileSize();
     };
 }
 

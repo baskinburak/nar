@@ -20,7 +20,7 @@ int main() {
 
     const int TAG_SIZE = 12;
 
-    std::string pdata("yarak fatih ahuasdu");
+    std::string pdata("here some data pls");
     std::string cipher, encoded;
 
     CryptoPP::GCM<CryptoPP::AES>::Encryption enc;

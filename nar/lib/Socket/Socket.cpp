@@ -156,18 +156,18 @@ bool nar::Socket::accept ( Socket& new_socket, const sockaddr_in * addr  ) const
 }
 
 
-bool nar::Socket::send (const char * offset, int length ) const
+int nar::Socket::send (const char * offset, int length ) const
 {
   int len = ::send ( m_sock, offset, length, MSG_NOSIGNAL );
   int tmp = errno;
   if ( length == -1 )
   {
       error("Sending Data",tmp);
-      return false;
+      return -1;
   }
   offset += len;
   length -= tmp;
-  return true;
+  return len;
 }
 
 

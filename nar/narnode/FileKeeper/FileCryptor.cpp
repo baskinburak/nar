@@ -57,3 +57,7 @@ nar::FileCryptor::FileCryptor(FileKeeper* keep, std::string a) : file(keep), key
 int nar::FileCryptor::getBytes(size_t start, size_t len, char* buf) {
     cryptedfile->getBytes(start, len, buf);
 }
+unsigned long nar::FileCryptor::getFileSize(){
+	cryptedfile->getFileSize();
+}
+
