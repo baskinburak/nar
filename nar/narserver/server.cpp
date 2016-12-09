@@ -510,6 +510,21 @@ namespace nar {
             std::cout<<"success"<<std::endl;
             return true;
        }
+
+	   bool get_aes_key(nar::SockInfo* inf, json& jsn) {
+					
+			std::string user_name = inf->getAuthenticationHash();
+			nar::User usr = ::db.getUser(user_name);
+			json resp;
+			resp["header"]["channel"] = "sp";
+            resp["header"]["status-code"] = 200;
+            resp["header"]["reply-to"] = "get_aes_request";
+			resp["payload"]["aes"] = usr.cryptedKey;
+			std::cout << "uname: " << usr.user_name << " "  << "key: "<< usr.cryptedKey << std::endl;
+			std::cout << "sname: " << inf->getAuthenticationHash() << std::endl;
+			nar::send_message(*(inf->getSck()), std::string(resp.dump()));
+	   		return true;
+	   }
     }
 }
 
@@ -541,6 +556,10 @@ void handle_connection(nar::Socket* skt) {
             std::cout<<"<ls"<<std::endl;
             nar::action::get_user_dir_info(inf, jsn);
             std::cout<<"ls>"<<std::endl;
+        } else if(jsn["header"]["action"] == "get_aes_request") {
+            std::cout<<"<aes"<<std::endl;
+            nar::action::get_aes_key(inf, jsn);
+            std::cout<<"aes>"<<std::endl;
         }
 					std::cout << "Here9" << std::endl;
     }
