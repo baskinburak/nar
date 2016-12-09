@@ -22,7 +22,7 @@ namespace nar {
 			std::map<std::string, int> _fds;
 
 		public:
-			FileKeeper() {	
+			FileKeeper() {
 				_file = NULL;
 				_fd = -1;
 			}
@@ -33,7 +33,7 @@ namespace nar {
 
 			void closeFd(int fd);					// closes the given file descriptor
 			void emptyMap();						// empties the mapping with closing file descriptors
-			
+
 			int openFdRdonly(const char * file);		// opens file descriptor on read only mode
 			static int openFdWrtonly(const char * file);
             int openAllWays(const char * file);
@@ -45,7 +45,7 @@ namespace nar {
 				// creates file descriptor of the given file
 
 			int getBytes(size_t start, size_t buffersize, char * buffer);			// gets specific byte interval  from the file
-			
+
 			static int writeToFile(int fd, size_t buffersize, const char * buffer);
 
 			void setFileMap(std::vector< std::string > & filenames);				// creates a mapping between file names and their file descriptors (if there is an already existing mapping changes it to new one)
