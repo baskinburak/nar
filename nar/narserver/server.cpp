@@ -128,7 +128,7 @@ namespace nar {
 		nar::File insertFileToDb(std::string fName,unsigned long fSize, std::string fDir,std::string uname) {
 			nar::File fi;
 			fi.file_name = fName;
-			fi.file_size = 100;
+			fi.file_size = fSize;
             long long int f_id = ::db.getNextFileId();
 			::db.insertFile(fi);
             nar::Directory dir = ::db.findDirectoryId(uname,fDir);
@@ -182,6 +182,7 @@ namespace nar {
 								std::cout << "Here2" << std::endl;
                     resp["header"]["status-code"] = 301; // no valid peer
                 } else {
+
 			        nar::File file = insertFileToDb(fName,fSize,fDir,inf->getAuthenticationHash());
                     auto it = keepalives.begin();
                     int selected_peer = std::rand() % ((int)keepalives.size()-1);
@@ -203,7 +204,7 @@ namespace nar {
                         peer_msg["header"]["action"] = "wait_chunk_push_request";
                         peer_msg["payload"]["token"] = token;
 						std::cout << token  << " " << token.size() << std::endl;
-						peer_msg["payload"]["chunk-id"] = std::to_string(::db.getNextChunkId());
+						peer_msg["payload"]["chunk-id"] = std::to_string(file.file_id);
 						peer_msg["payload"]["chunk-size"] = fSize;
 
 						auto it2 = keepalives.begin();
@@ -512,7 +513,7 @@ namespace nar {
        }
 
 	   bool get_aes_key(nar::SockInfo* inf, json& jsn) {
-					
+
 			std::string user_name = inf->getAuthenticationHash();
 			nar::User usr = ::db.getUser(user_name);
 			json resp;

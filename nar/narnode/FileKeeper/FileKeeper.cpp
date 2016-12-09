@@ -71,7 +71,7 @@ void nar::FileKeeper::setFileName(char * file) {
 	}
 	_file = file;
 	_fd = openFdRdonly(_file);
-	
+
 }
 
 
@@ -113,7 +113,7 @@ int nar::FileKeeper::getBytes(size_t start,size_t buffersize, char * buffer) {
 int nar::FileKeeper::writeToFile(int fd, size_t buffersize, const char * buffer) {
 	int w_value = write(fd,  buffer, buffersize);
 	if(w_value < 0) {		// reads from the file desciptor
-		printf("something is wrong with read() in FileKeeper getBytes %s \n" , strerror(errno));
+		printf("something is wrong with write() in FileKeeper writeToFile %s \n" , strerror(errno));
 		return -1;
 	}
 	return w_value;
@@ -132,7 +132,7 @@ std::string nar::FileKeeper::getFileName(){
 
 void nar::FileKeeper::setFileMap(std::vector<std::string> & filenames) {
 	std::vector<int> fds(filenames.size());
-	
+
 	this->emptyMap();
 	_fds.clear();
 	for(int  i= 0;i<filenames.size();i++) {

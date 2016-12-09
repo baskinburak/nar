@@ -170,7 +170,7 @@ void sendChunkToPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkS
     tmp["header"]["status-code"] = 200;
     send_message( peerSkt, tmp.dump());
 
-    std::string path("/home/doguhan/NarStorage/c");
+    std::string path("/home/fatih/NarStorage/c");
     std::cout << "PATH: " << (path+chunkId ).c_str() << std::endl;
     nar::FileKeeper f( (path+chunkId ).c_str() );
     //(unsigned long chunkSize, nar::Socket *peerSck, nar::FileKeeper &file, size_t &fOffset)
@@ -212,7 +212,7 @@ void getChunkFromPeer(nar::Socket* skt, std::string chunkId, unsigned long chunk
 		delete skt;
 		return;
 	}
-	std::string path("/home/utku/NarStorage/c");
+	std::string path("/home/fatih/NarStorage/c");
 	path = path + chunkId;
 	std::cout << path << std::endl;
 	int fd = nar::FileKeeper::openFdWrtonly( path.c_str());

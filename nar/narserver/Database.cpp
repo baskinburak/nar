@@ -937,14 +937,14 @@ nar::Directory nar::Database::findDirectoryId(std::string user_name,std::string 
     std::string sql_string = "";
     unsigned int count = 1;
     sql::SQLString query;
-    if(dir_name[dir_name.length()-1] == '/'){
+    if((dir_name[dir_name.length()-1] == '/') && dir_name.length()>1 ){
         dir_name = dir_name.substr(0,dir_name.length()-1);
     }
 
     //names.push_back(std::string("/"));
 
 
-    if(dir_name[0] == '/'){
+    if((dir_name[0] == '/') && dir_name.length()>1){
         found = dir_name.find("/",1);
         last_found = 1;
     }
@@ -952,27 +952,41 @@ nar::Directory nar::Database::findDirectoryId(std::string user_name,std::string 
         found = dir_name.find("/");
         last_found = 0;
     }
+
     while(found != std::string::npos){
-        temp = dir_name.substr(last_found,found-last_found);
-        last_found = found+1;
-        found = dir_name.find("/",last_found);
+        if(found == 0 && last_found == 0){
+            temp = dir_name.substr(last_found,1);
+            last_found = found+1;
+            found = dir_name.find("/",last_found);
+            names.push_back(temp);
+        }
+        else{
+            temp = dir_name.substr(last_found,found-last_found);
+            last_found = found+1;
+            found = dir_name.find("/",last_found);
+            names.push_back(temp);
+        }
+
+    }
+    if(dir_name.length() != 1){
+        temp = dir_name.substr(last_found);
         names.push_back(temp);
     }
-    temp = dir_name.substr(last_found);
-    names.push_back(temp);
     nar::Directory result_dir;
-    sql_string+=std::string(" SELECT Item_id FROM DirectoryTo WHERE ForD = 1 AND Dir_id IN (select Dir_id from Users where user_name= ? )");
+    sql_string+=std::string(" select Dir_id from Users where user_name= ? ");
     for(int i=0;i<names.size()-1;i++){
-            sql_string =std::string(" SELECT Dir_id From Directories WHERE Dir_name = ? AND Dir_id IN ( ")+sql_string +std::string(")");
             sql_string = std::string(" SELECT Item_id FROM DirectoryTo WHERE ForD = 1 AND Dir_id IN (")+sql_string+std::string(")");
+            sql_string =std::string(" SELECT Dir_id From Directories WHERE Dir_name = ? AND Dir_id IN ( ")+sql_string +std::string(")");
     }
     sql_string =std::string(" SELECT Dir_id, Dir_name, Dir_size, UNIX_TIMESTAMP(Change_time) As Time From Directories WHERE Dir_name = ? AND Dir_id IN ( ")+sql_string +std::string(")");
     sql_string = sql_string +(";");
+    std::cout<<sql_string<<std::endl;
+//    std::cout<<names[0]<<std::endl;
     query = sql::SQLString(sql_string);
     std::reverse(names.begin(),names.end());
     prep_stmt = _con->prepareStatement(query);
     for(int i= 0;i<names.size();i++){
-
+        std::cout<<names[i]<<std::endl;
         prep_stmt->setString(count, sql::SQLString(names[i]));
         count++;
     }
