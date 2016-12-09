@@ -992,3 +992,27 @@ nar::Directory nar::Database::findDirectoryId(std::string user_name,std::string 
 
 
 }
+std::vector<nar::User> nar::Database::getUserFromFile(long long int fileId){
+    sql::SQLString file_id = std::to_string(fileId);
+    std::vector<nar::User> output;
+    sql::PreparedStatement  *prep_stmt;
+    sql::ResultSet *res;
+    prep_stmt = _con->prepareStatement("SELECT User_id,User_name "
+                                        "From Users "
+                                        "Where User_id IN (Select File_id "
+                                                                "From UserToFile "
+                                                                "Where UserToFile.File_id = ?);");
+    prep_stmt->setBigInt(1,file_id);
+    res = prep_stmt->executeQuery();
+    while (res->next()) {
+        nar::User a;
+        a.user_id = std::stoll(res->getString("User_id").asStdString());
+        a.user_name = res->getString("User_name").asStdString();
+
+        output.push_back(a);
+
+    }
+    delete prep_stmt;
+    delete res;
+    return output;
+}
