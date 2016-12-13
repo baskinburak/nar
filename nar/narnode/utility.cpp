@@ -201,27 +201,15 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 		   std::cout << "Read Data Failed from peer Skt" << std::endl;             
 		   return 0;
 		}
-        int offset = 0;
-
+        
 		std::cout <<  "buffer: "<<std::string(buffer) << std::endl << std::endl << std::endl ;
 
-		char * tbuf = buffer;
 
-        do
-        {
-            size_t written = nar::FileKeeper::writeToFile( filefd,  num-offset, buffer);
-            if (written < 1)
-			{
-				std::cout << "Write to file failed " << std::endl;
-                return 0;
-			}
-            offset += written;
-			tbuf += written;
-        }
-        while (offset < num);
+        nar::FileKeeper::writeToFile( filefd,  num, buffer);
+
 	
 		
-        fileSize -= offset;
+        fileSize -= num;
 		std::cout << "FILE SIZE HERE !é!!! : " << fileSize << std::endl;
     
 	}

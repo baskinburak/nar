@@ -30,7 +30,7 @@ nar::FileCryptor::FileCryptor(FileKeeper* keep, std::string a) : file(keep), key
     std::string filename = generateUniqueFilename();
     cryptedfile = new FileKeeper(filename);
     int size = keep->getFileSize();
-    char buff[size];
+    char* buff = (char*) malloc(sizeof(char)* size);
     keep->getBytes(0, size, buff);
     std::string inp(buff, buff+size);
 
