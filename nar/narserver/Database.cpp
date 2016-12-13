@@ -980,13 +980,13 @@ nar::Directory nar::Database::findDirectoryId(std::string user_name,std::string 
     }
     sql_string =std::string(" SELECT Dir_id, Dir_name, Dir_size, UNIX_TIMESTAMP(Change_time) As Time From Directories WHERE Dir_name = ? AND Dir_id IN ( ")+sql_string +std::string(")");
     sql_string = sql_string +(";");
-    std::cout<<sql_string<<std::endl;
+//    std::cout<<sql_string<<std::endl;
 //    std::cout<<names[0]<<std::endl;
     query = sql::SQLString(sql_string);
     std::reverse(names.begin(),names.end());
     prep_stmt = _con->prepareStatement(query);
     for(int i= 0;i<names.size();i++){
-        std::cout<<names[i]<<std::endl;
+//        std::cout<<names[i]<<std::endl;
         prep_stmt->setString(count, sql::SQLString(names[i]));
         count++;
     }
@@ -1013,7 +1013,7 @@ std::vector<nar::User> nar::Database::getUserFromFile(long long int fileId){
     sql::ResultSet *res;
     prep_stmt = _con->prepareStatement("SELECT User_id,User_name "
                                         "From Users "
-                                        "Where User_id IN (Select File_id "
+                                        "Where User_id IN (Select User_id "
                                                                 "From UserToFile "
                                                                 "Where UserToFile.File_id = ?);");
     prep_stmt->setBigInt(1,file_id);
