@@ -13,13 +13,16 @@ nar::FileKeeper* nar::FileDecryptor::decrypt(std::string filename) {
     std::cout << key << std::endl;
     byte* aes = nar::hex_to_byte(key); // 16 bytes
 
+	std::cout << "zu" << std::endl;
     std::string ivs = data.substr(0, 512);
+	std::cout << "zu hast" << std::endl;
     byte* iv = hex_to_byte(ivs); // 256 bytes
 
     std::cout << ivs << std::endl;
 
-
+	std::cout << data.size() << " huloggg" << std::endl;
     data = data.substr(512);
+	std::cout << "zu hast dich" << std::endl;
 
 
     CryptoPP::GCM<CryptoPP::AES>::Decryption dec;
