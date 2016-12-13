@@ -186,7 +186,7 @@ void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::So
     //file.writeToFile(file.getFd(), index, (const char *)buffer);
     std::cout << "sanirim bitti" << std::endl;
     return;*/
-    std::string path("/home/doguhan/Desktop/Maq");
+    std::string path("/tmp/maq");
     //int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
     //nar::FileKeeper f( path );
     //if(! nar::readSckWriteFile(fd,*peerSck,chunkSize)) return;
@@ -202,7 +202,9 @@ void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::So
 
     close(fd);
     //decyrpt it
-    std::string destination = "/home/doguhan/Desktop/Maq";
+    char cwd[1024];
+    getcwd(cwd, sizeof(cwd));
+    std::string destination = std::string(cwd) + std::string("/") + file_name;
 
     char *buffer = new char[1024];
     nar::FileKeeper fk(destination);
