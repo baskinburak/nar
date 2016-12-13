@@ -22,10 +22,10 @@ namespace nar {
         public:
             Global() {
                 set_curdir("/");
-                std::cout << "Server IP: " << std::endl;
-                std::string ip;
-                std::cin >> ip;
-                set_narServerIp(ip);
+                std::cout << "Server IP: ";
+                std::cin >> narServerIP;
+                std::cout << "Username: ";
+                std::cin >> username;
                 std::cout << "Thanks." << std::endl;
                 set_narServerPort(12345);
                 set_curdir("/");

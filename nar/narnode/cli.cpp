@@ -123,8 +123,6 @@ void nar_pull_file(std::string file_name) {
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     doc.Accept(writer);
 
-
-
     std::string stringify(buffer.GetString());
 
     nar::IPCClient ipc_client(NAR_IPC_FILE);

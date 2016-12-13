@@ -48,8 +48,10 @@ void nar::IPCClient::sendRequest(std::string str) {
 
     ok = nar::get_string_sckt(sockfd, 2);
 
-    if(ok != std::string("OK"))
+    if(ok != std::string("OK")) {
+        std::cout << ok << std::endl;
         throw nar::Exception("narIPCClient::sendRequest - Receive 2 OK error.");
+    }
 
 }
 

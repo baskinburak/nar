@@ -72,7 +72,7 @@ int nar::Global::get_narServerPort(){
     return serverPort;
 }
 
-void nar::Global::set_configFolder(std::string fold) {
+void nar::Global::set_narFolder(std::string fold) {
     write_start();
     narFolder = fold;
     write_end();

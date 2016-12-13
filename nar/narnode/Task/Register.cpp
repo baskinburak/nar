@@ -51,5 +51,5 @@ void nar::task::Register::run(int unx_sockfd, nar::Global* globals) {
     }
 
     nar::send_ipc_message(unx_sockfd, std::string("END"));
-    std::string conf = globals->get_configFolder();
+	globals->set_username(username);
 }

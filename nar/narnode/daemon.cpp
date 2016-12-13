@@ -28,7 +28,6 @@
 void handle_cli_ipc(int sockfd, nar::Global* globals) {
     char buf[129];
     std::string json = nar::receive_ipc_message(sockfd);
-
     rapidjson::Document doc;
     doc.Parse(json.c_str());
     std::string action(doc["action"].GetString());
@@ -353,9 +352,6 @@ int main() {
     struct passwd *pw = getpwuid(getuid());
     const char *homedir = pw->pw_dir;
     globals->set_narFolder(std::string(homedir) + std::string("/.config/nar"));
-
-    globals->set_username(std::string(""));
-
 
 	nar::Socket serverSck;
 	std::thread keepalvThread(keepAlive,&serverSck,globals);

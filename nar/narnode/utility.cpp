@@ -63,7 +63,7 @@ std::string nar::get_string_sckt(int sockfd, int len) {
     int l;
     char buf[129];
     while(idx < len) {
-        if((l = recv(sockfd, buf, 128, 0)) > 0) {
+        if((l = recv(sockfd, buf, std::min(len, 128), 0)) > 0) {
             res.append(buf, l);
             idx+=l;
         } else {
