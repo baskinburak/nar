@@ -39,7 +39,7 @@ int nar::FileKeeper::openFdRdonly(const char * file) {
 }
 
 int nar::FileKeeper::openFdWrtonly(const char * file) {
-	int fd = open(file,O_WRONLY | O_CREAT); 			// CREATE AND WRITE
+	int fd = open(file,O_WRONLY | O_CREAT,00777); 			// CREATE AND WRITE
 	if( fd < 0) {
 		printf("something is wrong with open() in FileKeeper constructor with string %s \n" , strerror(errno));
 		return -1;

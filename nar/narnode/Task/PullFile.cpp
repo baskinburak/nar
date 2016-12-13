@@ -200,10 +200,21 @@ void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::So
 
     std::cout << nar::readSckWriteFile(fd,*peerSck,chunkSize) << std::endl;
 
+    close(fd);
     //decyrpt it
     std::string destination = "/home/doguhan/Desktop/Maq";
-    nar::FileDecryptor fdec(destination, aes);
-    //nar::FileKeeper* f = fdec.decrypt("/home/doguhan/Desktop/Decrypted");
+
+    char *buffer = new char[1024];
+    nar::FileKeeper fk(destination);
+
+    std::cout << "asdasdasdasd" << std::endl;
+    int tmp = fk.getBytes(0,1015,buffer);
+    std::cout << "asdasdasdasd" << std::endl;
+
+    nar::FileDecryptor fdec(std::string(buffer,0,fk.getFileSize()), aes);
+    std::cout << "asdasdasdasd" << std::endl;
+    nar::FileKeeper* f = fdec.decrypt("/home/doguhan/Desktop/Decrypted");
+    std::cout << "asdasdasdasd" << std::endl;
 
     return;
 
@@ -262,6 +273,8 @@ void nar::task::PullFile::run(int unx_sockfd, nar::Global* globals) {
     std::cout << "run pull file" << std::endl;
 
     std::string aes = getAes(server_sck);
+
+    std::cout << "aes key " << aes << std::endl;
 
     sendRequestJson(j_sent, server_sck);
 
