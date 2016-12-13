@@ -2,6 +2,7 @@
 #define NAR_GLOBAL_H
 #include <mutex>
 #include <string>
+#include <iostream>
 
 namespace nar {
     class Global {
@@ -12,14 +13,23 @@ namespace nar {
             std::string username;
             std::string cur_dir;
 			std::string narServerIP;
-            std::string configFolder;
+            std::string narFolder;
 			int narServerPort;
             void read_start();
             void read_end();
             void write_start();
             void write_end();
         public:
-            Global() {set_curdir("/"); set_narServerIp(std::string("144.122.238.208")); set_narServerPort(12345); set_configFolder("/");}
+            Global() {
+                set_curdir("/");
+                std::cout << "Server IP: " << std::endl;
+                std::string ip;
+                std::cin >> ip;
+                set_narServerIp(ip);
+                std::cout << "Thanks." << std::endl;
+                set_narServerPort(12345);
+                set_curdir("/");
+            }
             std::string get_username();
             void set_username(std::string uname);
             std::string get_curdir();
@@ -28,8 +38,8 @@ namespace nar {
 			int get_narServerPort();
 			void set_narServerIp(std::string ip);
 			void set_narServerPort(int port);
-            void set_configFolder(std::string fold);
-            std::string get_configFolder();
+            void set_narFolder(std::string fold);
+            std::string get_narFolder();
     };
 }
 

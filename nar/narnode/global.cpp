@@ -74,13 +74,13 @@ int nar::Global::get_narServerPort(){
 
 void nar::Global::set_configFolder(std::string fold) {
     write_start();
-    configFolder = fold;
+    narFolder = fold;
     write_end();
 }
 
-std::string nar::Global::get_configFolder() {
+std::string nar::Global::get_narFolder() {
     read_start();
-    std::string fold = configFolder;
+    std::string fold = narFolder;
     read_end();
     return fold;
 }

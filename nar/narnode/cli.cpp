@@ -51,13 +51,7 @@ void nar_push_file(std::string file_name) {
 
     std::string stringify(buffer.GetString());
 
-	std::string var[2];
-	var[0] = std::string("/tmp/nar_ipc");
-	var[1] = std::string("/tmp/nar_ipc2");
-	int peerNum;
-	std::cin >> peerNum;
-
-    nar::IPCClient ipc_client( var[peerNum]); //NAR_IPC_FILE);
+    nar::IPCClient ipc_client(NAR_IPC_FILE); //NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(stringify);
 
@@ -129,16 +123,11 @@ void nar_pull_file(std::string file_name) {
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     doc.Accept(writer);
 
-    std::string var[2];
-    var[0] = std::string("/tmp/nar_ipc");
-    var[1] = std::string("/tmp/nar_ipc2");
 
-    int peerNum;
-    std::cin >> peerNum;
 
     std::string stringify(buffer.GetString());
 
-    nar::IPCClient ipc_client(var[peerNum]); //NAR_IPC_FILE
+    nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(stringify);
 
@@ -157,16 +146,48 @@ void nar_register(std::string uname) {
     jsn["action"] = "register";
     jsn["username"] = uname;
 
-	std::string var[2];
-	var[0] = std::string("/tmp/nar_ipc");
-	var[1] = std::string("/tmp/nar_ipc2");
-	int peerNum;
-	std::cin >> peerNum;
+    nar::IPCClient ipc_client(NAR_IPC_FILE);
+    ipc_client.connectServer();
+    ipc_client.sendRequest(jsn.dump());
+
+
+    ipc_client.printLoop();
+}
+
+void nar_config(std::string var, std::string value) {
+/*
+{
+    "action": "config",
+    "var": var,
+    "value": value
+}
+*/
+
+    json jsn;
+    jsn["action"] = "config";
+    jsn["var"] = var;
+    jsn["value"] = value;
 
     nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(jsn.dump());
 
+    ipc_client.printLoop();
+}
+
+void nar_status() {
+/*
+{
+    "action": "status"
+}
+*/
+
+    json jsn;
+    jsn["action"] = "status";
+
+    nar::IPCClient ipc_client(NAR_IPC_FILE);
+    ipc_client.connectServer();
+    ipc_client.sendRequest(jsn.dump());
 
     ipc_client.printLoop();
 }
@@ -206,6 +227,19 @@ int main(int argc, char* argv[]){
         std::cout << "Enter a username: ";
         std::cin >> uname;
         nar_register(uname);
+    } else if(first_arg == std::string("config")) {
+        if(argc < 3) {
+            return 0;
+        }
+        for(int i=2; i<argc; i++) {
+            std::string conf(argv[i]);
+            int eq = conf.find('=');
+            std::string left = conf.substr(0, eq);
+            std::string right = conf.substr(eq+1);
+            nar_config(left, right);
+        }
+    } else if(first_arg == std::string("status")) {
+        nar_status();
     }
 
     return 0;

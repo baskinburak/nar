@@ -23,6 +23,7 @@
 #include <utility>
 #include <algorithm>
 #include <nar/narnode/FileKeeper/FileKeeper.h>
+#include <pwd.h>
 
 void handle_cli_ipc(int sockfd, nar::Global* globals) {
     char buf[129];
@@ -45,6 +46,24 @@ void handle_cli_ipc(int sockfd, nar::Global* globals) {
     } else if(action == std::string("register")) {
         nar::task::Register task(doc["username"].GetString());
         task.run(sockfd, globals);
+    } else if(action == std::string("config")) {
+        std::string var = doc["var"].GetString();
+        std::string value = doc["value"].GetString();
+        if(var == "server_ip") {
+            globals->set_narServerIp(value);
+        } else if(var == "server_port") {
+            globals->set_narServerPort(std::stoi(value));
+        } else if(var == "username") {
+            globals->set_username(value);
+        }
+        nar::send_ipc_message(sockfd, std::string("\033[0;32mDONE\033[0m"));
+        nar::send_ipc_message(sockfd, std::string("END"));
+    } else if(action == std::string("status")) {
+        nar::send_ipc_message(sockfd, std::string("\033[0;33mUsername:\033[0m ") + globals->get_username());
+        nar::send_ipc_message(sockfd, std::string("\033[0;33mServer IP:\033[0m ") + globals->get_narServerIp());
+        nar::send_ipc_message(sockfd, std::string("\033[0;33mServer Port:\033[0m ") + std::to_string(globals->get_narServerPort()));
+        nar::send_ipc_message(sockfd, std::string("\033[0;33mCurrent Directory:\033[0m ") + std::string(globals->get_curdir()));
+        nar::send_ipc_message(sockfd, std::string("END"));
     }
 
     close(sockfd);
@@ -133,7 +152,7 @@ void pushFileToPeer(unsigned long int chunkSize, nar::Socket *peerSck, nar::File
 	fOffset += len;
 }
 
-void sendChunkToPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkSize, std::string token){
+void sendChunkToPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkSize, std::string token, nar::Global *globals){
     struct timeval tv;
     fd_set readfds;
 
@@ -170,7 +189,7 @@ void sendChunkToPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkS
     tmp["header"]["status-code"] = 200;
     send_message( peerSkt, tmp.dump());
 
-    std::string path("/home/fatih/NarStorage/c");
+    std::string path(globals->get_narFolder() + std::string("/c"));
     std::cout << "PATH: " << (path+chunkId ).c_str() << std::endl;
     nar::FileKeeper f( (path+chunkId ).c_str() );
     //(unsigned long chunkSize, nar::Socket *peerSck, nar::FileKeeper &file, size_t &fOffset)
@@ -182,7 +201,7 @@ void sendChunkToPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkS
     return;
 }
 
-void getChunkFromPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkSize, std::string token){
+void getChunkFromPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkSize, std::string token, nar::Global* globals){
 	struct timeval tv;
     fd_set readfds;
 
@@ -211,8 +230,8 @@ void getChunkFromPeer(nar::Socket* skt, std::string chunkId, unsigned long chunk
 		skt->close();
 		delete skt;
 		return;
-	}
-	std::string path("/home/fatih/NarStorage/c");
+    }
+    std::string path(globals->get_narFolder() + std::string("/c"));
 	path = path + chunkId;
 	std::cout << path << std::endl;
 	int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
@@ -267,7 +286,7 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 				nar::Socket* tmpSkt = peerList[serverReq["payload"]["token"]].second.first; std::cout << "Casual" << std::endl;
 				int port = peerList[serverReq["payload"]["token"]].second.second;
 				peerList.erase( serverReq["payload"]["token"].get<std::string>() );std::cout << "After Erase" << std::endl;
-				std::thread getFile(getChunkFromPeer, tmpSkt, chunkId, chunkSize,serverReq["payload"]["token"]); // TOKEN MAYBE WRONG TOKEN
+				std::thread getFile(getChunkFromPeer, tmpSkt, chunkId, chunkSize,serverReq["payload"]["token"], globals); // TOKEN MAYBE WRONG TOKEN
 				getFile.detach();
 
 				nlohmann::json rsp;
@@ -284,7 +303,7 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 				nar::Socket* tmpSkt = peerList[serverReq["payload"]["token"]].second.first; std::cout << "Casual" << std::endl;
 				int port = peerList[serverReq["payload"]["token"]].second.second;
 				peerList.erase( serverReq["payload"]["token"].get<std::string>() );std::cout << "After Erase" << std::endl;
-				std::thread getFile(sendChunkToPeer, tmpSkt, chunkId, chunkSize,serverReq["payload"]["token"]); // TOKEN MAYBE WRONG TOKEN
+				std::thread getFile(sendChunkToPeer, tmpSkt, chunkId, chunkSize,serverReq["payload"]["token"], globals); // TOKEN MAYBE WRONG TOKEN
 				getFile.detach();
 
 				nlohmann::json rsp;
@@ -327,28 +346,17 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 
 int main() {
 
-    std::string var[2];
-    var[0] = std::string("/tmp/nar_ipc");
-    var[1] = std::string("/tmp/nar_ipc2");
-
-    std::string usr[2];
-    usr[0] = std::string("dogu");
-    usr[1] = std::string("utku");
-
-    int peerNum;
-    std::cin >> peerNum;
-
-
-    nar::IPCServer cli_server(var[peerNum]);
+    nar::IPCServer cli_server("/tmp/nar_ipc");
     cli_server.initialize();
     nar::Global* globals = new nar::Global();
 	std::string uname;
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+    globals->set_narFolder(std::string(homedir) + std::string("/.config/nar"));
 
-    globals->set_username(usr[peerNum]);		//std::string("nar_admin"));
+    globals->set_username(std::string(""));
 
 
-
-	// 				Create KeepAlive Task
 	nar::Socket serverSck;
 	std::thread keepalvThread(keepAlive,&serverSck,globals);
 	keepalvThread.detach();
