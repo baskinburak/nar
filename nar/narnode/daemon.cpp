@@ -326,7 +326,7 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 }
 
 int main() {
-
+/*
     std::string var[2];
     var[0] = std::string("/tmp/nar_ipc");
     var[1] = std::string("/tmp/nar_ipc2");
@@ -338,13 +338,14 @@ int main() {
     int peerNum;
     std::cin >> peerNum;
 
-
-    nar::IPCServer cli_server(var[peerNum]);
+*/
+    nar::IPCServer cli_server("/tmp/nar_ipc");
     cli_server.initialize();
     nar::Global* globals = new nar::Global();
-	std::string uname;
-
-    globals->set_username(usr[peerNum]);		//std::string("nar_admin"));
+	std::string uname("doge");
+	globals->set_username(uname);
+	
+//    globals->set_username(usr[peerNum]);		//std::string("nar_admin"));
 
 
 

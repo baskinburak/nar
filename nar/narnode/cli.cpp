@@ -50,14 +50,14 @@ void nar_push_file(std::string file_name) {
     doc.Accept(writer);
 
     std::string stringify(buffer.GetString());
-
+/*
 	std::string var[2];
 	var[0] = std::string("/tmp/nar_ipc");
 	var[1] = std::string("/tmp/nar_ipc2");
 	int peerNum;
-	std::cin >> peerNum;
+	std::cin >> peerNum;*/
 
-    nar::IPCClient ipc_client( var[peerNum]); //NAR_IPC_FILE);
+    nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(stringify);
 
@@ -128,17 +128,17 @@ void nar_pull_file(std::string file_name) {
 
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     doc.Accept(writer);
-
+/*
     std::string var[2];
     var[0] = std::string("/tmp/nar_ipc");
     var[1] = std::string("/tmp/nar_ipc2");
 
     int peerNum;
-    std::cin >> peerNum;
+    std::cin >> peerNum;*/
 
     std::string stringify(buffer.GetString());
 
-    nar::IPCClient ipc_client(var[peerNum]); //NAR_IPC_FILE
+    nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
     ipc_client.sendRequest(stringify);
 
@@ -156,12 +156,12 @@ void nar_register(std::string uname) {
     json jsn;
     jsn["action"] = "register";
     jsn["username"] = uname;
-
+/*
 	std::string var[2];
 	var[0] = std::string("/tmp/nar_ipc");
 	var[1] = std::string("/tmp/nar_ipc2");
 	int peerNum;
-	std::cin >> peerNum;
+	std::cin >> peerNum;*/
 
     nar::IPCClient ipc_client(NAR_IPC_FILE);
     ipc_client.connectServer();
