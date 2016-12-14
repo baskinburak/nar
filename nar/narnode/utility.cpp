@@ -172,7 +172,7 @@ int nar::readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned lo
 		}*/
 		offset += readd;
 
-		std::cout << "buffer: " << std::string(buffer) <<"\n\n\n\n"<< std::endl;
+		//std::cout << "buffer: " << std::string(buffer) <<"\n\n\n\n"<< std::endl;
 		std::cout << "off: " << offset << std::endl;		
 		std::cout << "fs: "<< fileSize << std::endl;
 
@@ -202,7 +202,7 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 		   return 0;
 		}
         
-		std::cout <<  "buffer: "<<std::string(buffer) << std::endl << std::endl << std::endl ;
+		//std::cout <<  "buffer: "<<std::string(buffer) << std::endl << std::endl << std::endl ;
 
 
         nar::FileKeeper::writeToFile( filefd,  num, buffer);
