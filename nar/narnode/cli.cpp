@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <nar/narnode/IPC/ipcclient.h>
 #include <fstream>
+#include <unistd.h>
 #include <nar/lib/json.hpp>
 #define NAR_IPC_FILE "/tmp/nar_ipc"
 
@@ -97,9 +98,11 @@ void nar_pull_file(std::string file_name) {
 /*
 {
     "action": "pull",
-    "file": file_name
+    "file": file_name,
+    "cur_id": cur_dir
 }
 */
+
 
     std::cout << file_name << std::endl;
 
@@ -107,6 +110,14 @@ void nar_pull_file(std::string file_name) {
     rapidjson::Document doc;
     doc.SetObject();
     rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+
+
+    char cwd[1024];
+    getcwd(cwd, sizeof(cwd));
+    std::string cwdss(cwd);
+    rapidjson::Value cwds;
+    cwds.SetString(cwdss.c_str(), cwdss.size(), allocator);
+
 
     rapidjson::Value action;
     action.SetString("pull");
@@ -116,6 +127,8 @@ void nar_pull_file(std::string file_name) {
 
     doc.AddMember("action", action, allocator);
     doc.AddMember("file", filename, allocator);
+    doc.AddMember("cur_dir", cwds, allocator);
+
 
     rapidjson::StringBuffer buffer;
     buffer.Clear();

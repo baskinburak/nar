@@ -176,39 +176,37 @@ nar::Socket* nar::task::PullFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 
 void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, int chunkSize, std::string aes)
 {/*
-std::string fileName = (*it)["chunk-id"].get<std::string>();
-nar::FileKeeper file(fileName);
-char buffer[1024] = " ";
-while(peerSck->recv(buffer,chunkSize) > 0);
-int index=0;
-std::cout << buffer[0] << std::endl;
-//while() index++;
-//file.writeToFile(file.getFd(), index, (const char *)buffer);
-std::cout << "sanirim bitti" << std::endl;
-return;*/
-std::string path("/tmp/maq");
-//int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
-//nar::FileKeeper f( path );
-//if(! nar::readSckWriteFile(fd,*peerSck,chunkSize)) return;
+    std::string fileName = (*it)["chunk-id"].get<std::string>();
+    nar::FileKeeper file(fileName);
+    char buffer[1024] = " ";
+    while(peerSck->recv(buffer,chunkSize) > 0);
+    int index=0;
+    std::cout << buffer[0] << std::endl;
+    //while() index++;
+    //file.writeToFile(file.getFd(), index, (const char *)buffer);
+    std::cout << "sanirim bitti" << std::endl;
+    return;*/
+    std::string path("/tmp/maq");
+    //int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
+    //nar::FileKeeper f( path );
+    //if(! nar::readSckWriteFile(fd,*peerSck,chunkSize)) return;
 
-//std::string path("/home/utku/NarStorage/");
-//path = path + chunkId;
-//std::cout << path << std::endl;
+    //std::string path("/home/utku/NarStorage/");
+    //path = path + chunkId;
+    //std::cout << path << std::endl;
 
-std::cout << "chuSzi " << chunkSize << std::endl;
+    std::cout << "chuSzi " << chunkSize << std::endl;
 
-//std::cout << nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize) << std::endl;
-//decyrpt it
-char cwd[1024];
-getcwd(cwd, sizeof(cwd));
-std::string destination = std::string(cwd) + std::string("/") + file_name;
-std::cout<<destination<<std::endl;
+    //std::cout << nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize) << std::endl;
+    //decyrpt it
+    std::string destination = cur_dir + std::string("/") + file_name;
+    std::cout<<destination<<std::endl;
 
 
-nar::FileDecryptor fdec(nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize), aes);
-nar::FileKeeper* f = fdec.decrypt(destination);
+    nar::FileDecryptor fdec(nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize), aes);
+    nar::FileKeeper* f = fdec.decrypt(destination);
 
-return;
+    return;
 
 }
 

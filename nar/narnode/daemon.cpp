@@ -40,7 +40,7 @@ void handle_cli_ipc(int sockfd, nar::Global* globals) {
         nar::task::LS task(doc["dir"].GetString());
         task.run(sockfd, globals);
     } else if(action == std::string("pull")) { //todo
-        nar::task::PullFile task(doc["file"].GetString());
+        nar::task::PullFile task(doc["file"].GetString(), doc["cur_dir"].GetString());
         task.run(sockfd, globals);
     } else if(action == std::string("register")) {
         nar::task::Register task(doc["username"].GetString());
