@@ -24,7 +24,7 @@ namespace nar {
                         std::string entityname;
                         unsigned long long int entitysize;
                         bool type; // true for DIR, false for FILE
-                    };                    
+                    };
                     Response(int statcode, std::vector<struct DirListElement>& e) : ResponseHeader(statcode, std::string("get_dir_info")), elements(e) {}
                     Response(int statcode) : ResponseHeader(statcode, std::string("get_dir_info")) {}
                     std::vector<struct DirListElement>& get_elements();
