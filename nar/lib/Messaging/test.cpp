@@ -1,5 +1,6 @@
 #include "MessageTypes/DirInfo.h"
 #include "MessageTypes/FilePushRequest.h"
+#include "MessageTypes/KeepAlive.h"
 #include <iostream>
 int main() {
     /* DIRINFO TEST START */
@@ -34,7 +35,20 @@ int main() {
         std::cout << elesfile[i].peerid << " " << elesfile[i].chunkid << " " << elesfile[i].token << std::endl;
     }
     std::cout << "FILEPUSHREQUEST TEST END" << std::endl << std::endl;
-    
+
+
+    /* KEEPALIVE TEST START*/
+    std::cout << "KEEPALIVE TEST START" << std::endl;
+    nar::messagetypes::KeepAlive::Request req4;
+    std::cout << req4.get_action() << std::endl;
+
+    nar::messagetypes::KeepAlive::Response resp4(200);
+    std::cout << resp4.get_statuscode() << std::endl;
+    std::cout << resp4.get_replyto() << std::endl;
+    std::cout << "KEEPALIVE TEST END" << std::endl;
+    /* KEEPALIVE TEST END */
+
+
 
     return 0;
 }
