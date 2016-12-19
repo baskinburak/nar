@@ -1,10 +1,8 @@
-<<<<<<< HEAD
 #include "MessageTypes/DirInfo.h"
 #include "MessageTypes/FilePushRequest.h"
 #include "MessageTypes/Register.h"
-=======
 #include "MessageTypes/Handshake.h"
->>>>>>> origin/utku
+#include "MessageTypes/KeepAlive.h"
 #include <iostream>
 using namespace nar::messagetypes;
 int main() {
@@ -60,6 +58,21 @@ int main() {
 	std::cout << resp5.get_statuscode() << " " << resp5.get_replyto() << std::endl;
     	std::cout << "HANDSHAKE TEST END" << std::endl;
     /* HANDSHAKE TEST END */
+
+
+
+
+    /* KEEPALIVE TEST START*/
+    std::cout << "KEEPALIVE TEST START" << std::endl;
+    KeepAlive::Request req4;
+    std::cout << req4.get_action() << std::endl;
+
+    KeepAlive::Response resp4(200);
+    std::cout << resp4.get_statuscode() << std::endl;
+    std::cout << resp4.get_replyto() << std::endl;
+    std::cout << "KEEPALIVE TEST END" << std::endl;
+    /* KEEPALIVE TEST END */
+
 
 
     return 0;
