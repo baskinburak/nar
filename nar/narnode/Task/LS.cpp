@@ -12,7 +12,7 @@ REQ
 {
     "header": {
         "channel":"ps"
-        "action":"get_user_dir_info"
+        "action":"dir_info"
     },
     "payload": {
         "user_name": name,
@@ -26,7 +26,7 @@ RES
     "header":
         {
             "channel":"sp",
-            "reply-to":"get_user_dir_info"
+            "reply-to":"dir_info"
         },
         "payload":{
             "dir_list":{
@@ -98,7 +98,7 @@ void nar::task::LS::getResJson(nlohmann::json &js,nar::Socket* con_socket){
 
 
 void nar::task::LS::createReqJson(nlohmann::json &js,std::string & user_name){
-    js["header"] = { {"channel", "ps"}, {"action", "get_user_dir_info"} };
+    js["header"] = { {"channel", "ps"}, {"action", "dir_info"} };
     js["payload"] = { {"user_name", user_name}, {"dir_name", _dir} };
 }
 

@@ -410,7 +410,7 @@ namespace nar {
         bool get_user_dir_info(nar::SockInfo* inf, json& jsn) {
             json resp;
             resp["header"]["channel"] = "sp";
-            resp["header"]["reply-to"] = "get_user_dir_info";
+            resp["header"]["reply-to"] = "dir_info";
             if(inf->isAuthenticated()) {
                 std::string user_name = inf->getAuthenticationHash();
                 std::string dir_name =  jsn["payload"]["dir_name"].get<std::string>();
@@ -522,7 +522,7 @@ void handle_connection(nar::Socket* skt) {
             nar::action::file_pull_request(inf, jsn);
         } else if(jsn["header"]["action"] == "register") {
             nar::action::register_user(inf, jsn);
-        } else if(jsn["header"]["action"] == "get_user_dir_info") {
+        } else if(jsn["header"]["action"] == "dir_info") {
             std::cout<<"<ls"<<std::endl;
             nar::action::get_user_dir_info(inf, jsn);
             std::cout<<"ls>"<<std::endl;
