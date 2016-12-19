@@ -148,19 +148,23 @@ namespace nar {
             //nar::User user = ::db.getUser(nar::globals->get_username());
 
         }
-        std::vector<long long int> findPosUsers(std::string& file_name,std::string& dir_name,std::string& uname,long long int & f_id){
+        long long int findFileId(std::string& file_name,std::string& dir_name,std::string& uname){// returns -1 in any case of problem
+            long long int file_id = -1;
             nar::Directory dir = ::db.findDirectoryId(uname,dir_name);
-            std::cout<<"dir id "<<dir.dir_id<<std::endl;
-            std::vector<nar::File> files = ::db.getDirectoryFile(dir.dir_id);
-            std::cout<<"files size "<<files.size()<<std::endl;
-            long long int file_id;
-            for(int i= 0;i<files.size();i++){
-                if(files[i].file_name.compare(file_name)== 0){
-                    file_id = files[i].file_id;
+            if(dir.id == -1){
+                std::cout<<"No such User directory pair"<<std::endl;
+            } else{
+                std::vector<nar::File> files = ::db.getDirectoryFile(dir.dir_id);
+                for(int i= 0;i<files.size();i++){
+                    if(files[i].file_name.compare(file_name)== 0){
+                        file_id = files[i].file_id;
+                    }
                 }
             }
-            f_id = file_id;
-            std::cout<<"f_id "<<f_id<<std::endl;
+            return file_id;
+
+        }
+        std::vector<long long int> findPosUsers(long long int  f_id){
             std::vector<nar::User> users = ::db.getUserFromFile(file_id);
             std::vector<long long int> output;
             for(int i= 0;i<users.size();i++){
@@ -269,176 +273,93 @@ namespace nar {
             resp["header"]["reply-to"] = "file_pull_request";
             std::string file_name = jsn["payload"]["file_name"];
             std::string dir = jsn["payload"]["directory"];
+            std::string user_name = inf->getAuthenticationHash();
+            long long int file_id = findFileId(file_name,dir,user_name);
 
             if(inf->isAuthenticated())   {
-                if(keepalives.size() == 0) {
+                if(keepalives.size() < 2) {
                     resp["header"]["status-code"] = 301; // no valid peer
-                } else {
-                    long long int file_id;
-                    std::string user_name = inf->getAuthenticationHash();
-                    std::vector< long long int > pos_user = findPosUsers(file_name,dir,user_name,file_id);
-                    nar::File desf = ::db.getFile(file_id);
-                    auto it = keepalives.begin();
-                    /*int selected_peer = std::rand() % ((int)keepalives.size()-1);
-                    std::advance(it, selected_peer);
-                    std::cout << (*it).first << std::endl;
-
-
-                    for(; (*it).first == inf->getAuthenticationHash() ; it++) {
-
-                        if(std::distance(it, keepalives.end()) == 1)
-                        {
-                            it = keepalives.begin();
-                        }
-                    }
-
-                    std::cout << "c
-nt: " << cnt << std::endl;
-                    std::cout << "keepalivesSize:" << keepalives.size() << std::endl;
-                    */
-
-                    if(1 == keepalives.size()) {
-                        resp["header"]["status-code"] = 301; // no valid peer
-                        std::cout << "Error 301 attim!" << std::endl;
+                } else if(file_id != -1){
+                    std::vector< long long int > pos_user = findPosUsers(file_id);
+                    if(pos_user.size()==0){
+                        resp["header"]["status-code"] = 304 // There is no peer with required file
+                        std::cout<<" There is no user with the required file try push first "<<std::endl;
                     } else {
-                        json peer_msg;
-                        peer_msg["header"]["channel"] = "sp";
-                        peer_msg["header"]["action"] = "wait_chunk_pull_request";
+                            nar::File desf = ::db.getFile(file_id);
+                            auto it = keepalives.begin();
+                            json peer_msg;
+                            peer_msg["header"]["channel"] = "sp";
+                            peer_msg["header"]["action"] = "wait_chunk_pull_request";
 
-                        peer_msg["payload"]["token"] = token;
-                        peer_msg["payload"]["chunk-id"] = std::to_string(file_id);
-                        peer_msg["payload"]["chunk-size"] = desf.file_size;
-                        std::vector< std::map<std::string, nar::SockInfo*>::iterator > send_peers;
-                        for(int i=0;i<pos_user.size();i++){
-                            nar::User temp_user = ::db.getUser(pos_user[i]);
-                            auto it_temp = keepalives.find(temp_user.user_name);
-                            send_peers.push_back(it_temp);
-                        //    nar::SockInfo * temp_sock = (*it_temp).second;
-                            std::string temp_peer_str(peer_msg.dump());
-                            send_message(*((*it_temp).second->getSck()), temp_peer_str);
-                            std::string temp_str_come = get_message(*((*it_temp).second->getSck()) );
-                        }
-
-
-                        /*peer_msg["header"]["channel"] = "sp";
-                        peer_msg["header"]["action"] = "wait_chunk_pull_request";
-
-                        peer_msg["payload"]["file-id"] = file_id;
-                        peer_msg["payload"]["peer-list"] = json::array();
-                        for(int i=0;i<pos_user.size();i++){
-                                json per_peer;
-                                per_peer["peer_id"] = pos_user[i];
-                                per_peer["chunk_size"] = desf.file_size;
-                                per_peer["chunk_id"] = std::to_string(file_id);
-                                per_peer["token"] = token;
-                                peer_msg[i] = per_peer;
-
-
-                        }*/
-
-                        //nar::SockInfo* peer_sock = (*it).second;
-                        //std::string peer_str(peer_msg.dump());
-                        //peer_str = std::to_string((int)peer_str.size()) + std::string(" ") + peer_str;
-                        std::cout << "amk4" << std::endl;
-
-                        //(peer_sock->getSck())->send((char*) peer_str.c_str(), (int)peer_str.size());
-                        //send_message(*(peer_sock->getSck()), peer_str);
-
-                        std::cout << "amk5" << std::endl;
-
-                        std::cout << "gogogo" << std::endl;
-                        //while(1);
-
-                        //std::string peer_ip = (peer_sock->getSck())->get_dest_ip();
-
-                        std::cout << "amk6" << std::endl;
-                        json real_peer;
-                        real_peer["header"]["channel"] = "sp";
-                        real_peer["header"]["status-code"] = 200;
-                        real_peer["header"]["action"] = "file_pull_request";
-
-                        real_peer["payload"]["file-id"] = file_id;
-                        real_peer["payload"]["peer-list"] = json::array();
-                        real_peer["payload"]["chunk-size"] = desf.file_size;
-                        std::cout << "pls7" << std::endl;
-                        for(int i=0;i<pos_user.size();i++){
-                                json per_peer;
-                                nar::User temp_us = ::db.getUser(pos_user[i]);
-                                per_peer["peer_id"] = temp_us.user_name;
-                                per_peer["chunk_id"] = std::to_string(file_id);
-                                per_peer["token"] = token;
-                                real_peer["payload"]["peer-list"][i] = per_peer;
-
-
-                        }
-std::cout << "pls8" << std::endl;
-                        /*json jreq;
-                        jreq["header"]["channel"] = "sp";
-                        jreq["header"]["status-code"] = 200;
-                        jreq["header"]["reply-to"] = "file_pull_request";
-                        jreq["payload"]["chunk-size"] = desf.file_size;
-
-                        json tmp;
-                        /*std::map<std::string, nar::SockInfo*>::iterator it2 = keepalives.begin();
-                        for(;it2 != keepalives.end() ; it2++){
-                            if(it2->first != inf -> getAuthenticationHash())
-                            {
-                                break;
+                            peer_msg["payload"]["token"] = token;
+                            peer_msg["payload"]["chunk-id"] = std::to_string(file_id);
+                            peer_msg["payload"]["chunk-size"] = desf.file_size;
+                            std::vector< std::map<std::string, nar::SockInfo*>::iterator > send_peers;
+                            for(int i=0;i<pos_user.size();i++){
+                                nar::User temp_user = ::db.getUser(pos_user[i]);
+                                auto it_temp = keepalives.find(temp_user.user_name);
+                                send_peers.push_back(it_temp);
+                                std::string temp_peer_str(peer_msg.dump());
+                                send_message(*((*it_temp).second->getSck()), temp_peer_str);
+                                std::string temp_str_come = get_message(*((*it_temp).second->getSck()) );
                             }
-                        }*/
 
-                    /*    tmp["peer_id"] = (it->first);
-                        tmp["chunk_id"] = std::to_string(desf.file_id);
-                        tmp["token"] = token;
 
-                        jreq["payload"]["peer-list"] = { tmp };
-*////////////////////////////////////////////////////////////////////////////////////CHHHHHHHHHHHHHHHHHHHHHHHHAAAAAAAAAAAANNNNNNNNNNNNGGGGGGGGGGGEEEEEEEEEEEEEEEe
-                        send_message(*(inf -> getSck()), real_peer.dump());
 
-                        std::string strcome = get_message(*(inf -> getSck()));
-                        std::cout << "str: " << strcome << std::endl;
+                            json real_peer;
+                            real_peer["header"]["channel"] = "sp";
+                            real_peer["header"]["status-code"] = 200;
+                            real_peer["header"]["action"] = "file_pull_request";
 
-                        json jreq2 = json::parse(strcome);
-                        std::string peerId = jreq2["payload"]["peer-id"];
-                        jreq2.clear();
-                        jreq2["header"]["channel"] = "sp";
-                        jreq2["header"]["action"] = "peer_port_request_pull";
-                        jreq2["payload"]["token"] = token;
-                        for(int i= 0;i<send_peers.size();i++){
-                            if(send_peers[i]->first.compare(peerId) == 0){
-                                std::string temp_jreq(jreq2.dump());
-                                send_message(*((*send_peers[i]).second->getSck()), temp_jreq);
-                                std::string temp_str_come = get_message(*((*send_peers[i]).second->getSck()) );
-                                json temp_json = json::parse(temp_str_come);
-                                int peerPort = temp_json["payload"]["port"];
-                                std::string peer_ip = ((*send_peers[i]).second->getSck())->get_dest_ip();
-                                json bull;
-                                bull["header"]["channel"] = "sp";
-                                bull["header"]["status-code"] = 200;
-                                bull["header"]["reply-to"] = "peer_connection_request";
-                                bull["payload"]["peer-ip"] = peer_ip;
-                                bull["payload"]["peer-port"] = peerPort;
-                                bull["payload"]["peer-id"] = send_peers[i]->first;
-                                send_message(*(inf->getSck()),bull.dump());
+                            real_peer["payload"]["file-id"] = file_id;
+                            real_peer["payload"]["peer-list"] = json::array();
+                            real_peer["payload"]["chunk-size"] = desf.file_size;
+                            std::cout << "pls7" << std::endl;
+                            for(int i=0;i<pos_user.size();i++){
+                                    json per_peer;
+                                    nar::User temp_us = ::db.getUser(pos_user[i]);
+                                    per_peer["peer_id"] = temp_us.user_name;
+                                    per_peer["chunk_id"] = std::to_string(file_id);
+                                    per_peer["token"] = token;
+                                    real_peer["payload"]["peer-list"][i] = per_peer;
+
+
                             }
-                        }
 
-                        //send_message(*(peer_sock->getSck()), jreq2.dump());
+            //////////////////////////////////////////////////////////////////////////////////////CHHHHHHHHHHHHHHHHHHHHHHHHAAAAAAAAAAAANNNNNNNNNNNNGGGGGGGGGGGEEEEEEEEEEEEEEEe
+                            send_message(*(inf -> getSck()), real_peer.dump());
 
-                        //std::string strcome2 = get_message(*(peer_sock->getSck()));
-                    /*    jreq.clear();
-                        jreq = json::parse(strcome2);
+                            std::string strcome = get_message(*(inf -> getSck()));
+                            std::cout << "str: " << strcome << std::endl;
 
-                        //int peerPort = jreq["payload"]["port"];
-                        jreq.clear();
+                            json jreq2 = json::parse(strcome);
+                            std::string peerId = jreq2["payload"]["peer-id"];
+                            jreq2.clear();
+                            jreq2["header"]["channel"] = "sp";
+                            jreq2["header"]["action"] = "peer_port_request_pull";
+                            jreq2["payload"]["token"] = token;
+                            for(int i= 0;i<send_peers.size();i++){
+                                if(send_peers[i]->first.compare(peerId) == 0){
+                                    std::string temp_jreq(jreq2.dump());
+                                    send_message(*((*send_peers[i]).second->getSck()), temp_jreq);
+                                    std::string temp_str_come = get_message(*((*send_peers[i]).second->getSck()) );
+                                    json temp_json = json::parse(temp_str_come);
+                                    int peerPort = temp_json["payload"]["port"];
+                                    std::string peer_ip = ((*send_peers[i]).second->getSck())->get_dest_ip();
+                                    json bull;
+                                    bull["header"]["channel"] = "sp";
+                                    bull["header"]["status-code"] = 200;
+                                    bull["header"]["reply-to"] = "peer_connection_request";
+                                    bull["payload"]["peer-ip"] = peer_ip;
+                                    bull["payload"]["peer-port"] = peerPort;
+                                    bull["payload"]["peer-id"] = send_peers[i]->first;
+                                    send_message(*(inf->getSck()),bull.dump());
+                                }
+                            }
 
-                        std::string filename = jsn["payload"]["file-name"];
-                        unsigned long filesize = jsn["payload"]["file-size"];
-                        std::string directory = jsn["payload"]["directory"];
-                        std::cout << filename << std::endl;
-                        std::cout << filesize << std::endl;
-                        std::cout << directory << std::endl << std::endl;*/
                     }
+                } else {
+                    resp["header"]["status-code"] = 303;
                 }
 
             } else {
