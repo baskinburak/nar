@@ -1,14 +1,14 @@
-#include "MessageTypes/DirInfo.h"
-#include "MessageTypes/FilePushRequest.h"
+#include "MessageTypes/Handshake.h"
 #include <iostream>
+using namespace nar::messagetypes;
 int main() {
     /* DIRINFO TEST START */
-    std::cout << "DIRINFO TEST START" << std::endl;
-    nar::messagetypes::DirInfo::Request req("dirasdasd");
+   /* std::cout << "DIRINFO TEST START" << std::endl;
+    DirInfo::Request req("dirasdasd");
     std::cout << req.get_action() << std::endl << req.get_dir() << std::endl;
 
 
-    nar::messagetypes::DirInfo::Response resp(200);
+    DirInfo::Response resp(200);
     resp.add_element(std::string("a"), std::string("b"), std::string("c"), 1, false);
 
     std::vector<nar::messagetypes::DirInfo::Response::DirListElement>& eles = resp.get_elements();
@@ -20,7 +20,7 @@ int main() {
     /* DIRINFO TEST END */
 
 
-    /* FILEPUSHREQEUST TEST START*/
+    /* FILEPUSHREQEUST TEST START
     std::cout << "FILEPUSHREQEUST TEST START" << std::endl;
     nar::messagetypes::FilePushRequest::Request reqfile(std::string("yark"), std::string("/"), 12314123);
     std::cout << reqfile.get_action() << " " << reqfile.get_filename() << " " << reqfile.get_dir() << " " << reqfile.get_filesize() << std::endl;
@@ -33,8 +33,15 @@ int main() {
     for(int i=0; i<elesfile.size(); i++) {
         std::cout << elesfile[i].peerid << " " << elesfile[i].chunkid << " " << elesfile[i].token << std::endl;
     }
-    std::cout << "FILEPUSHREQUEST TEST END" << std::endl << std::endl;
+    std::cout << "FILEPUSHREQUEST TEST END" << std::endl << std::endl;*/
     
+	std::cout << "HANDSHAKE TEST START" << std::endl;
+	Handshake::Request req5("userNAME");
+	std::cout << req5.get_username() << std::endl;
+
+
+	Handshake::Response resp5(300);
+	std::cout << resp5.get_statuscode() << " " << resp5.get_replyto() << std::endl;
 
     return 0;
 }
