@@ -3,6 +3,10 @@
 #include "MessageTypes/Register.h"
 #include "MessageTypes/Handshake.h"
 #include "MessageTypes/KeepAlive.h"
+#include "MessageTypes/PeerPortPushRequest.h"
+#include "MessageTypes/InfoChunkPush.h"
+#include "MessageTypes/InfoChunkPull.h"
+#include "MessageTypes/ChunkReceiveRequest.h"
 #include <iostream>
 using namespace nar::messagetypes;
 int main() {
@@ -72,6 +76,59 @@ int main() {
     std::cout << resp4.get_replyto() << std::endl;
     std::cout << "KEEPALIVE TEST END" << std::endl;
     /* KEEPALIVE TEST END */
+
+
+	/*PUSHFILE TESTS START */
+    std::cout << "PUSHFILE TEST START" << std::endl;
+	// 7-8
+    std::cout << "7-8 TEST START" << std::endl;
+	PeerPortPushRequest::Request reqpush7("tokenasdasd123");
+	std::cout << reqpush7.get_token() << " " << reqpush7.get_action() << std::endl;
+
+	PeerPortPushRequest::Response resppush8(350,65554);
+    std::cout << resppush8.get_port() << std::endl;
+    std::cout << resppush8.get_statuscode() << std::endl;
+    std::cout << resppush8.get_replyto() << std::endl;
+    std::cout << "7-8 TEST END" << std::endl;
+
+    std::cout << "14-15 TEST START" << std::endl;
+	InfoChunkPush::Request reqpush14(1112323423, false);
+	std::cout << reqpush14.get_chunkId() << " " << reqpush14.get_success() << " "<< reqpush14.get_action() << std::endl;
+
+	InfoChunkPush::Response resppush15(888);
+    std::cout << resppush15.get_statuscode() << std::endl;
+    std::cout << resppush15.get_replyto() << std::endl;
+    std::cout << "14-15 TEST END" << std::endl;
+
+
+    std::cout << "PUSHFILE TEST END" << std::endl;
+	/*PUSHFILE TESTS END */
+
+	/*PULLFILE TESTS START */
+    std::cout << "PULLFILE TEST START" << std::endl;
+	// 7-8
+    std::cout << "10-11 TEST START" << std::endl;
+	ChunkReceiveRequest::Request reqpull10("tokenasdasd123", 123123123, 2000);
+	std::cout << reqpull10.get_token() << " " << reqpull10.get_chunkId() << " " << reqpull10.get_chunkSize() << std::endl;
+
+	ChunkReceiveRequest::Response resppull11(350);
+    std::cout << resppull11.get_statuscode() << std::endl;
+    std::cout << resppull11.get_replyto() << std::endl;
+    std::cout << "10-11 TEST END" << std::endl;
+
+    std::cout << "15-16 TEST START" << std::endl;
+	InfoChunkPull::Request reqpull15(1112323423, true);
+	std::cout << reqpull15.get_chunkId() << " " << reqpull15.get_success() << " "<< reqpull15.get_action() << std::endl;
+
+	InfoChunkPull::Response resppull16(888);
+    std::cout << resppull16.get_statuscode() << std::endl;
+    std::cout << resppull16.get_replyto() << std::endl;
+    std::cout << "15-16 TEST END" << std::endl;
+
+
+    std::cout << "PULLFILE TEST END" << std::endl;
+	/*PULLFILE TESTS END */
+
 
 
 
