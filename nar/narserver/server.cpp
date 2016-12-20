@@ -130,10 +130,13 @@ namespace nar {
             nar::File fi;
             fi.file_name = fName;
             fi.file_size = fSize;
-
+            long long int f_id = ::db.getNextFileId()
+            if(f_id == -1) {
+                f_id = 1;
+            }
 
             ::db.insertFile(fi);
-            long long int f_id = ::db.getNextFileId()-1;
+
             nar::Directory dir = ::db.findDirectoryId(uname,fDir);
             nar::DirectoryTo dt;
             dt.dir_id = dir.dir_id;
@@ -238,16 +241,6 @@ namespace nar {
 
                         getPeerPort(inf,token);
 
-                        /*
-
-                        resp["header"]["status-code"] = 200;
-                        std::string filename = jsn["payload"]["file-name"];
-                        unsigned long filesize = jsn["payload"]["file-size"];
-                        std::string directory = jsn["payload"]["directory"];
-                        std::cout << filename << std::endl;
-                        std::cout << filesize << std::endl;
-                        std::cout << directory << std::endl << std::endl;*/
-
 
 
                     }
@@ -314,7 +307,6 @@ namespace nar {
                             real_peer["payload"]["file-id"] = file_id;
                             real_peer["payload"]["peer-list"] = json::array();
                             real_peer["payload"]["chunk-size"] = desf.file_size;
-                            std::cout << "pls7" << std::endl;
                             for(int i=0;i<pos_user.size();i++){
                                     json per_peer;
                                     nar::User temp_us = ::db.getUser(pos_user[i]);

@@ -3,6 +3,10 @@
 #include "MessageTypes/Register.h"
 #include "MessageTypes/Handshake.h"
 #include "MessageTypes/KeepAlive.h"
+#include "MessageTypes/WaitChunkPushRequest.h"
+#include "MessageTypes/ChunkSendRequest.h"
+#include "MessageTypes/PeerPortRequest.h"
+#include "MessageTypes/WaitChunkPullRequest.h"
 #include <iostream>
 using namespace nar::messagetypes;
 int main() {
@@ -70,10 +74,52 @@ int main() {
     KeepAlive::Response resp4(200);
     std::cout << resp4.get_statuscode() << std::endl;
     std::cout << resp4.get_replyto() << std::endl;
-    std::cout << "KEEPALIVE TEST END" << std::endl;
+    std::cout << "KEEPALIVE TEST END" << std::endl<<std::endl;
     /* KEEPALIVE TEST END */
 
 
+    /* WAITCHUNKPUSHREQUEST TEST START */
+    std::cout<<"WAITCHUNKPUSHREQUEST TEST START "<<std::endl;
+    WaitChunkPushRequest::Request push3(std::string("token"),3,100);
+    std::cout<<"type "<<push3.get_action()<<" token "<<push3.get_token()<<" chunk_id "<<push3.get_chunk_id()<<" chunk_size "<<push3.get_chunk_size()<<std::endl;
+
+    WaitChunkPushRequest::Response push4(200);
+    std::cout<<"type "<<push4.get_replyto()<<" statuscode "<<push4.get_statuscode()<<std::endl;
+    std::cout<<"WAITCHUNKPUSHREQUEST TEST END "<<std::endl<<std::endl;
+    /* WAITCHUNKPUSHREQUEST TEST END */
+
+
+    /* CHUNKSENDREQUEST TEST START */
+    std::cout<<"CHUNKSENDREQUEST TEST START "<<std::endl;
+    ChunkSendRequest::Request push10(std::string("token"),3,100);
+    std::cout<<"type "<<push10.get_action()<<" token "<<push10.get_token()<<" chunk_id "<<push10.get_chunk_id()<<" chunk_size "<<push10.get_chunk_size()<<std::endl;
+
+    ChunkSendRequest::Response push11(200);
+    std::cout<<"type "<<push11.get_replyto()<<" statuscode "<<push11.get_statuscode()<<std::endl;
+    std::cout<<"CHUNKSENDREQUEST TEST END "<<std::endl<<std::endl;
+    /* CHUNKSENDREQUEST TEST END */
+
+
+    /* PEERPORTREQUEST TEST START */
+    std::cout<<"PEERPORTREQUEST TEST START "<<std::endl;
+    PeerPortRequest::Request pull7;
+    std::cout<<"type "<<pull7.get_action()<<std::endl;
+
+    PeerPortRequest::Response pull8(200,12345);
+    std::cout<<"type "<<pull8.get_replyto()<<" statuscode "<<pull8.get_statuscode()<<" port_number "<<pull8.get_port_number()<<std::endl;
+    std::cout<<"PEERPORTREQUEST TEST END "<<std::endl<<std::endl;
+    /* PEERPORTREQUEST TEST END */
+
+
+    /* WAITCHUNKPULLREQUEST TEST START */
+    std::cout<<"WAITCHUNKPULLREQUEST TEST START "<<std::endl;
+    WaitChunkPullRequest::Request pull3(std::string("token"),3,100);
+    std::cout<<"type "<<pull3.get_action()<<" token "<<pull3.get_token()<<" chunk_id "<<pull3.get_chunk_id()<<" chunk_size "<<pull3.get_chunk_size()<<std::endl;
+
+    WaitChunkPullRequest::Response pull4(200);
+    std::cout<<"type "<<pull4.get_replyto()<<" statuscode "<<pull4.get_statuscode()<<std::endl;
+    std::cout<<"WAITCHUNKPULLREQUEST TEST END "<<std::endl<<std::endl;
+    /* WAITCHUNKPULLREQUEST TEST END */
 
     return 0;
 }
