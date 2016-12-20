@@ -1,6 +1,8 @@
 #include "MessageTypes/DirInfo.h"
 #include "MessageTypes/FilePushRequest.h"
 #include "MessageTypes/KeepAlive.h"
+#include "MessageTypes/PeerConnectionRequest.h"
+#include "MessageTypes/FilePullRequest.h"
 #include <iostream>
 int main() {
     /* DIRINFO TEST START */
@@ -45,9 +47,41 @@ int main() {
     nar::messagetypes::KeepAlive::Response resp4(200);
     std::cout << resp4.get_statuscode() << std::endl;
     std::cout << resp4.get_replyto() << std::endl;
-    std::cout << "KEEPALIVE TEST END" << std::endl;
+    std::cout << "KEEPALIVE TEST END" << std::endl << std::endl;
     /* KEEPALIVE TEST END */
 
+
+    /* PEERCONNECTIONREQUEST TEST START */
+    std::cout << "PEERCONNECTIONREQUEST TEST START" << std::endl;
+    nar::messagetypes::PeerConnectionRequest::Request req55("peerid12345");
+    std::cout << req55.get_action() << std::endl << req55.get_peer_id() << std::endl;
+
+    nar::messagetypes::PeerConnectionRequest::Response resp55(200);
+    resp55.add_element(std::string("peerip127001"), 23456, std::string("peerId123"));
+
+    std::vector<nar::messagetypes::PeerConnectionRequest::Response::PeerListElement>& eles55 = resp55.get_elements();
+    std::cout << resp55.get_statuscode() << " " << resp55.get_replyto() << std::endl;
+    for(int i=0; i<eles55.size(); i++) {
+        std::cout << eles55[i].peer_ip << " " << eles55[i].peer_port << " " << eles55[i].peer_id << std::endl;
+    }
+    std::cout << "PEERCONNECTIONREQUEST TEST END" << std::endl << std::endl;
+    /* PEERCONNECTIONREQUEST TEST END */
+
+
+    /* FILEPULLREQEUST TEST START*/
+    std::cout << "FILEPULLREQEUST TEST START" << std::endl;
+    nar::messagetypes::FilePullRequest::Request reqfile56(std::string("yark"), std::string("/"));
+    std::cout << reqfile56.get_action() << " " << reqfile56.get_filename() << " " << reqfile56.get_dir() << std::endl;
+
+    nar::messagetypes::FilePullRequest::Response respfile56(200, std::string("fileidasdasf"), 1234);
+    respfile56.add_element(std::string("peerid1231"), std::string("chunkid"), std::string("token123124"));
+
+    std::vector<nar::messagetypes::FilePullRequest::Response::PeerListElement>& elesfile56 = respfile56.get_elements();
+    std::cout << respfile56.get_statuscode() << " " << respfile56.get_replyto() << " " << respfile56.get_fileid() << " " << respfile56.get_chunksize() << std::endl;
+    for(int i=0; i<elesfile56.size(); i++) {
+        std::cout << elesfile56[i].peerid << " " << elesfile56[i].chunkid << " " << elesfile56[i].token << std::endl;
+    }
+    std::cout << "FILEPULLREQUEST TEST END" << std::endl << std::endl;
 
 
     return 0;
