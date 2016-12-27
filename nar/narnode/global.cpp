@@ -84,5 +84,3 @@ std::string nar::Global::get_narFolder() {
     read_end();
     return fold;
 }
-
-
