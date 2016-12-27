@@ -1,22 +1,19 @@
-#include "HSocket.h"
 #include <iostream>
-int main() {
-    nar::HSocket sock;
-    sock.sendto(std::string("144.122.238.149"), 54321, "HALLOLENA", 9);
+#include <boost/asio.hpp>
+#include <boost/array.hpp>
+#include <algorithm>
+#include "THSocket.h"
 
-    std::string ip;
-    int port;
-    std::cout << "ip port: ";
-    std::cin >> ip >> port;
-    sock.establish(ip, port);
-	usleep(2000000);
-    int send = 1;
-    //std::cout << "sender(1)/receiver(0): ";
-    //std::cin >> send;
-    if(send)
-        sock.send(std::string("slm kardis"));
+int main(int argc, char* argv[]) {
+    nar::THSocket sck;
+    sck.introduce(argv[1], "localhost", "12345");
+    int a;
+    std::cin >> a;
+    if(argc > 2)
+        sck.establish(argv[2]);
     else {
-        std::string res = sock.recv(100);
-        std::cout << res << std::endl;
+        sck.wait();
     }
+    //sck.establish(std::string("necmi"), std::string("baskin"), std::string("localhost"), std::string("12345"));
+    return 0;
 }
