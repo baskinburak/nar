@@ -18,7 +18,7 @@ namespace nar {
                 private:
                     int port_number;
                 public:
-                    Response(int statcode,int pnum) : ResponseHeader(statcode, std::string("register")),port_number(pnum) {}
+                    Response(int statcode,int pnum) : ResponseHeader(statcode, std::string("peer_port_request")),port_number(pnum) {}
                     int get_port_number();
             };
         }

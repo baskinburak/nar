@@ -7,10 +7,11 @@
 #include "MessageTypes/ChunkSendRequest.h"
 #include "MessageTypes/PeerPortRequest.h"
 #include "MessageTypes/WaitChunkPullRequest.h"
+#include "MessageTypes/MessageRS.h"
 #include <iostream>
-using namespace nar::messagetypes;
+using namespace nar;
 int main() {
-    /* DIRINFO TEST START */
+    /* DIRINFO TEST START *//*
     std::cout << "DIRINFO TEST START" << std::endl;
     DirInfo::Request req1("dirasdasd");
     std::cout << req1.get_action() << std::endl << req1.get_dir() << std::endl;
@@ -26,7 +27,7 @@ int main() {
     /* DIRINFO TEST END */
 
 
-    /* FILEPUSHREQEUST TEST START */
+    /* FILEPUSHREQEUST TEST START *//*
     std::cout << "FILEPUSHREQEUST TEST START" << std::endl;
     FilePushRequest::Request req2(std::string("yark"), std::string("/"), 12314123);
     std::cout << req2.get_action() << " " << req2.get_filename() << " " << req2.get_dir() << " " << req2.get_filesize() << std::endl;
@@ -42,7 +43,7 @@ int main() {
     std::cout << "FILEPUSHREQUEST TEST END" << std::endl << std::endl;
     /* FILEPUSHREQEUST TEST START */
 
-    /* REGISTER TEST  */
+    /* REGISTER TEST  *//*
     std::cout<< "REGISTER TEST START "<<std::endl;
     Register::Request req3(std::string("insan"),std::string("aaaaaaaaaaaaaaaaaaaaabbbbbbbbbcccccccccccc"));
     std::cout<<"type "<<req3.get_action()<<" username "<<req3.get_username()<< " aes "<<req3.get_aes()<<std::endl;
@@ -52,7 +53,7 @@ int main() {
     std::cout<< "REGISTER TEST END "<<std::endl<<std::endl;
     /* REGISTER TEST END */
 
-    /* HANDSHAKE TEST START */
+    /* HANDSHAKE TEST START *//*
 	std::cout << "HANDSHAKE TEST START" << std::endl;
 	Handshake::Request req5("userNAME");
 	std::cout << req5.get_username() << std::endl;
@@ -66,7 +67,7 @@ int main() {
 
 
 
-    /* KEEPALIVE TEST START*/
+    /* KEEPALIVE TEST START*//*
     std::cout << "KEEPALIVE TEST START" << std::endl;
     KeepAlive::Request req4;
     std::cout << req4.get_action() << std::endl;
@@ -78,7 +79,7 @@ int main() {
     /* KEEPALIVE TEST END */
 
 
-    /* WAITCHUNKPUSHREQUEST TEST START */
+    /* WAITCHUNKPUSHREQUEST TEST START *//*
     std::cout<<"WAITCHUNKPUSHREQUEST TEST START "<<std::endl;
     WaitChunkPushRequest::Request push3(std::string("token"),3,100);
     std::cout<<"type "<<push3.get_action()<<" token "<<push3.get_token()<<" chunk_id "<<push3.get_chunk_id()<<" chunk_size "<<push3.get_chunk_size()<<std::endl;
@@ -89,7 +90,7 @@ int main() {
     /* WAITCHUNKPUSHREQUEST TEST END */
 
 
-    /* CHUNKSENDREQUEST TEST START */
+    /* CHUNKSENDREQUEST TEST START *//*
     std::cout<<"CHUNKSENDREQUEST TEST START "<<std::endl;
     ChunkSendRequest::Request push10(std::string("token"),3,100);
     std::cout<<"type "<<push10.get_action()<<" token "<<push10.get_token()<<" chunk_id "<<push10.get_chunk_id()<<" chunk_size "<<push10.get_chunk_size()<<std::endl;
@@ -100,7 +101,7 @@ int main() {
     /* CHUNKSENDREQUEST TEST END */
 
 
-    /* PEERPORTREQUEST TEST START */
+    /* PEERPORTREQUEST TEST START *//*
     std::cout<<"PEERPORTREQUEST TEST START "<<std::endl;
     PeerPortRequest::Request pull7;
     std::cout<<"type "<<pull7.get_action()<<std::endl;
@@ -111,7 +112,7 @@ int main() {
     /* PEERPORTREQUEST TEST END */
 
 
-    /* WAITCHUNKPULLREQUEST TEST START */
+    /* WAITCHUNKPULLREQUEST TEST START *//*
     std::cout<<"WAITCHUNKPULLREQUEST TEST START "<<std::endl;
     WaitChunkPullRequest::Request pull3(std::string("token"),3,100);
     std::cout<<"type "<<pull3.get_action()<<" token "<<pull3.get_token()<<" chunk_id "<<pull3.get_chunk_id()<<" chunk_size "<<pull3.get_chunk_size()<<std::endl;
@@ -120,6 +121,98 @@ int main() {
     std::cout<<"type "<<pull4.get_replyto()<<" statuscode "<<pull4.get_statuscode()<<std::endl;
     std::cout<<"WAITCHUNKPULLREQUEST TEST END "<<std::endl<<std::endl;
     /* WAITCHUNKPULLREQUEST TEST END */
+
+
+
+
+    /* MESSAGERS SEND TEST START*/
+    std::vector<MessObject> rsTest;
+
+
+    MessObject head;
+    MessObject pay;
+    MessElement ele1;
+    MessElement ele2;
+    MessElement ele3;
+    MessElement ele4;
+
+
+    MessObject obj1;
+    MessObject obj2;
+
+
+    std::vector<MessObject> mtObject;
+
+
+
+    std::vector<::MessElement> objEle;
+
+
+
+
+    ele1.name = std::string("action");
+    ele1.type = (MessTypes)2;
+    std::string a =std::string("dir_info");
+    ele1.var = &a;
+
+
+
+    ele2.name = std::string("peer_id");
+    ele2.type = (MessTypes)0;
+    int b = 12345;
+    ele2.var = &b;
+
+    std::vector<::MessElement>  c;
+    c.push_back(ele1);
+    c.push_back(ele2);
+
+    ele3.name = std::string("eleArr");
+    ele3.type = (MessTypes)3;
+    ele3.var = &c;
+    std::cout << (*(std::vector<MessElement> *)ele3.var).size() << std::endl;
+
+
+    objEle.push_back(ele1);
+    objEle.push_back(ele2);
+
+    obj1.name = std::string("obj1 name");
+    obj1.var = objEle;
+    obj1.size = 2;
+
+
+    obj2.name = std::string("obj2 name");
+    obj2.var = objEle;
+    obj2.size = 2;
+
+
+    mtObject.push_back(obj1);
+    mtObject.push_back(obj2);
+
+    ele4.name = std::string("objArr");
+    ele4.type = (MessTypes)4;
+    ele4.var = &mtObject;
+
+
+
+    head.name = std::string("header");
+    head.size = 1;
+    head.var.push_back(ele1);
+
+
+
+    pay.name = std::string("payload");
+    pay.size = 3;
+    pay.var.push_back(ele2);
+    pay.var.push_back(ele3);
+    pay.var.push_back(ele4);
+
+
+
+    rsTest.push_back(head);
+    rsTest.push_back(pay);
+    ::sendMessage(rsTest);
+
+    /* MESSAGERS SEND TEST END*/
 
     return 0;
 }

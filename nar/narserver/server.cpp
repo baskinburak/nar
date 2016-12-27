@@ -130,7 +130,7 @@ namespace nar {
             nar::File fi;
             fi.file_name = fName;
             fi.file_size = fSize;
-            long long int f_id = ::db.getNextFileId()
+            long long int f_id = ::db.getNextFileId();
             if(f_id == -1) {
                 f_id = 1;
             }
@@ -154,7 +154,7 @@ namespace nar {
         long long int findFileId(std::string& file_name,std::string& dir_name,std::string& uname){// returns -1 in any case of problem
             long long int file_id = -1;
             nar::Directory dir = ::db.findDirectoryId(uname,dir_name);
-            if(dir.id == -1){
+            if(dir.dir_id == -1){
                 std::cout<<"No such User directory pair"<<std::endl;
             } else{
                 std::vector<nar::File> files = ::db.getDirectoryFile(dir.dir_id);
@@ -168,7 +168,7 @@ namespace nar {
 
         }
         std::vector<long long int> findPosUsers(long long int  f_id){
-            std::vector<nar::User> users = ::db.getUserFromFile(file_id);
+            std::vector<nar::User> users = ::db.getUserFromFile(f_id);
             std::vector<long long int> output;
             for(int i= 0;i<users.size();i++){
                 auto it = keepalives.find(users[i].user_name);
@@ -275,7 +275,7 @@ namespace nar {
                 } else if(file_id != -1){
                     std::vector< long long int > pos_user = findPosUsers(file_id);
                     if(pos_user.size()==0){
-                        resp["header"]["status-code"] = 304 // There is no peer with required file
+                        resp["header"]["status-code"] = 304 ;// There is no peer with required file
                         std::cout<<" There is no user with the required file try push first "<<std::endl;
                     } else {
                             nar::File desf = ::db.getFile(file_id);
