@@ -1,6 +1,7 @@
 #ifndef NAR_MESS_ChunkReceiveRequest_H
 #define NAR_MESS_ChunkReceiveRequest_H
 #include <string>
+#include <nar/lib/Socket/Socket.h>
 #include "RequestHeader.h"
 #include "ResponseHeader.h"
 namespace nar {
@@ -16,12 +17,14 @@ namespace nar {
 																																		 chunkId(_chunkId), chunkSize(_chunkSize) {}
                     long long int get_chunkId();
 					std::string get_token();
-					unsigned long get_chunkSize();
+					unsigned long get_chunkSize();					
+					void recvMessage(Socket &sck);
             };
 
             class Response : public ResponseHeader {
                 public:
-                    Response(int statcode): ResponseHeader(statcode, std::string("chunk_receive_request"))  {}
+                    Response(int statcode): ResponseHeader(statcode, std::string("chunk_receive_request"))  {}					
+					//void recvMessage(Socket &sck);
             };
         }
     }

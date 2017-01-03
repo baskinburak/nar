@@ -10,7 +10,7 @@
 #include "MessageRS.h"
 #include <iostream>
 
-using namespace nar;
+using namespace nar::messagetypes;
 
 void recvTest0() {
 
@@ -155,12 +155,76 @@ void recvTest2() {
 	std::cout  << "HELLOOOOO HOW ARE YOU" << std::endl;
 	//std::cout << *((long long int *) dId2.var) << std::endl;
 	std::cout << *( (long long int *) ((MessObject *) ((MessObject *) ( ( (MessObject *)(ev[0].var) )->var[0].var) ) ->var[0].var )->var[0].var)   << " val " <<  std::endl;//*(( int *) ( ( (MessObject *)(io[0].var) )->var[0].var ))  << std::endl;
+
+	
+}
+
+void recvTest3() {
+	
+	std::vector<MessElement> ev;
+	MessElement payloadE2;
+	MessObject payload2;
+	payload2.size = 1;
+
+	MessElement dirL;
+	dirL.name = std::string("peer_list");
+	dirL.type = (MessTypes) 4;
+	MessElementArr dirLO;
+
+		MessObject dir0O;
+		dir0O.size = 2;
+	
+		MessElement dId;
+		dId.type = (MessTypes)2;
+		dId.name = std::string("peer_id");
+		MessElement dirName;
+		dirName.type = (MessTypes)1;
+		dirName.name = std::string("chunk_id");
+		dir0O.var.push_back(dId);
+		dir0O.var.push_back(dirName);
+
+	//dirLO.var.push_back(dir0E);
+	dirLO.vars.push_back( (void *) (&dir0O) );
+
+		MessObject dir0O2;
+		dir0O2.size = 2;
+
+		MessElement dId2;
+		dId2.type = (MessTypes)2;
+		dId2.name = std::string("peer_id");
+		MessElement dirName2;
+		dirName2.type = (MessTypes)1;
+		dirName2.name = std::string("chunk_id");
+		dir0O2.var.push_back(dId2);
+		dir0O2.var.push_back(dirName2);
+	
+	//dirLO.var.push_back(dir0E2);
+	dirLO.vars.push_back( (void *) (&dir0O2) );
+
+	dirL.var = (void *)(&dirLO);
+
+	payload2.var.push_back(dirL);
+	//payload.var.push_back(fileL);
+
+
+	payloadE2.name = std::string("payload");
+	payloadE2.type = (MessTypes)3;
+	payloadE2.var = (void *)(&payload2);
+
+	ev.push_back(payloadE2);
+
+	recvMessage(  ev );
+
+std::cout << *((long long int *) ((MessObject *)  ((MessElementArr *)  ( (MessElement ) ( (MessObject *)(ev[0].var) )->var[0]).var)->vars[1] )->var[1].var)     << " val " <<  std::endl;
+
+//std::cout << *( (std::string *)((MessObject *) ((MessElement *) ((MessElementArr *) ( ( (MessObject *)(ev[0].var) )->var[0].var) ) ->vars[0])->var )->var[0].var)   << " val " <<  std::endl;//*(( int *)
+
 }
 				
 
 int main() {
 
-	recvTest2();
+	recvTest3();
 
     return 0;
 }
