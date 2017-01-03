@@ -18,11 +18,13 @@ namespace nar {
                     std::string& get_token();
                     long long int  get_chunk_id();
                     long long int  get_chunk_size();
+                    void sendMessage();
 
             };
             class Response : public ResponseHeader {
                 public:
                     Response(int statcode) : ResponseHeader(statcode, std::string("wait_chunk_pull_request")) {}
+                    void sendMessage();
             };
         }
     }

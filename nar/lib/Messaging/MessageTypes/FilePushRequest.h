@@ -17,6 +17,7 @@ namespace nar {
                     std::string& get_filename();
                     std::string& get_dir();
                     unsigned long long int get_filesize();
+                    void sendMessage();
             };
 
             class Response : public ResponseHeader {
@@ -32,11 +33,13 @@ namespace nar {
                     void add_element(std::string pid, std::string cid, std::string token);
                     std::vector<struct PeerListElement>& get_elements();
                     std::string& get_fileid();
+                    void sendMessage();
                     unsigned long long int get_chunksize();
                 private:
                     unsigned long long int chunksize;
                     std::string fileid;
                     std::vector<struct PeerListElement> elements;
+
             };
         }
     }

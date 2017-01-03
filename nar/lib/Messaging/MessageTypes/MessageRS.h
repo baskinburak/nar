@@ -1,3 +1,5 @@
+#ifndef NAR_MESSSENDHEADER_H
+#define NAR_MESSSENDHEADER_H
 #include <string>
 #include <map>
 #include <vector>
@@ -5,93 +7,40 @@
 //#include <nar/narnode/utility.h>
 #include "/home/fatih/bitirme/nar/nar/lib/nlohJson/json.hpp"
 
-enum MessTypes {
+enum SendMessTypes {
                     MINT  = 0,
                     MLINT = 1,
                     MSTRING = 2,
                     MELEMENT = 3,
-                    MOBJECT = 4
+                    MOBJECT = 4,
+                    MOBJECTARR = 5
                 };
 
 
 
 
 namespace nar {
-    typedef struct MessElement{
-        std::string name;
-        void * var;
-        MessTypes type;
-    } MessElement;
-    typedef struct MessObject{
-        std::string name;
-        int size;
-        std::vector<MessElement> var;
-    } MessObject;
+	namespace messagetypes{
+		typedef struct SendMessElement{
+	        std::string name;
+	        void * var;
+	        SendMessTypes type;
+	    } SendMessElement;
+	    typedef struct SendMessObject{
+	        std::string name;
+	        int size;
+	        std::vector<SendMessElement> var;
+	    } SendMessObject;
 
-    void objSendHandle(nlohmann::json & sent,MessObject & obj);
-    nlohmann::json eleSendHandle(nlohmann::json & sent,MessElement ele){
-        nlohmann::json newJ;
-        switch (ele.type) {
-            case MINT: {
-                int temp = *(int *)ele.var;
-                sent[ele.name] = temp;
-                break;
-            }
-            case MLINT: {
-                long long int temp = *(long long int *)ele.var;
-                sent[ele.name] = temp;
-                break;
-            }
-            case MSTRING: {
-                std::string temp = *(std::string *)ele.var;
-                sent[ele.name] = temp;
-                break;
-            }
-            case MELEMENT: {
-                std::vector<MessElement> temp = *(std::vector<MessElement> *)ele.var;
-                sent[ele.name]= nlohmann::json::array();
-                for(int i=0;i<temp.size();i++){
+        void objSendHandleAlt( nlohmann::json & sent,SendMessObject & obj);
 
-                     eleSendHandle(newJ,temp[i]);
-                     sent[ele.name][i] = newJ;
-                     newJ.clear();
-                }
+	    void objSendHandle(nlohmann::json & sent,SendMessObject & obj);
 
-                break;
-            }
-            case MOBJECT: {
-                std::vector<MessObject> temp = *(std::vector<MessObject> *)ele.var;
-                for(int i=0;i<temp.size();i++){
-                    objSendHandle(newJ,temp[i]);
-                }
-                sent[ele.name] = newJ;
-                break;
-            }
-            default:
-                return newJ;
-        }
+	    nlohmann::json eleSendHandle(nlohmann::json & sent,SendMessElement ele);
 
-    }
 
-    void objSendHandle( nlohmann::json & sent,MessObject & obj){
-        nlohmann::json another;
-        for(int i = 0;i<obj.var.size();i++){
-            eleSendHandle(another,obj.var[i]);
-            //std::cout<<sent.dump()<<std::endl;
-
-        }
-        sent[obj.name] = another;
-    }
-    void sendMessage( std::vector<MessObject> & narmess){
-        nlohmann::json sent;
-        if(narmess.size()<1){
-            std::cout<<"error"<<std::endl;
-            return;
-        }
-        for(int i=0;i<narmess.size();i++){
-            objSendHandle(sent,narmess[i]);
-            std::cout<<sent.dump()<<std::endl;
-        }
-
-    }
+	    void sendMessage( std::vector<SendMessObject> & narmess);
 }
+
+}
+#endif

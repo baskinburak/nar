@@ -4,6 +4,7 @@
 #include <string>
 #include "RequestHeader.h"
 #include "ResponseHeader.h"
+#include "MessageRS.h"
 
 namespace nar {
     namespace messagetypes {
@@ -11,6 +12,7 @@ namespace nar {
             class Request : public RequestHeader {
                 public:
                     Request(): RequestHeader(std::string("peer_port_request")){}
+                    void sendMessage();
 
 
             };
@@ -20,6 +22,7 @@ namespace nar {
                 public:
                     Response(int statcode,int pnum) : ResponseHeader(statcode, std::string("peer_port_request")),port_number(pnum) {}
                     int get_port_number();
+                    void sendMessage();
             };
         }
     }

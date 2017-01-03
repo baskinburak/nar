@@ -14,6 +14,7 @@ namespace nar {
                 public:
                     Request(std::string d) : RequestHeader(std::string("get_dir_info")), dir(d) {}
                     std::string& get_dir();
+                    void sendMessage();
             };
 
             class Response : public ResponseHeader {
@@ -30,6 +31,7 @@ namespace nar {
                     std::vector<struct DirListElement>& get_elements();
                     void add_element(struct DirListElement& ele);
                     void add_element(std::string ct, std::string ei, std::string en, unsigned long long int s, bool t);
+                    void sendMessage();
                 private:
                     std::vector<struct DirListElement> elements;
             };

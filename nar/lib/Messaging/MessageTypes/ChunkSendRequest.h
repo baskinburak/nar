@@ -3,6 +3,7 @@
 #include <string>
 #include "RequestHeader.h"
 #include "ResponseHeader.h"
+#include "MessageRS.h"
 
 namespace nar {
     namespace messagetypes {
@@ -17,11 +18,13 @@ namespace nar {
                     std::string& get_token();
                     long long int  get_chunk_id();
                     long long int  get_chunk_size();
+                    void sendMessage();
 
             };
             class Response : public ResponseHeader {
                 public:
                     Response(int statcode) : ResponseHeader(statcode, std::string("chunk_send_request")) {}
+                    void sendMessage();
             };
         }
     }
