@@ -29,7 +29,8 @@ namespace nar {
         public:
             THSocket(): io_service(), socket(io_service), succeed(false) {
                 socket.open(boost::asio::ip::tcp::v4());
-                socket.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+                int val = 1;
+                setsockopt(socket.native_handle(), SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
             }
 
             void introduce(std::string my_id, std::string server, std::string port) {
@@ -82,6 +83,8 @@ namespace nar {
 
                 tcp::socket accepted_socket(io_service);
                 accepted_socket.open(boost::asio::ip::tcp::v4());
+                int val = 1;
+                setsockopt(accepted_socket.native_handle(), SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
                 boost::system::error_code ec;
                 accepted_socket.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true), ec);
                 std::cout << ec << std::endl;

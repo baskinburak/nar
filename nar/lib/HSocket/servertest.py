@@ -1,6 +1,6 @@
 import socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(('', 12345))
+s.bind(('', 12346))
 dict = {}
 s.listen(5)
 

@@ -6,7 +6,7 @@
 
 int main(int argc, char* argv[]) {
     nar::THSocket sck;
-    sck.introduce(argv[1], "localhost", "12345");
+    sck.introduce(argv[1], "localhost", "12346");
     int a;
     std::cin >> a;
     if(argc > 2)
