@@ -7,7 +7,7 @@ namespace nar {
   class Packet {
     /*
       SEQNUM - 4 bytes
-      FLAGS - 1 byte [SYN, ACK, FIN, NAT, DATA]
+      FLAGS - 1 byte [SYN, ACK, FIN, NAT, DATA, RAN]
       PAYLOAD_LENGTH - 2 bytes
       STREAM_ID - 4 bytes
     */
@@ -20,6 +20,7 @@ namespace nar {
       char fin; // end the stream
       char nat; // mark packet for nat only
       char data; // mark packet as data packet
+      char ran; // mark packet as initial randevous packet
       unsigned int seqnum; // seqnum of the packet. packets constitute the sequence not bytes.
       unsigned short payload_len; // length of the payload
       unsigned int stream_id;
@@ -28,7 +29,7 @@ namespace nar {
       static const unsigned short PACKET_LEN = 1000; // bytes
       static const unsigned short HEADER_LEN = 11; // bytes
 
-      Packet(char s, char a, char f, char n, char d, unsigned int sqnm, unsigned short p, unsigned int strid, std::string pl): syn(s), ack(a), fin(f), nat(n), data(d), seqnum(sqnm), payload_len(p), stream_id(strid), payload(pl) {}
+      Packet(char s, char a, char f, char n, char d, char r, unsigned int sqnm, unsigned short p, unsigned int strid, std::string pl): syn(s), ack(a), fin(f), nat(n), data(d), seqnum(sqnm), payload_len(p), stream_id(strid), payload(pl), ran(r) {}
       Packet() {}
 
       void set_header(const std::string& hdr);
@@ -42,7 +43,8 @@ namespace nar {
       void hdr_set_fin(char n_fin);
       void hdr_set_nat(char n_nat);
       void hdr_set_data(char n_data);
-      void hdr_set_flags(char n_syn, char n_ack, char n_fin, char n_nat, char n_data);
+      void hdr_set_ran(char n_ran);
+      void hdr_set_flags(char n_syn, char n_ack, char n_fin, char n_nat, char n_data, char n_ran);
       void hdr_set_seqnum(unsigned int n_seqnum);
       void hdr_set_streamid(unsigned int n_strmid);
       void hdr_set_payloadlen(unsigned short n_pllen);
@@ -52,6 +54,8 @@ namespace nar {
       bool is_fin() const;
       bool is_nat() const;
       bool is_data() const;
+      bool is_ran() const;
+
       std::string& get_payload();
       unsigned int get_streamid() const;
       unsigned int get_seqnum() const;

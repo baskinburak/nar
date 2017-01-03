@@ -30,7 +30,7 @@ unsigned int nar::Packet::ntoh(const std::string& inp, int start, int len) {
 
 std::string nar::Packet::make_packet() const {
   assert(this->payload_len == (this->payload).size());
-  char flags = (syn<<7) | (ack<<6) | (fin<<5) | (nat<<4) | (data<<3);
+  char flags = (syn<<7) | (ack<<6) | (fin<<5) | (nat<<4) | (data<<3) | (ran<<2);
   std::string pckt_str;
   pckt_str = this->htonl(this->seqnum);
   pckt_str.push_back(flags);
@@ -51,6 +51,7 @@ void nar::Packet::set_header(const std::string& hdr) {
   this->fin = (flags & (0x20)) >> 5;
   this->nat = (flags & (0x10)) >> 4;
   this->data = (flags & (0x8)) >> 3;
+  this->ran = (flags & (0x4)) >> 2;
 }
 
 void nar::Packet::set_header(const char* hdr_c) {
@@ -64,6 +65,7 @@ void nar::Packet::set_header(const char* hdr_c) {
   this->fin = (flags & (0x20)) >> 5;
   this->nat = (flags & (0x10)) >> 4;
   this->data = (flags & (0x8)) >> 3;
+  this->ran = (flags & (0x4)) >> 2;
 }
 
 void nar::Packet::set_payload(const std::string& pl) {
@@ -105,6 +107,10 @@ void nar::Packet::hdr_set_data(char n_data) {
   assert(n_data == 0 || n_data == 1);
   this->data = n_data;
 }
+void nar::Packet::hdr_set_ran(char n_ran) {
+  assert(n_ran == 0 || n_ran == 1);
+  this->ran = n_ran;
+}
 void nar::Packet::hdr_set_seqnum(unsigned int n_seqnum) {
   this->seqnum = n_seqnum;
 }
@@ -115,17 +121,19 @@ void nar::Packet::hdr_set_payloadlen(unsigned short n_pllen) {
   this->payload_len = n_pllen;
 }
 
-void nar::Packet::hdr_set_flags(char n_syn, char n_ack, char n_fin, char n_nat, char n_data) {
+void nar::Packet::hdr_set_flags(char n_syn, char n_ack, char n_fin, char n_nat, char n_data, char n_ran) {
   assert(n_syn == 0 || n_syn == 1);
   assert(n_ack == 0 || n_ack == 1);
   assert(n_fin == 0 || n_fin == 1);
   assert(n_nat == 0 || n_nat == 1);
   assert(n_data == 0 || n_data == 1);
+  assert(n_ran == 0 || n_ran == 1);
   this->syn = n_syn;
   this->ack = n_ack;
   this->fin = n_fin;
   this->nat = n_nat;
   this->data = n_data;
+  this->ran = n_ran;
 }
 
 bool nar::Packet::is_syn() const {
@@ -142,6 +150,9 @@ bool nar::Packet::is_nat() const {
 }
 bool nar::Packet::is_data() const {
   return this->data == 1;
+}
+bool nar::Packet::is_ran() const {
+  return this->ran == 1;
 }
 
 std::string& nar::Packet::get_payload() {

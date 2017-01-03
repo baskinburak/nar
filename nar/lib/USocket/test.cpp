@@ -3,11 +3,12 @@
 #include <string>
 #include <iomanip>
 #include <cassert>
+#include "USocket.h"
 
 int main() {
-  std::cout << "Packet test; seqnum:0, syn:1, ack:0, fin:0, nat:0, data:0, payload_len:13, stream_id: 12345, payload: keke naber ya";
+  std::cout << "Packet test; seqnum:0, syn:1, ack:0, fin:0, nat:0, data:0, ran:0, payload_len:13, stream_id: 12345, payload: keke naber ya";
   nar::Packet syn;
-  syn.hdr_set_flags(1,0,0,0,0);
+  syn.hdr_set_flags(1,0,0,0,0,0);
   syn.hdr_set_seqnum(0);
   syn.hdr_set_streamid(12345);
   syn.set_payload(std::string("keke naber ya"));
@@ -46,7 +47,7 @@ int main() {
 
 
 
-  std::cout << "Packet test; seqnum:12, syn:0, ack:0, fin:0, nat:0, data:1, payload_len:3, stream_id: 1212, payload: kop";
+  std::cout << "Packet test; seqnum:12, syn:0, ack:0, fin:0, nat:0, data:1, ran:0 payload_len:3, stream_id: 1212, payload: kop";
   nar::Packet data;
   data.hdr_set_seqnum(12);
   data.hdr_set_syn(0);
@@ -54,6 +55,7 @@ int main() {
   data.hdr_set_fin(0);
   data.hdr_set_nat(0);
   data.hdr_set_data(1);
+  data.hdr_set_ran(0);
   data.hdr_set_payloadlen(3);
   data.hdr_set_streamid(1212);
   data.set_payload(std::string("kop"));
@@ -81,8 +83,8 @@ int main() {
   std::cout << "....done" << std::endl;
 
 
-  std::cout << "Packet test; seqnum:4294967295, syn:1, ack:1, fin:0, nat:0, data:0, payload_len:0, stream_id: 65535, payload: ";
-  nar::Packet synack(1,1,0,0,0,4294967295, 0, 65535,std::string(""));
+  std::cout << "Packet test; seqnum:4294967295, syn:1, ack:1, fin:0, nat:0, data:0, ran:1, payload_len:0, stream_id: 65535, payload: ";
+  nar::Packet synack(1,1,0,0,0,1,4294967295, 0, 65535,std::string(""));
   pck = synack.make_packet();
   res.clear();
   res.resize(11);
@@ -90,7 +92,7 @@ int main() {
   res[1] = 0xff;
   res[2] = 0xff;
   res[3] = 0xff;
-  res[4] = 0xc0;
+  res[4] = 0xc4;
   res[5] = 0x00;
   res[6] = 0x00;
   res[7]=0x00;
@@ -103,7 +105,9 @@ int main() {
   }
   std::cout << "....done" << std::endl;
 
-  
 
+
+  std::cout << "USocket test;" << std::endl;
+  nar::USocket sock;
   std::cout << "tests done." << std::endl;
 }
