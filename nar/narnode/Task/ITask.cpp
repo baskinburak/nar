@@ -8,6 +8,7 @@ bool nar::task::ITask::handshake(nar::Socket& skt, nar::Global* globals) {
     json jsn;
     jsn["header"]["action"] = "handshake";
     jsn["header"]["channel"] = "ps";
+	jsn["payload"]["machine_id"] = globals->get_macId();
     jsn["payload"]["username"] = username;
     std::string stringify = jsn.dump();
     std::string len = std::to_string((int)stringify.size());

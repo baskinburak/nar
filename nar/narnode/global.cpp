@@ -34,6 +34,19 @@ void nar::Global::set_username(std::string uname) {
     write_end();
 }
 
+std::string nar::Global::get_macId() {
+	read_start();
+	std::string macId = narMacId;
+	read_end();
+	return macId;
+}
+
+void nar::Global::set_macId(std::string macId) {
+	write_start();
+	narMacId = macId;
+	write_end();
+	return;
+}
 
 std::string nar::Global::get_curdir() {
     read_start();
