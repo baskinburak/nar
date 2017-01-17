@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS `nar`.`Machines` (
   `Machine_diskSpace` BIGINT NOT NULL DEFAULT 0,
   `Change_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`Machine_id`),
-  UNIQUE INDEX `Machine_Id_UNIQUE` (`Machine_id` ASC))
+  UNIQUE INDEX `Machine_Id_UNIQUE` (`Machine_id` ASC),
+  UNIQUE INDEX `User_Id_UNIQUE` (`User_id` ASC))
 ENGINE = InnoDB;
 
 

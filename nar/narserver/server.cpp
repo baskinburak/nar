@@ -24,8 +24,7 @@ nar::Database db;
 std::map<std::string, bool> activetokens;
 std::string charlist("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&'()*+,-./:;<=>?@[]^_`{|}~");
 
-std::string generate_secure_token() {
-    int TOKENLEN = 32;
+std::string generate_secure_token(int TOKENLEN) {
     std::string token;
     token.resize(TOKENLEN);
     do {
@@ -36,12 +35,35 @@ std::string generate_secure_token() {
     return token;
 }
 
+
+
+std::string generate_machineId() {
+    int idLen = 150;
+    std::string machineId;
+    machineId.resize(idLen);
+    nar::Machine tempMac;
+    do {
+        for(int i=0; i<idLen; i++) {
+            machineId[i] = charlist[std::rand()%charlist.size()];
+        }
+        tempMac = db.getMachine(machineId);
+    } while(tempMac.machine_id.compare("-1") != 0);
+
+
+    return machineId;
+}
+
+
+
+
+
 namespace nar {
     namespace action {
         bool handshake(nar::SockInfo* inf, json& jsn) {
             std::string username = jsn["payload"]["username"];
+            std::string machineId = jsn["payload"]["machine_id"];
 
-            inf->authenticate(username);
+            inf->authenticate(username,machineId);
 
             json resp;
             resp["header"]["channel"] = "sp";
@@ -54,7 +76,21 @@ namespace nar {
             (inf->getSck())->send((char*) response.c_str(), (int)response.size());
             return true;
         }
+        bool registerMachine(nar::SockInfo* inf, json& jsn){
+            json resp;
+            resp["header"]["reply-to"] = "machine_register";
+            std::string machine_id = generate_machineId();
+            resp["header"]["status-code"] = 200;
+            resp["payload"]["machine_id"] = machine_id;
 
+            std::string response(resp.dump());
+            response = std::to_string((int)response.size()) + std::string(" ") + response;
+            (inf->getSck())->send((char*) response.c_str(), (int)response.size());
+            nar::Machine newMac;
+            newMac.machine_id = machine_id;
+            ::db.insertMachine(newMac);
+            return true;
+        }
         bool keepalive(nar::SockInfo* inf, json& jsn) {
             json resp;
             resp["header"]["channel"] = "sp";
@@ -194,7 +230,7 @@ namespace nar {
                     resp["header"]["status-code"] = 301; // no valid peer
                 } else {
 
-                    nar::File file = insertFileToDb(fName,fSize,fDir,inf->getAuthenticationHash());
+                    nar::File file = insertFileToDb(fName,fSize,fDir,inf->getUser());
                     auto it=keepalives.begin();
                     int selected_peer;
                     do{
@@ -202,10 +238,10 @@ namespace nar {
                         std::cout<<selected_peer<<std::endl;
                         std::advance(it, selected_peer);
                     }
-                    while(it->first.compare(inf->getAuthenticationHash())==0);
+                    while(it->first.compare(inf->getUser())==0);
 
                     nar::User us = ::db.getUser(it->first);
-                    std::cout<<"name to "<<it->first<<" "<<us.user_name<<" "<<us.user_id<<" "<<inf->getAuthenticationHash()<<std::endl;
+                    std::cout<<"name to "<<it->first<<" "<<us.user_name<<" "<<us.user_id<<" "<<inf->getUser()<<std::endl;
                     nar::UserToFile ust;
                     ust.user_id = us.user_id;
                     ust.file_id = file.file_id;
@@ -216,7 +252,7 @@ namespace nar {
                         std::cout << "Here4" << std::endl;
                         resp["header"]["status-code"] = 301; // no valid peer
                     } else {
-                        std::string token =  generate_secure_token();
+                        std::string token =  generate_secure_token(32);
 
                         json peer_msg;
                         peer_msg["header"]["channel"] = "sp";
@@ -260,13 +296,13 @@ namespace nar {
 
         }
         bool file_pull_request(nar::SockInfo* inf, json& jsn) {
-            std::string token = generate_secure_token();
+            std::string token = generate_secure_token(32);
             json resp;
             resp["header"]["channel"] = "sp";
             resp["header"]["reply-to"] = "file_pull_request";
             std::string file_name = jsn["payload"]["file_name"];
             std::string dir = jsn["payload"]["directory"];
-            std::string user_name = inf->getAuthenticationHash();
+            std::string user_name = inf->getUser();
             long long int file_id = findFileId(file_name,dir,user_name);
 
             if(inf->isAuthenticated())   {
@@ -407,7 +443,7 @@ namespace nar {
             resp["header"]["channel"] = "sp";
             resp["header"]["reply-to"] = "dir_info";
             if(inf->isAuthenticated()) {
-                std::string user_name = inf->getAuthenticationHash();
+                std::string user_name = inf->getUser();
                 std::string dir_name =  jsn["payload"]["dir_name"].get<std::string>();
                 nar::User us= ::db.getUser(user_name);
                 std::vector<nar::File> files;
@@ -477,7 +513,7 @@ std::cout<<test<<std::endl;
 
        bool get_aes_key(nar::SockInfo* inf, json& jsn) {
 
-            std::string user_name = inf->getAuthenticationHash();
+            std::string user_name = inf->getUser();
             nar::User usr = ::db.getUser(user_name);
             json resp;
             resp["header"]["channel"] = "sp";
@@ -485,7 +521,7 @@ std::cout<<test<<std::endl;
             resp["header"]["reply-to"] = "get_aes_request";
             resp["payload"]["aes"] = usr.cryptedKey;
             std::cout << "uname: " << usr.user_name << " "  << "key: "<< usr.cryptedKey << std::endl;
-            std::cout << "sname: " << inf->getAuthenticationHash() << std::endl;
+            std::cout << "sname: " << inf->getUser() << std::endl;
             nar::send_message(*(inf->getSck()), std::string(resp.dump()));
                return true;
        }
@@ -522,10 +558,14 @@ void handle_connection(nar::Socket* skt) {
             nar::action::get_user_dir_info(inf, jsn);
             std::cout<<"ls>"<<std::endl;
         } else if(jsn["header"]["action"] == "get_aes_request") {
-            std::cout<<"<aes"<<std::endl;
+            std::cout << "<aes" << std::endl;
             nar::action::get_aes_key(inf, jsn);
-            std::cout<<"aes>"<<std::endl;
+            std::cout << "aes>" << std::endl;
 
+        } else if(jsn["header"]["action"] == "machine_register") {
+            std::cout<<"<register machine"<<std::endl;
+            nar::action::registerMachine(inf,jsn);
+            std::cout<<"register machine>"<<std::endl;
         }
                     std::cout << "Here9" << std::endl;
     }

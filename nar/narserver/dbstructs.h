@@ -32,7 +32,6 @@ namespace nar {
     struct Machine{
         Machine():machine_id(std::string("-1")),machine_quota(0),machine_diskSpace(0){}
         std::string machine_id;
-        long long int user_id;
         long long int  machine_quota;
         long long int machine_diskSpace;
         long long int change_time;

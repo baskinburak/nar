@@ -4,8 +4,9 @@ void nar::SockInfo::elevateKeepalive() {
     this->keepalive = true;
 }
 
-void nar::SockInfo::authenticate(const std::string& uname) {
+void nar::SockInfo::authenticate(const std::string& uname,const std::string& macid) {
     this->username = uname;
+    this->machineId = macid;
 }
 
 nar::Socket* nar::SockInfo::getSck() {
@@ -15,9 +16,12 @@ nar::Socket* nar::SockInfo::getSck() {
 bool nar::SockInfo::isAuthenticated() {
     return this->username != std::string();
 }
+std::string nar::SockInfo::getUser() {
+    return this->username;
+}
 
 std::string nar::SockInfo::getAuthenticationHash() {
-    return this->username;
+    return this->machineId;
 }
 
 bool nar::SockInfo::isKeepalive() {

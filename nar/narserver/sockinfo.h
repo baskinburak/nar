@@ -6,15 +6,17 @@ namespace nar {
     class SockInfo {
         private:
             std::string username;
+            std::string machineId;
             nar::Socket* skt;
             bool keepalive;
         public:
             SockInfo(nar::Socket* sk): skt(sk) {  }
             void elevateKeepalive();
-            void authenticate(const std::string& uname);
+            void authenticate(const std::string& uname, const std::string&macid);
             nar::Socket* getSck();
             bool isAuthenticated();
             std::string getAuthenticationHash();
+            std::string getUser();
             bool isKeepalive();
     };
 }

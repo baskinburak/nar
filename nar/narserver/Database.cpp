@@ -57,7 +57,6 @@ nar::db::ChunkToMachine nar::Database::turnChunkToMachine(nar::ChunkToMachine & 
 nar::db::Machine nar::Database::turnMachine(nar::Machine & machine){
     nar::db::Machine mk;
     mk.machine_id = machine.machine_id;
-    mk.user_id = std::to_string(machine.user_id);
     mk.machine_quota = std::to_string(machine.machine_quota);
     mk.machine_diskSpace = std::to_string(machine.machine_diskSpace);
     return mk;
@@ -199,12 +198,11 @@ void nar::Database::insertMachine(struct Machine &ma)
 {
     nar::db::Machine machine = turnMachine(ma);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Machines(Machine_id, User_id, Machine_quota, Machine_diskSpace) "
-                                            "VALUES(?, ?, ?, ?);");
+    prep_stmt = _con -> prepareStatement("INSERT INTO Machines(Machine_id,  Machine_quota, Machine_diskSpace) "
+                                            "VALUES(?,  ?, ?);");
     prep_stmt -> setString(1, machine.machine_id);
-    prep_stmt -> setBigInt(2, machine.user_id);
-    prep_stmt -> setBigInt(3, machine.machine_quota);
-    prep_stmt -> setBigInt(4, machine.machine_diskSpace);
+    prep_stmt -> setBigInt(2, machine.machine_quota);
+    prep_stmt -> setBigInt(3, machine.machine_diskSpace);
 
     prep_stmt -> execute();
 
@@ -305,7 +303,7 @@ nar::Machine nar::Database::getMachine(long long int userId)
     sql::SQLString user_id = std::to_string(userId);
     sql::PreparedStatement *prep_stmt;
             sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT Machine_id, User_id, Machine_quota, Machine_diskSpace, "
+    prep_stmt = _con -> prepareStatement("SELECT Machine_id,  Machine_quota, Machine_diskSpace, "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "FROM Machines "
                                         "WHERE Machines.User_id = ?;");
@@ -320,7 +318,6 @@ nar::Machine nar::Database::getMachine(long long int userId)
     while (res->next()) {
 
         a.machine_id = res->getString("Machine_id").asStdString();
-        a.user_id = std::stoll(res->getString("User_id").asStdString());
         a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
         a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
 
@@ -335,7 +332,7 @@ nar::Machine nar::Database::getMachine(std::string machine_id)
 {
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT Machine_id, User_id, Machine_quota, Machine_diskSpace, "
+    prep_stmt = _con -> prepareStatement("SELECT Machine_id, Machine_quota, Machine_diskSpace, "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "FROM Machines "
                                         "WHERE Machines.Machine_id = ?;");
@@ -351,7 +348,6 @@ nar::Machine nar::Database::getMachine(std::string machine_id)
     while (res->next()) {
 
         a.machine_id = res->getString("Machine_id").asStdString();
-        a.user_id = std::stoll(res->getString("User_id").asStdString());
         a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
         a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
 
@@ -904,7 +900,7 @@ std::vector<nar::Machine>  nar::Database::getMachines(long long int chunkId){
     std::vector<nar::Machine> output;
     sql::PreparedStatement  *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con->prepareStatement("SELECT Machine_id, User_id, Machine_quota, Machine_diskSpace, "
+    prep_stmt = _con->prepareStatement("SELECT Machine_id,  Machine_quota, Machine_diskSpace, "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "From Machines "
                                         "Where Machines.Machine_id IN (Select Machine_id "
@@ -915,7 +911,6 @@ std::vector<nar::Machine>  nar::Database::getMachines(long long int chunkId){
     while (res->next()) {
         nar::Machine a;
         a.machine_id = res->getString("Machine_id").asStdString();
-        a.user_id = std::stoll(res->getString("User_id").asStdString());
         a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
         a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
 
