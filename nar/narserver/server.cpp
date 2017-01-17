@@ -13,6 +13,7 @@
 #include <nar/narserver/Database.h>
 #include <nar/narserver/dbstructs.h>
 #include <nar/narserver/sockinfo.h>
+#include <math.h>
 #include <cstdlib>
 #include <ctime>
 #include <iterator>
@@ -110,52 +111,50 @@ namespace nar {
             return true;
         }
 
-        bool getPeerPort(nar::SockInfo* active,std::string token){
-            std::cout << "IMA1" << std::endl;
+        bool getPeerPort(nar::SockInfo* inf,json& jsn){
             json req;
-            req = json::parse(get_message( *(active->getSck())) );
-                        std::cout << "IMA2" << std::endl;
-            std::string peerId = req["payload"]["peer-id"];
-                    std::cout << "IMA3" << std::endl;
-            nar::SockInfo *peerSck = keepalives[peerId];
-                        std::cout << "IMA4" << std::endl;
+            std::string machineId = req["payload"]["peer-id"];
+            nar::SockInfo *peerSck = keepalives[machineId];
 
             json reqR;
             reqR["header"]["channel"] = "sp";
             reqR["header"]["action"] = "peer_port_request";
-            reqR["payload"]["token"] = token;
             send_message( peerSck->getSck() , reqR.dump());
-            std::cout << "IMA5" << std::endl;
             json respR;
             std::string tmp = get_message( *(peerSck->getSck()));
             std::cout << tmp << std::endl;
             respR = json::parse(tmp );
-            std::cout << "IMA6" << std::endl;
             int peerPort = respR["payload"]["port"];
-            std::cout << "IMA7" << std::endl;
-
             json respA;
             respA["header"]["reply-to"] = "peer_connection_request";
             respA["header"]["channel"] = "sp";
             respA["header"]["status-code"] = 200;
             respA["payload"]["peer-ip"] = (peerSck->getSck())->get_dest_ip();
-            respA["payload"]["peer-id"] = peerId;
+            respA["payload"]["peer-id"] = machineId;
             respA["payload"]["peer-port"] = peerPort;
-            send_message( active->getSck() , respA.dump());
+            send_message( inf->getSck() , respA.dump());
         }
+        bool sendMachineList(nar::SockInfo* inf, int status, unsigned long csize, std::vector<std::string> machine_list, int cId,std::vector<std::string> tokens,long long int fSize){
 
-        bool sendPeerList(nar::SockInfo* inf, int status, unsigned long cSize, int fId, std::string peerId, std::string cId, std::string token){
+
             json resp;
             resp["header"]["channel"] = "sp";
             resp["header"]["reply-to"] = "file_push_request";
             resp["header"]["status-code"] = 200;
-            resp["payload"]["chunk-size"] = cSize;
-            resp["payload"]["file-id"] = fId;
-            json arr;
-            arr["peer_id"] = peerId;
-            arr["chunk_id"] = cId;
-            arr["token"] = token;
 
+            json arr;
+            for(int i=0 ;i<machine_list.size();i++){
+
+                if (fSize < csize) {
+                    csize= fSize;
+                } else {
+                    fSize -= csize;
+                }
+                arr[i]["peer_id"] = machine_list[i];
+                arr[i]["chunk_id"] = cId+i;
+                arr[i]["token"] = tokens[i];
+                arr[i]["chunk_id"] = csize;
+            }
             resp["payload"]["peer-list"] = { arr };
             std::string rspMsg(resp.dump());
             send_message( inf->getSck() , rspMsg);
@@ -185,6 +184,28 @@ namespace nar {
             std::cout<<"file a "<<output.file_name<<" "<<output.file_id<<std::endl;
             return output;
             //nar::User user = ::db.getUser(nar::globals->get_username());
+
+        }
+
+        void insertFileAndChunks(std::string username,std::vector<std::string> &selected_machines,long long int cId,std::string fName,long long int fSize,std::string fDir,long long int csize){
+            nar::File f = insertFileToDb(fName,fSize,fDir,username);
+            long long int fId = f.file_id;
+            for(int i= 0;i<selected_machines.size();i++){
+
+                nar::Chunk tempChunk;
+                tempChunk.chunk_size = csize;
+                if (fSize < csize) {
+                    csize= fSize;
+                } else {
+                    fSize -= csize;
+                }
+                tempChunk.file_id = fId;
+                ::db.insertChunk(tempChunk);
+                nar::ChunkToMachine tempctm;
+                tempctm.chunk_id = cId+i;
+                tempctm.machine_id = selected_machines[i];
+                ::db.insertChunkToMachine(tempctm);
+            }
 
         }
         long long int findFileId(std::string& file_name,std::string& dir_name,std::string& uname){// returns -1 in any case of problem
@@ -224,62 +245,77 @@ namespace nar {
             std::string fName = jsn["payload"]["file-name"];
             unsigned long fSize = jsn["payload"]["file-size"];
             std::string fDir = jsn["payload"]["directory"];
+            long int onemb = 1024*1024;
             if(inf->isAuthenticated()) {
                 if(keepalives.size() < 2) {
-                                std::cout << "Here2" << std::endl;
+                    std::cout << "Here2" << std::endl;
                     resp["header"]["status-code"] = 301; // no valid peer
                 } else {
 
-                    nar::File file = insertFileToDb(fName,fSize,fDir,inf->getUser());
-                    auto it=keepalives.begin();
-                    int selected_peer;
-                    do{
-                        selected_peer = std::rand() % ((int)keepalives.size());
-                        std::cout<<selected_peer<<std::endl;
-                        std::advance(it, selected_peer);
-                    }
-                    while(it->first.compare(inf->getUser())==0);
+                    int maxnum= fSize/onemb;
+                    if( fSize % onemb !=0 ) maxnum++;
+                    std::vector<std::string> selected_machines;
 
+                    int selected_machine;
+
+                    do{
+                        auto it=keepalives.begin();
+                        selected_machine = std::rand() % ((int)keepalives.size());
+                        std::cout<<selected_machine<<std::endl;
+                        std::advance(it, selected_machine);
+                        if(it->first.compare(inf->getUser())==0) {
+                            continue;
+                        } else {
+                            selected_machines.push_back(it->second->getAuthenticationHash());
+                        }
+
+                    }
+                    while(selected_machines.size()<maxnum);
+                    /*
                     nar::User us = ::db.getUser(it->first);
                     std::cout<<"name to "<<it->first<<" "<<us.user_name<<" "<<us.user_id<<" "<<inf->getUser()<<std::endl;
                     nar::UserToFile ust;
                     ust.user_id = us.user_id;
                     ust.file_id = file.file_id;
                     std::cout<<"file _ name "<<file.file_id<<" "<<file.file_name<<std::endl;
-                    ::db.insertUserToFile(ust);
-                    int cnt = 0;
-                    if(cnt == keepalives.size()) {
-                        std::cout << "Here4" << std::endl;
-                        resp["header"]["status-code"] = 301; // no valid peer
-                    } else {
-                        std::string token =  generate_secure_token(32);
+                    ::db.insertUserToFile(ust);*/
+                    std::vector<std::string> tokens;
+                    long long int  cId= ::db.getNextChunkId();
+                    if(cId== -1){
+                        cId = 1;
+                    }
 
+                    for(int i = 0;i<selected_machines.size();i++){
+                        tokens.push_back(generate_secure_token(32));
+                    }
+                    long long int altfSize = fSize;
+                    long long int  csize = onemb;
+                    insertFileAndChunks(inf->getUser(),selected_machines,cId,fName,fSize,fDir,onemb);
+                    for(int i = 0;i<selected_machines.size();i++){
+                        if (altfSize < csize) {
+                            csize= altfSize;
+                        } else {
+                            altfSize -= csize;
+                        }
                         json peer_msg;
                         peer_msg["header"]["channel"] = "sp";
                         peer_msg["header"]["action"] = "wait_chunk_push_request";
-                        peer_msg["payload"]["token"] = token;
-                        std::cout << token  << " " << token.size() << std::endl;
-                        peer_msg["payload"]["chunk-id"] = std::to_string(file.file_id);
-                        peer_msg["payload"]["chunk-size"] = fSize;
+                        peer_msg["payload"]["token"] = tokens[i];
+                        peer_msg["payload"]["chunk-id"] = cId+i;
+                        peer_msg["payload"]["chunk-size"] = csize;
 
 
-                        nar::SockInfo* peer_sock = (*it).second;
+                        nar::SockInfo* peer_sock = keepalives[selected_machines[i]];
                         std::string peer_str(peer_msg.dump());
 
                         std::cout << "\n"<< peer_str << std::endl;
-                        send_message( peer_sock->getSck() , peer_str);                        std::cout << "yama" << std::endl;
-                        json rspX = json::parse(get_message( *(peer_sock->getSck())) );                         std::cout << "yama" << std::endl;
+                        send_message( peer_sock->getSck() , peer_str);
+                        json rspX = json::parse(get_message( *(peer_sock->getSck())) );
                         std::cout << rspX << std::endl;
 
 
-                        sendPeerList( inf, 200 , file.file_size,  file.file_id,  it->first, std::to_string(file.file_id), token);
-                        std::cout << "prrrt" << std::endl;
-
-                        getPeerPort(inf,token);
-
-
-
                     }
+                    sendMachineList( inf, 200, onemb, selected_machines ,cId, tokens , fSize);
                 }
 
             } else {
@@ -566,6 +602,10 @@ void handle_connection(nar::Socket* skt) {
             std::cout<<"<register machine"<<std::endl;
             nar::action::registerMachine(inf,jsn);
             std::cout<<"register machine>"<<std::endl;
+        } else if(jsn["header"]["action"] == "peer_connection_request") {
+            std::cout<<"<peer_connection_request"<<std::endl;
+            nar::action::getPeerPort(inf,jsn);
+            std::cout<<"peer_connection_request>"<<std::endl;
         }
                     std::cout << "Here9" << std::endl;
     }
