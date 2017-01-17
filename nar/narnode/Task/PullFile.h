@@ -32,7 +32,7 @@ namespace nar {
                 void constructJsonforNewPeer(nlohmann::json::iterator &it, nlohmann::json &j, std::string peer_id);
                 void getPeerInfo(std::string peerId, nar::Socket *serverSck);
                 nar::Socket* sendTokenToPeer(nlohmann::json::iterator &it, nar::Socket *serverSck,unsigned long chunkSize);
-                void pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, int chunkSize, std::string aes);
+                void pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, unsigned long chunkSize, std::string aes, int file );
                 void getResultJsonFake(nlohmann::json &j_resp, nar::Socket *serverSck);
                 std::string getAes(nar::Socket *serverSck);
 

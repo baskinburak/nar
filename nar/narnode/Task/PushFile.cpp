@@ -154,7 +154,7 @@ void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Sock
 	peerSck->send(chunk, len);
 	fOffset += len;*/
 
-	nar::readFileWriteSck( file, *peerSck, _chunkSize);
+	nar::readFileWriteSck( file, *peerSck, _chunkSize,fOffset);
 
 
 }
@@ -162,8 +162,7 @@ void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Sock
 void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serverSck, nar::FileCryptor &file){
 	std::cout << "Not here either" << std::endl;
 	int chunkSize = msg["payload"]["chunk-size"].get<int>();std::cout << "Not here either" << std::endl;
-	int fileId = msg["payload"]["file-id"];std::cout << "Not here either" << std::endl;
-	//std::cout << "File id: " <<fileId << std::endl;
+	
 	size_t fOffset = 0;
 	for(nlohmann::json::iterator it = msg["payload"]["peer-list"].begin(); it != msg["payload"]["peer-list"].end(); ++it){
 		/*std::cout << "HELP5" << std::endl;
@@ -186,9 +185,9 @@ void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serve
 		std::cout << (*it)["peer_id"] << std::endl;
 
 		nar::Socket *peerSck = sendTokenToPeer(it,serverSck,msg["payload"]["chunk-size"]);
-				std::cout << "Not MAYBE" << std::endl;
+		std::cout << "Not MAYBE" << std::endl;
 		pushFileToPeer(it,peerSck, file , fOffset, msg["payload"]["chunk-size"]);
-				
+		fOffset += msg["payload"]["chunk-size"].get<unsigned long>();
 	}
 }
 
@@ -225,8 +224,6 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 	nar::FileKeeper f(file_path);
 	nar::FileCryptor file(&f, aes);
 	unsigned long file_size = file.getFileSize();
-
-
 
 
 	rapidjson::Document header(&msg.GetAllocator());		// Create Header

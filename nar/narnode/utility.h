@@ -16,7 +16,7 @@ namespace nar {
 	int readdata(Socket &sock, char *buf, int buflen);
 	int senddata(nar::Socket &sock, char *buf, int buflen);
 	int readSckWriteFile(int filefd, Socket &skt, unsigned long fileSize );
-	int readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned long fileSize);
+	int readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned long fileSize, unsigned long _offset);
     std::string byte_to_hex(byte* arr, int size);
     byte* hex_to_byte(std::string hex);
     void send_message(nar::Socket& skt, std::string message);

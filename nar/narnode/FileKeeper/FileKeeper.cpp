@@ -47,6 +47,16 @@ int nar::FileKeeper::openFdWrtonly(const char * file) {
 	return fd;
 }
 
+int nar::FileKeeper::openFdWrtonlyAppend(const char * file) {
+	int fd = open(file,O_WRONLY | O_CREAT | O_APPEND ,00777); 			// CREATE AND WRITE
+	if( fd < 0) {
+		printf("something is wrong with open() in FileKeeper constructor with string %s \n" , strerror(errno));
+		return -1;
+	}
+	return fd;
+}
+
+
 int nar::FileKeeper::openAllWays(const char * file) {
     int fd = open(file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if(fd < 0) {

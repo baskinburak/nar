@@ -145,10 +145,10 @@ int nar::senddata(nar::Socket &sock, char *buf, int buflen)
 }
 
 
-int nar::readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned long fileSize) {
+int nar::readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned long fileSize, unsigned long _offset) {
 	char *buffer = new char[1024];
 	std::cout << "fileSizeinit " << fileSize << std::endl;
-	int offset = 0;
+	int offset = _offset;
 	//std::cout << "BuffSIZE " << sizeof(buffer) << std::endl;
 	do
 	{

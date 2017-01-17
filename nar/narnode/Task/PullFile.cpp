@@ -5,6 +5,7 @@
 #include <nar/narnode/utility.h>
 #include <iostream>
 #include <unistd.h>
+#include <cstdio>
 
 void nar::task::PullFile::initialize()
 {
@@ -174,7 +175,7 @@ nar::Socket* nar::task::PullFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 	return peerSck;
 }
 
-void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, int chunkSize, std::string aes)
+void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::Socket *peerSck, unsigned long chunkSize, std::string aes,int file)
 {/*
     std::string fileName = (*it)["chunk-id"].get<std::string>();
     nar::FileKeeper file(fileName);
@@ -186,7 +187,7 @@ void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::So
     //file.writeToFile(file.getFd(), index, (const char *)buffer);
     std::cout << "sanirim bitti" << std::endl;
     return;*/
-    std::string path("/tmp/maq");
+   																			// std::string path("/tmp/maq");
     //int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
     //nar::FileKeeper f( path );
     //if(! nar::readSckWriteFile(fd,*peerSck,chunkSize)) return;
@@ -195,33 +196,47 @@ void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::So
     //path = path + chunkId;
     //std::cout << path << std::endl;
 
-    std::cout << "chuSzi " << chunkSize << std::endl;
+    																	//	std::cout << "chuSzi " << chunkSize << std::endl;
 
     //std::cout << nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize) << std::endl;
-    //decyrpt it
-    std::string destination = cur_dir + std::string("/") + file_name;
-    std::cout<<destination<<std::endl;
+																	//decyrpt it
+																	//std::string destination = cur_dir + std::string("/") + file_name;
+																	//std::cout<<destination<<std::endl;
 
 
-    nar::FileDecryptor fdec(nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize), aes);
-    nar::FileKeeper* f = fdec.decrypt(destination);
-
+																	//nar::FileDecryptor fdec(nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize), aes);
+																	//nar::FileKeeper* f = fdec.decrypt(destination);	
+	std::string cnk = nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize);
+	nar::FileKeeper::writeToFile(file, chunkSize, cnk.c_str());	
     return;
 
 }
 
 void nar::task::PullFile::comeTogether(nlohmann::json &j_resp, nar::Socket *serverSck,std::string aes)
 {
-    unsigned long chunkSize = j_resp["payload"]["chunk-size"].get<int>();
+   // unsigned long chunkSize = j_resp["payload"]["chunk-size"].get<int>();
+	std::string destination = cur_dir + std::string("/") + std::string("tmpFile");//file_name;
     std::cout << j_resp.dump() << std::endl;
+	int holder = nar::FileKeeper::openFdWrtonlyAppend(destination.c_str());
+  	
     for(nlohmann::json::iterator it = j_resp["payload"]["peer-list"].begin(); it != j_resp["payload"]["peer-list"].end(); ++it) {
         //std::cout << "are you here,in come0?" << std::endl;
         std::cout << "(*it)" << std::endl;
-        nar::Socket *peerSck = sendTokenToPeer(it, serverSck,chunkSize);
+        nar::Socket *peerSck = sendTokenToPeer(it, serverSck,(*it)["chunk_size"]);
         std::cout << "are you here,in come1?" << std::endl;
-        pullFileFromPeer(it, peerSck,chunkSize,aes); // 100 -> chunksize
+        pullFileFromPeer(it, peerSck,(*it)["chunk_size"],aes,holder); // 100 -> chunksize
         //std::cout << "are you here,in come2?" << std::endl;
     }
+	close(holder);
+
+	nar::FileKeeper keep(destination);
+	int size = keep.getFileSize();
+    char* buff = (char*) malloc(sizeof(char)* size);
+    keep.getBytes(0, size, buff);
+	nar::FileDecryptor fdec(std::string(buff), aes);
+	delete[] buff;
+	fdec.decrypt( cur_dir + std::string("/") + file_name );
+	std::remove(destination.c_str());
     return;
 }
 
