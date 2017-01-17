@@ -4,41 +4,90 @@
 #include <vector>
 #include "Packet.h"
 #include <iostream>
-#include <mutex>
 #include <atomic>
-#include <condition_variable>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <condition_variable>
+#include <mutex>
 
 namespace nar {
   class USocket {
     private:
+      class AckComparator {
+        bool operator()(const nar::Packet& pkt1, const nar::Packet& pkt2) {
+          return pkt1.get_acknum() < pkt2.get_acknum();
+        }
+      };
+
+      class SeqComparator {
+        bool operator()(const nar::Packet& pkt1, const nar::Packet& pkt2) {
+          return pkt1.get_seqnum() < pkt2.get_seqnum();
+        }
+      };
+
       int udp_sockfd;
       std::mutex receive_buffer_mutex;
-      std::vector<nar::Packet> receive_buffer;
-      int stream_id;
+      std::string receive_buffer;
+      unsigned int stream_id;
       std::atomic<bool> stop_thread;
+      std::atomic<bool> syn_ok;
+
+      bool syn_flag;
+      bool synack_flag;
+      bool ack_flag;
+      std::mutex flag_mtx;
+      
+      std::condition_variable event_cv;
+      std::mutex event_cv_mtx;
+
+      std::priority_queue<nar::Packet, std::vector<nar::Packet>, AckComparator> acks;
+
 
       void receive_thread() {
+        unsigned int expectedseqnum = 0;
+        std::priority_queue<nar::Packet, std::vector<nar::Packet>, SeqComparator> received_packets;
         char buf[nar::Packet::PACKET_LEN];
         struct sockaddr addr;
         unsigned int fromlen = sizeof(addr);
+        nar::Packet pqpacket;
         while(!this->stop_thread) {
-          std::cout << "PACKLEN: " << nar::Packet::PACKET_LEN << " " << this->udp_sockfd << std::endl;
           int len = recvfrom(this->udp_sockfd, buf, nar::Packet::PACKET_LEN, 0, &addr, &fromlen);
-          int val = fcntl(this->udp_sockfd, F_GETFL, 0);
-          bool is_blocking = !(val & O_NONBLOCK);
-          std::cout << "huhu " << len << " " << is_blocking << std::endl;
           if(len < nar::Packet::HEADER_LEN) continue;
           nar::Packet recvd;
           recvd.set_header(buf);
-          if(len != recvd.get_payloadlen() + nar::Packet::HEADER_LEN) continue;
           recvd.set_payload(buf + nar::Packet::HEADER_LEN);
-          receive_buffer_mutex.lock();
-          this->receive_buffer.push_back(recvd);
-          receive_buffer_mutex.unlock();
+
+          if(len != recvd.get_payloadlen() + nar::Packet::HEADER_LEN) continue;
+          if(this->stream_id != recvd.get_streamid()) continue;
+
+          if(recvd.is_syn() && recvd.is_ack()) {
+            this->flag_mtx.lock();
+            this->synack_flag = true;
+            std::unique_lock<std::mutex> lck(this->event_cv_mtx);
+            event_cv.notify_all();
+            this->flag_mtx.unlock();
+          } else if(recvd.is_syn()) {
+            nar::Packet synack;
+            synack.make_synack(this->stream_id);
+            std::string packet = synack.make_packet();
+            sendto(this->udp_sockfd, packet.c_str(), packet.size(), 0, addr, fromlen);
+            this->flag_mtx.lock();
+            this->syn_flag = true;
+            std::unique_lock<std::mutex> lck(this->event_cv_mtx);
+            this->event_cv.notify_all();
+            this->flag_mtx.unlock();
+          } else if(recvd.is_ack()) {
+            acks.push(recvd);
+          } else if(recvd.is_nat()) {
+          } else if(recvd.is_data()) {
+          } else if(recvd.is_ran()) {
+          }
+
+          
+          
         }
       }
     public:

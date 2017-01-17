@@ -9,33 +9,20 @@
 #include <iostream>
 #include <sys/ioctl.h>
 
-nar::USocket::USocket() {
-  if((udp_sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) == -1)) {
+nar::USocket::USocket(unsigned int streamid) {
+  this->stream_id = streamid;
+  if((this->udp_sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
     throw "USocket create error.";
   }
-  int iMode = 0;
-  ioctl(udp_sockfd, FIONBIO, &iMode);  
-  std::cout << "sockfd: " << this->udp_sockfd << std::endl;
 
-  /****** JUST FOR TEST ******/
-  struct sockaddr_in me;
-  me.sin_family = AF_INET;
-  me.sin_port = htons(12345);
-  me.sin_addr.s_addr = INADDR_ANY;
-  bind(udp_sockfd, (struct sockaddr*) &me, sizeof(me));
-  /****************************/
+  this->syn_flag = false;
+  this->synack_flag = false;
+  this->ack_flag = false;
+  this->stop_thread = false;
+  this->stream_id = streamid;
 
-
-  stop_thread = false;
-  stream_id = 0;
-
-  std::thread rcv(&USocket::receive_thread, *this);
+  std::thread rcv(&USocket::receive_thread, &*this);
   rcv.detach();
-  while(true) {
-    receive_buffer_mutex.lock();
-    std::cout << receive_buffer.size() << std::endl;
-    receive_buffer_mutex.unlock();
-  }
 }
 
 nar::USocket::USocket(const USocket& rhs) {
