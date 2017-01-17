@@ -6,6 +6,7 @@
 #include <fstream>
 #include <nar/lib/nlohJson/json.hpp>
 #include <nar/narnode/utility.h>
+#include <cstdlib>
 namespace nar {
     class Global {
         private:
@@ -30,7 +31,10 @@ namespace nar {
                 set_narServerPort(12345);
                 std::fstream fs;
 				std::cout << "Here1" << std::endl;
-                fs.open ("/home/utku/.config/nar/config", std::fstream::in | std::fstream::out | std::fstream::app);
+                std::string temps(getenv("HOME"));
+                temps += std::string("/.config/nar/config");
+                fs.open (temps.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
+                std::cout << "Here1" << std::endl;
                 int flag1 = 0;
                 int flag2 = 0;
 				int flag3 = 0;
@@ -45,7 +49,7 @@ namespace nar {
                             username = temp.substr(11,temp.size()-11);
                             std::cout << "Username : " << username << std::endl;
                         }
-                        else if(temp[0] == 'S') { //ServerIp : 
+                        else if(temp[0] == 'S') { //ServerIp :
                             flag2 = 1;
                             narServerIP = temp.substr(11,temp.size()-11);
                             std::cout << "ServerIp : " << narServerIP << std::endl;
@@ -75,8 +79,10 @@ namespace nar {
                     if(flag1 == 1 and flag2 ==1 and flag3 == 1){ //already registered
                         std::cout << "You are already registered bro! (north remembers...)" << std::endl;
                     }
-                    else { 
-                        fs.open ("/home/utku/.config/nar/config", std::fstream::in | std::fstream::out | std::fstream::app);
+                    else {
+                        std::string temps(getenv("HOME"));
+                        temps += std::string("/.config/nar/config");
+                        fs.open (temps.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
                         std::cout << "Username : ";
                         std::cin >> username;
                         fs << "Username : ";
@@ -87,7 +93,6 @@ namespace nar {
                         fs << "ServerIp : ";
                         fs << narServerIP;
                         fs << '\n';
-
 						nar::Socket serverSck;
 						std::cout << "Here2" << std::endl;
 						serverSck.create();
