@@ -11,7 +11,7 @@
 #include <sstream>
 
 std::string nar::get_message(nar::Socket& skt) {
-    char buf[1025];
+    char buf[1035];
     int received = skt.recv(buf, 1024);
     if(received <= 0) throw nar::Exception("Connection Lost");
     int len = 0;
@@ -38,9 +38,11 @@ std::string nar::get_message(nar::Socket& skt) {
             throw nar::Exception("wowowo");
         }
     }
+
+    std::cout << "len: " << len << std::endl;
     std::string data;
     int cur;
-    data.append(buf+idx, cur = std::min((received - idx + 1), len));
+    data.append(buf+idx, cur = std::min((received - idx), len));
     len -= cur;
 
     while(len > 0) {
@@ -52,6 +54,7 @@ std::string nar::get_message(nar::Socket& skt) {
             throw nar::Exception("wtf");
         }
     }
+    std::cout << "data: " << data << std::endl;
     return data;
 }
 
