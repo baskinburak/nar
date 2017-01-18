@@ -4,7 +4,7 @@
 #include <zlib.h>
 #include <stdio.h>
 
-#include <nar/narnode/FileKeeper/FileKeeper.h>
+#include "FileKeeper.h"
 
 namespace nar {
     class FileCompressor {
@@ -14,8 +14,8 @@ namespace nar {
         public:
             FileCompressor(nar::FileKeeper *myfile) : file(myfile) {}
             unsigned long file_size(char *filename);
-            int decompress_one_file(nar::FileKeeper *infile, nar::FileKeeper *outfile);
-            int compress_one_file(nar::FileKeeper *infile, nar::FileKeeper *outfile);
+            int decompress_one_file(char *infilename, char *outfilename);
+            int compress_one_file(char *infilename, char *outfilename);
     };
 }
 

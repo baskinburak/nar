@@ -1,4 +1,4 @@
-SRC_FILES := $(shell find ../../ ! -name "aes.cpp" ! -name "test.cpp" ! -name "Database.cpp" ! -name "Database2.cpp" ! -name "server.cpp" ! -name "cli.cpp" ! -name "daemon.cpp" ! -name "cryptor.cpp" ! -name "FileKeeperTest.cpp" -name "*.cpp")
+SRC_FILES := $(shell find ../../ ! -name "aes.cpp" ! -name "test.cpp" ! -name "Database.cpp" ! -name "Database2.cpp" ! -name "server.cpp" ! -name "cli.cpp" ! -name "daemon.cpp" ! -name "cryptor.cpp" ! -name "FileKeeperTest.cpp" -name "*.cpp" ! -name "compressor.cpp")
 
 all: nardaemon narcli
 
