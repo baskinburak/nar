@@ -44,7 +44,7 @@ std::string nar::get_message(nar::Socket& skt) {
     len -= cur;
 
     while(len > 0) {
-        int rec = skt.recv(buf, std::min(len, 1024));
+        int rec = skt.recv(buf, std::min(len, std::min(len, 1024)));
         if(rec > 0) {
             data.append(buf, rec);
             len-=rec;
@@ -53,7 +53,6 @@ std::string nar::get_message(nar::Socket& skt) {
         }
     }
     return data;
-
 }
 
 

@@ -458,10 +458,10 @@ int nar::USocket::send(char* buf, int len) {
     }
 
     std::cout << "zu" << std::endl;
-    {
-      std::unique_lock<std::mutex> lck(this->event_cv_mtx);
-      this->event_cv.wait(lck);
-    }
+    
+    std::unique_lock<std::mutex> lck(this->event_cv_mtx);
+    this->event_cv.wait(lck);
+    
     this->flag_mtx.lock();
     if(this->ack_flag) {
       std::cout << "ack" << std::endl;

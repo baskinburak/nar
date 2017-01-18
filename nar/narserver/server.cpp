@@ -402,6 +402,7 @@ namespace nar {
 
                         std::cout << "\n"<< peer_str << std::endl;
                         send_message( peer_sock->getSck() , peer_str);
+                        
                         json rspX = json::parse(get_message( *(peer_sock->getSck())) );
                         std::cout << rspX << std::endl;
 

@@ -301,9 +301,9 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 				nlohmann::json peer_msg;
                 peer_msg["header"]["channel"] = "sp";
                 peer_msg["header"]["reply-to"] = "wait_chunk_push_request";
-				peer_msg["header"]["status-code"] = 200;
-				std::string resp(peer_msg.dump());
-				nar::send_message( skt, resp);
+				  peer_msg["header"]["status-code"] = 200;
+				  std::string resp(peer_msg.dump());
+				  nar::send_message( skt, resp);
 
           std::thread thr(&chunk_push_replier, stream_id, globals, chunk_size, rand_port, chunk_id);
           thr.detach();
