@@ -474,6 +474,9 @@ int nar::USocket::send(char* buf, int len) {
         if(acked.find(ackseqnum) != acked.end()) { // if this is already acked, ignore it.
           continue;
         }
+        if(ackseqnum < first_seqnum) {
+          continue;
+        }
 
         if(is_sent_not_acked.find(ackseqnum) != is_sent_not_acked.end()) { // if it is sent but not acked
           is_sent_not_acked.erase(ackseqnum);

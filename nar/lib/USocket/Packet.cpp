@@ -196,6 +196,20 @@ nar::Packet& nar::Packet::operator=(const nar::Packet& rhs) {
   return *this;
 }
 
+nar::Packet::Packet(const nar::Packet& rhs) {
+  this->syn = rhs.syn;
+  this->ack = rhs.ack;
+  this->fin = rhs.fin;
+  this->nat = rhs.nat;
+  this->data = rhs.data;
+  this->ran = rhs.ran;
+  this->seqnum = rhs.seqnum; // seqnum of the packet. packets constitute the sequence not bytes.
+  this->payload_len = rhs.payload_len; // length of the payload
+  this->stream_id = rhs.stream_id;
+  this->payload = rhs.payload;
+  this->acknum = rhs.acknum;
+}
+
 void nar::Packet::make_ack(unsigned int str_id, unsigned int aknm) {
   this->syn = 0;
   this->ack = 1;

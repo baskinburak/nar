@@ -33,6 +33,7 @@ namespace nar {
 
       Packet(char s, char a, char f, char n, char d, char r, unsigned int sqnm, unsigned int acknm, unsigned short p, unsigned int strid, std::string pl): syn(s), ack(a), fin(f), nat(n), data(d), seqnum(sqnm), acknum(acknm), payload_len(p), stream_id(strid), payload(pl), ran(r) {}
       Packet() {}
+      Packet(const Packet& rhs);
 
       void set_header(const std::string& hdr);
       void set_header(const char* hdr);
