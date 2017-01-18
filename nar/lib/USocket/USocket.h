@@ -76,6 +76,7 @@ namespace nar {
 
       USocket(unsigned int);
       USocket(const USocket& rhs);
+      ~USocket();
       void make_randevous(std::string server_ip, unsigned short server_port);
       void randevous_server(); // makes this socket a randevous server, call this to make socket arrange randevouses
       int recv(char* buf, int len);

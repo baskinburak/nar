@@ -59,6 +59,11 @@ nar::USocket::USocket(const USocket& rhs) {
   
 }
 
+nar::USocket::~USocket() {
+  this->stop_thread = true;
+  usleep(1000);
+}
+
 unsigned short nar::USocket::get_port() {
   return this->bind_port;
 }
@@ -169,7 +174,7 @@ void nar::USocket::receive_thread() {
 
 void nar::USocket::timer_thread() {
   bool expired = false;
-  while(true) {
+  while(!this->stop_thread) {
     usleep(100);
     this->timer_mtx.lock();
     this->numberof_100us--;
