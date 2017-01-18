@@ -342,10 +342,10 @@ namespace nar {
                     std::cout<<"here 5"<<std::endl;
                     do{
                         auto it=keepalives.begin();
-                        selected_machine = std::rand() % ((int)keepalives.size()-1);
+                        selected_machine = std::rand() % ((int)keepalives.size());
                         std::cout<<"selected number "<<selected_machine<<std::endl;
                         std::advance(it, selected_machine);
-                        if(it->first.compare(inf->getUser())==0) {
+                        if(it->second->getUser().compare(inf->getUser())==0) {
                             continue;
                         } else {
                             selected_machines.push_back(it->second->getAuthenticationHash());

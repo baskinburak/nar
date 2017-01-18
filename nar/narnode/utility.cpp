@@ -62,10 +62,10 @@ std::string nar::get_string_sckt(int sockfd, int len) {
     int idx = 0;
     int l = 0;
     char buf[129];
-	int val = len;
+
+    int val = len;
     while(idx < len) {
         if((l = recv(sockfd, buf, std::min(val, 128), 0)) > 0) {
-			//std::cout<<"l "<<l<<" buf "<<buf<<std::endl;
             res.append(buf, l);
 			//std::cout<<"res "<<res<<std::endl;
             idx+=l;
@@ -198,6 +198,7 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 
 	std::cout << "FILE SIZE HERE !é!!! : " << fileSize << std::endl;
 
+    unsigned long total = 0;
     do
     {
         int num = std::min(fileSize, (unsigned long int)1024);
@@ -206,7 +207,7 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 		   std::cout << "Read Data Failed from peer Skt" << std::endl;
 		   return 0;
 		}
-
+        total+=num;
 
 		////std::cout <<  "buffer: "<<std::string(buffer) << std::endl << std::endl << std::endl ;
 
@@ -216,10 +217,10 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 
 
         fileSize -= num;
-	
+
 	}
     while (fileSize > 0);
-
+    std::cout<<"total ->>>> "<<total<<std::endl;
 	delete buffer;
 
 	return 1;
