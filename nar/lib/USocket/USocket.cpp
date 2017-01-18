@@ -48,10 +48,10 @@ nar::USocket::USocket(unsigned int streamid) {
   this->stop_thread = false;
   this->stream_id = streamid;
 
-  std::thread rcv(&USocket::receive_thread, &*this);
+  std::thread rcv(&USocket::receive_thread, this);
   rcv.detach();
 
-  std::thread tmr(&USocket::timer_thread, &*this);
+  std::thread tmr(&USocket::timer_thread, this);
   tmr.detach();
 }
 
