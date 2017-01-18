@@ -143,7 +143,7 @@ void nar::USocket::receive_thread() {
       if(seqnum_visited.find(recvd.get_seqnum()) != seqnum_visited.end()) continue;
 
       received_packets.push(recvd);
-      seqnum_visited[recv.get_seqnum()] = true;
+      seqnum_visited[recvd.get_seqnum()] = true;
       std::string res;
       bool new_exists = false;
       while(!received_packets.empty() && (pqpacket = received_packets.top()).get_seqnum() == expectedseqnum) {
