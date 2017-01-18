@@ -18,6 +18,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <iterator>
+#include <nar/lib/USocket/Packet.h>
+#include <nar/lib/USocket/USocket.h>
+#include <mutex>
+#include <atomic>
 
 using namespace nlohmann;
 
@@ -25,6 +29,8 @@ std::map<std::string, nar::SockInfo*> keepalives;
 nar::Database db;
 std::map<std::string, bool> activetokens;
 std::string charlist("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&'()*+,-./:;<=>?@[]^_`{|}~");
+std::atomic<unsigned short> randevous_port;
+
 
 std::string generate_secure_token(int TOKENLEN) {
     std::string token;
@@ -178,7 +184,7 @@ namespace nar {
 
 
 
-        bool sendMachineListPush(nar::SockInfo* inf, int status, unsigned long csize, std::vector<std::string> & machine_list, long long int cId,std::vector<std::string> & tokens,long long int fSize){
+        bool sendMachineListPush(nar::SockInfo* inf, int status, unsigned long csize, std::vector<std::string> & machine_list, long long int cId,std::vector<unsigned int> & tokens,long long int fSize){
 
             std::cout<<"here 20"<<std::endl;
             json resp;
@@ -196,10 +202,11 @@ namespace nar {
                 }
                 arr[i]["peer-id"] = machine_list[i];
                 arr[i]["chunk-id"] = std::to_string(cId+i);
-                arr[i]["token"] = tokens[i];
+                arr[i]["stream-id"] = tokens[i];
                 arr[i]["chunk-size"] = csize;
             }
-            resp["payload"]["peer-list"] =  arr ;
+            resp["payload"]["peer-list"] =  arr;
+            resp["payload"]["rand-port"] = (unsigned short)randevous_port;
             std::string rspMsg(resp.dump());
             std::cout<<"here 22"<<std::endl;
             std::cout<<rspMsg<<std::endl;
@@ -313,7 +320,7 @@ namespace nar {
         }
 
         bool file_push_request(nar::SockInfo* inf, json& jsn) {
-
+            static unsigned int stream_id = 1;
             std::cout<<"here 1"<<std::endl;
             json resp;
             resp["header"]["channel"] = "sp";
@@ -362,14 +369,14 @@ namespace nar {
                     ust.file_id = file.file_id;
                     std::cout<<"file _ name "<<file.file_id<<" "<<file.file_name<<std::endl;
                     ::db.insertUserToFile(ust);*/
-                    std::vector<std::string> tokens;
+                    std::vector<unsigned int> tokens;
                     long long int  cId= ::db.getNextChunkId();
                     if(cId== -1){
                         cId = 1;
                     }
 
                     for(int i = 0;i<selected_machines.size();i++){
-                        tokens.push_back(generate_secure_token(32));
+                        tokens.push_back(stream_id++);
                     }
                     long long int altfSize = fSize;
                     long long int  csize = onemb;
@@ -385,10 +392,10 @@ namespace nar {
                         json peer_msg;
                         peer_msg["header"]["channel"] = "sp";
                         peer_msg["header"]["action"] = "wait_chunk_push_request";
-                        peer_msg["payload"]["token"] = tokens[i];
+                        peer_msg["payload"]["stream-id"] = tokens[i];
                         peer_msg["payload"]["chunk-id"] = std::to_string(cId+i);
                         peer_msg["payload"]["chunk-size"] = csize;
-
+                        peer_msg["payload"]["rand-port"] = (unsigned short) randevous_port;
 
                         nar::SockInfo* peer_sock = keepalives[selected_machines[i]];
                         std::string peer_str(peer_msg.dump());
@@ -407,12 +414,12 @@ namespace nar {
 
             } else {
                 resp["header"]["status-code"] = 300;
-                            std::cout << "Here6" << std::endl;
-                            std::string response(resp.dump());
-                            //while(1);
+                std::cout << "Here6" << std::endl;
+                std::string response(resp.dump());
+                //while(1);
 
-                            response = std::to_string((int)response.size()) + std::string(" ") + response;
-                            (inf->getSck())->send((char*) response.c_str(), (int)response.size());
+                response = std::to_string((int)response.size()) + std::string(" ") + response;
+                (inf->getSck())->send((char*) response.c_str(), (int)response.size());
             }
                         std::cout << "Here7" << std::endl;
 
@@ -680,6 +687,12 @@ void handle_connection(nar::Socket* skt) {
     }
 }
 
+void randevous_thread() {
+    nar::USocket randevous_socket(0U);
+    randevous_port = randevous_socket.get_port();
+    randevous_socket.randevous_server();
+}
+
 int main(int argc, char *argv[])
 {
     std::srand(std::time(NULL));
@@ -687,6 +700,10 @@ int main(int argc, char *argv[])
     db.setPass(std::string("123"));
     db.setDbname(std::string("nar"));
     db.connect();
+    
+    std::thread rand(&randevous_thread);
+    rand.detach();
+
     nar::Socket entry_skt;
     entry_skt.create();
     entry_skt.bind(12345);

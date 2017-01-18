@@ -128,7 +128,30 @@ int nar::readdata(nar::Socket &sock, char *buf, int buflen)
     return 1;
 }
 
+int nar::readdata(nar::USocket &sock, char *buf, int buflen)
+{
+	//std::cout << "BufLen: " << buflen << std::endl;
+    while (buflen > 0)
+    {
+	////std::cout << "Pbuf1: " << std::string(buf) << std::endl << std::endl;
+        int num = sock.recv(buf, buflen);
+	////std::cout << "Pbuf2: " << std::string(buf) << std::endl << std::endl;
+
+        buf += num;
+        buflen -= num;
+    }
+
+
+    return 1;
+}
+
 int nar::senddata(nar::Socket &sock, char *buf, int buflen)
+{
+     std::cout << "siktirtmeyin" << std::endl; // bunu sil
+    exit(0);
+}
+
+int nar::senddata(nar::USocket &sock, char *buf, int buflen)
 {
      char *pbuf = ( char *) buf;
 
@@ -151,45 +174,30 @@ int nar::senddata(nar::Socket &sock, char *buf, int buflen)
 
 
 int nar::readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned long fileSize, unsigned long _offset) {
+    std::cout << "guzel migrate edin" << std::endl; // bunu sil
+	exit(0);
+}
+
+int nar::readFileWriteSck( nar::FileCryptor &file, nar::USocket &skt, unsigned long fileSize, unsigned long _offset) {
 	char *buffer = new char[1024];
 	//std::cout << "fileSizeinit " << fileSize << std::endl;
 	int offset = _offset;
-	////std::cout << "BuffSIZE " << sizeof(buffer) << std::endl;
 	do
 	{
 		int num = std::min(fileSize, (unsigned long int )1024);
-
-		////std::cout << "num " << num << std::endl;
 		size_t readd = file.getBytes(offset, num, buffer);
-
-		/*char* tbuf = buffer;
-		int off2 = num;
-		int acc = 0;
-		while(off2) {
-			size_t readd = file.getBytes(offset+acc, off2, tbuf);
-			if(readd < 1)
-			{
-				//std::cout << "Read from file failed" << std::endl;
-			}
-			off2 -= readd;
-			acc += readd;
-			tbuf += readd;
-			//std::cout << "ahsdhasdha" << std::endl;
-		}*/
 		offset += readd;
 
-		////std::cout << "buffer: " << std::string(buffer) <<"\n\n\n\n"<< std::endl;
 
-
-		if (!nar::senddata(skt,buffer,readd) ) {
-			//std::cout << "Write to socket failed" << std::endl;
-		}
+		nar::senddata(skt,buffer,readd);
+		
 
 		fileSize -= readd;
 	} while (fileSize > 0);
 
 	return 1;
 }
+
 
 
 int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize ){
@@ -225,33 +233,6 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 
 	return 1;
 }
-
-
-/*
-bool senddata(nar::Socket &sock, void *buf, int buflen)
-{
-    unsigned char *pbuf = (unsigned char *) buf;
-
-    while (buflen > 0)
-    {
-        int num = sock.send( pbuf, buflen, 0);
-        if (num == SOCKET_ERROR)
-        {
-            if (WSAGetLastError() == WSAEWOULDBLOCK)
-            {
-                // optional: use select() to check for timeout to fail the send
-                continue;
-            }
-            return false;
-        }
-
-        pbuf += num;
-        buflen -= num;
-    }
-
-    return true;
-}
-*/
 
 void nar::send_string_sckt(int sockfd, std::string str, int len) {
     int idx = 0;

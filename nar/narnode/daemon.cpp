@@ -24,6 +24,8 @@
 #include <algorithm>
 #include <nar/narnode/FileKeeper/FileKeeper.h>
 #include <pwd.h>
+#include <nar/lib/USocket/Packet.h>
+#include <nar/lib/USocket/USocket.h>
 
 void handle_cli_ipc(int sockfd, nar::Global* globals) {
     char buf[129];
@@ -278,16 +280,29 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 			std::cout << "!!!!!!!!!!" << std::endl;
 
 			if(action == "wait_chunk_push_request"){
-				std::pair< std::string, unsigned long > p1 = std::make_pair(serverReq["payload"]["chunk-id"].get<std::string>(),serverReq["payload"]["chunk-size"].get<unsigned long>());
+                unsigned int stream_id = serverReq["payload"]["stream-id"];
+                std::string chunk_id = serverReq["payload"]["chunk-id"];
+                unsigned long chunk_size = serverReq["payload"]["chunk-size"];
+                unsigned short rand_port = serverReq["payload"]["rand-port"];
 				std::cout << "Begin" << std::endl;
-				std::pair< nar::Socket *, int > p2 = wait_chunk();
-				peerList[serverReq["payload"]["token"]] = std::make_pair(p1,p2);
+				
 				nlohmann::json peer_msg;
                 peer_msg["header"]["channel"] = "sp";
                 peer_msg["header"]["reply-to"] = "wait_chunk_push_request";
 				peer_msg["header"]["status-code"] = 200;
 				std::string resp(peer_msg.dump());
 				nar::send_message( skt, resp);
+
+                nar::USocket peer_sock(stream_id);
+                peer_sock.make_randevous(globals->get_narServerIp(), rand_port);
+
+                char* buf = new char[chunk_size];
+                nar::readdata(peer_sock, buf, chunk_size);
+                std::string path(globals->get_narFolder() + std::string("/c"));
+                path = path + chunk_id;
+                std::cout << path << std::endl;
+                int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
+                nar::FileKeeper::writeToFile( fd,  chunk_size, buf);
 			}
 			else if(action == "peer_port_request"){
 				std::string chunkId = peerList[serverReq["payload"]["token"]].first.first;

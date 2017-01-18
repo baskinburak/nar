@@ -26,7 +26,7 @@ namespace nar {
 				void sendJson(rapidjson::Document &msg,nar::Socket *serverSck );
 				bool sendJson(nlohmann::json &msg,nar::Socket *serverSck );
 				void recvJson(nlohmann::json &msg, nar::Socket *serverSck );
-				void distributeFile(nlohmann::json &msg, Socket *serverSck, FileCryptor &file);
+				void distributeFile(nlohmann::json &msg, Socket *serverSck, FileCryptor &file, Global* globals);
 				void getPeerInfo(std::string peerId, std::string token, nar::Socket *serverSck);
 				std::string getAesKey(nar::Socket *serverSck) ;
 

@@ -161,11 +161,11 @@ void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Sock
 
 }
 
-void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serverSck, nar::FileCryptor &file){
+void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serverSck, nar::FileCryptor &file, nar::Global* globals){
 	std::cout << "Not here eitherEHE" << std::endl;
 	std::cout << msg.dump() << std::endl;
 	//int chunkSize = msg["payload"]["chunk-size"].get<int>();std::cout << "Not here eitherAHA" << std::endl;
-	
+	unsigned short rand_port = msg["payload"]["rand-port"];
 	size_t fOffset = 0;
 	for(nlohmann::json::iterator it = msg["payload"]["peer-list"].begin(); it != msg["payload"]["peer-list"].end(); ++it){
 		/*std::cout << "HELP5" << std::endl;
@@ -184,13 +184,16 @@ void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serve
 		nar::Socket *peerSck = establishPeerConnection(peerIp,port);
 		resp.clear();
 		resp["payload"][]*/
-		std::cout << "HERE MAYBE" << std::endl;
-		std::cout << (*it)["peer-id"] << std::endl;
+        unsigned int stream_id = (*it)["stream-id"];
+        unsigned long chunk_size = (*it)["chunk-size"];
+        std::string machine_id = (*it)["peer-id"];
+        std::string chunk_id = (*it)["chunk-id"];
 
-		nar::Socket *peerSck = sendTokenToPeer(it,serverSck,(*it)["chunk-size"]);
-		std::cout << "Not MAYBE" << std::endl;
-		pushFileToPeer(it,peerSck, file , fOffset, (*it)["chunk-size"]);
-		fOffset += (*it)["chunk-size"].get<unsigned long>();
+        nar::USocket peer_sock(stream_id);
+        peer_sock.make_randevous(globals->get_narServerIp(), rand_port);
+
+        nar::readFileWriteSck(file, peer_sock, chunk_size, fOffset);
+		fOffset += chunk_size;
 		//peerSck->close();
 	}
 }
@@ -246,7 +249,7 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 
 	recvJson(response, serverSck);
 
-	distributeFile(response, serverSck, file);
+	distributeFile(response, serverSck, file, globals);
 	std::string endMsg("END");
 	nar::send_ipc_message(unx_sockfd, endMsg);
 }
