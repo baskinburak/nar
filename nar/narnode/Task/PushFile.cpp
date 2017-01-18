@@ -155,7 +155,7 @@ void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Sock
 
 	peerSck->send(chunk, len);
 	fOffset += len;*/
-
+	std::cout << "MATTERSSS!!!!! *** CS OFF "<<_chunkSize << " " << fOffset << std::endl;
 	nar::readFileWriteSck( file, *peerSck, _chunkSize,fOffset);
 
 
@@ -191,6 +191,7 @@ void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serve
 		std::cout << "Not MAYBE" << std::endl;
 		pushFileToPeer(it,peerSck, file , fOffset, (*it)["chunk-size"]);
 		fOffset += (*it)["chunk-size"].get<unsigned long>();
+		//peerSck->close();
 	}
 }
 
