@@ -31,7 +31,7 @@ namespace nar {
       static const unsigned short PACKET_LEN = 1000; // bytes
       static const unsigned short HEADER_LEN = 15; // bytes
 
-      Packet(char s, char a, char f, char n, char d, char r, unsigned int sqnm, unsigned int acknm, unsigned short p, unsigned int strid, std::string pl): syn(s), ack(a), fin(f), nat(n), data(d), seqnum(sqnm), acknum(acknm) payload_len(p), stream_id(strid), payload(pl), ran(r) {}
+      Packet(char s, char a, char f, char n, char d, char r, unsigned int sqnm, unsigned int acknm, unsigned short p, unsigned int strid, std::string pl): syn(s), ack(a), fin(f), nat(n), data(d), seqnum(sqnm), acknum(acknm), payload_len(p), stream_id(strid), payload(pl), ran(r) {}
       Packet() {}
 
       void set_header(const std::string& hdr);
@@ -69,13 +69,15 @@ namespace nar {
 
       nar::Packet& operator=(const nar::Packet& rhs);
 
-      void make_ack(unsigned int sqnm, unsigned int str_id, unsigned int acknm);
+      void make_ack(unsigned int str_id, unsigned int acknm);
       void make_syn(unsigned int str_id);
       void make_synack(unsigned int str_id);
       void make_nat(unsigned int str_id);
       void make_ran(unsigned int str_id);
-      void make_data(unsigned int sqnm, unsigned int str_id, std::string& payload, unsigned int payload_len = payload.size());
+      void make_data(unsigned int sqnm, unsigned int str_id, std::string& payload, unsigned int payload_len);
       void make_fin(unsigned int str_id);
+
+      void print();
   };
 }
 

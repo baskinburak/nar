@@ -1,5 +1,6 @@
 #include "Packet.h"
 #include <cassert>
+#include <iostream>
 
 std::string nar::Packet::htons(unsigned short num) {
   std::string res;
@@ -39,6 +40,10 @@ std::string nar::Packet::make_packet() const {
   pckt_str += this->htonl(this->stream_id);
   if(this->payload_len > 0)
     pckt_str += this->payload;
+
+  std::cout << "Send" << std::endl;
+  std::cout << "seqnum " << this->seqnum << std::endl;
+  std::cout << "nat " << (this->nat ? 1:0) << std::endl;
   return pckt_str;
 }
 
@@ -54,6 +59,10 @@ void nar::Packet::set_header(const std::string& hdr) {
   this->nat = (flags & (0x10)) >> 4;
   this->data = (flags & (0x8)) >> 3;
   this->ran = (flags & (0x4)) >> 2;
+
+  std::cout << "Received" << std::endl;
+  std::cout << "seqnum " << this->seqnum << std::endl;
+  std::cout << "nat " <<  (this->nat ? 1:0) << std::endl;
 }
 
 void nar::Packet::set_header(const char* hdr_c) {
@@ -69,6 +78,10 @@ void nar::Packet::set_header(const char* hdr_c) {
   this->nat = (flags & (0x10)) >> 4;
   this->data = (flags & (0x8)) >> 3;
   this->ran = (flags & (0x4)) >> 2;
+
+  std::cout << "Received" << std::endl;
+  std::cout << "seqnum " << this->seqnum << std::endl;
+  std::cout << "nat " <<  (this->nat ? 1:0) << std::endl;
 }
 
 void nar::Packet::set_payload(const std::string& pl) {
@@ -177,7 +190,7 @@ unsigned int nar::Packet::get_acknum() const {
   return this->acknum;
 }
 
-nar::Packet& operator=(const nar::Packet& rhs) {
+nar::Packet& nar::Packet::operator=(const nar::Packet& rhs) {
   if(this != &rhs) {
     this->syn = rhs.syn;
     this->ack = rhs.ack;
@@ -194,10 +207,20 @@ nar::Packet& operator=(const nar::Packet& rhs) {
   return *this;
 }
 
-nar::Packet::make_ack(unsigned int sqnm, unsigned int str_id, unsigned int aknm) {
-
+void nar::Packet::make_ack(unsigned int str_id, unsigned int aknm) {
+  this->syn = 0;
+  this->ack = 1;
+  this->fin = 0;
+  this->nat = 0;
+  this->data = 0;
+  this->ran = 0;
+  this->seqnum = 0;
+  this->payload_len = 0;
+  this->acknum = aknm;
+  this->stream_id = str_id;
+  this->payload = std::string("");
 }
-nar::Packet::make_syn(unsigned int str_id) {
+void nar::Packet::make_syn(unsigned int str_id) {
   this->syn = 1;
   this->ack = 0;
   this->fin = 0;
@@ -208,10 +231,10 @@ nar::Packet::make_syn(unsigned int str_id) {
   this->payload_len = 0;
   this->acknum = 0;
   this->stream_id = str_id;
-  this->payload = std::string("")
+  this->payload = std::string("");
 }
 
-nar::Packet::make_synack(unsigned int str_id) {
+void nar::Packet::make_synack(unsigned int str_id) {
   this->syn = 1;
   this->ack = 1;
   this->fin = 0;
@@ -222,10 +245,10 @@ nar::Packet::make_synack(unsigned int str_id) {
   this->acknum = 0;
   this->payload_len = 0;
   this->stream_id = str_id;
-  this->payload = std::string("")
+  this->payload = std::string("");
 }
 
-nar::Packet::make_nat(unsigned int str_id) {
+void nar::Packet::make_nat(unsigned int str_id) {
   this->syn = 0;
   this->ack = 0;
   this->fin = 0;
@@ -236,9 +259,9 @@ nar::Packet::make_nat(unsigned int str_id) {
   this->acknum = 0;
   this->payload_len = 0;
   this->stream_id = str_id;
-  this->payload = std::string("")
+  this->payload = std::string("");
 }
-nar::Packet::make_ran(unsigned int str_id) {
+void nar::Packet::make_ran(unsigned int str_id) {
   this->syn = 0;
   this->ack = 0;
   this->fin = 0;
@@ -248,10 +271,11 @@ nar::Packet::make_ran(unsigned int str_id) {
   this->seqnum = 0;
   this->acknum = 0;
   this->payload_len = 0;
+  std::cout << "--------------------" << str_id << std::endl;
   this->stream_id = str_id;
-  this->payload = std::string("")
+  this->payload = std::string("");
 }
-nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, std::string& pl, unsigned int pl_len = payload.size()) {
+void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, std::string& pl, unsigned int pl_len) {
   this->syn = 0;
   this->ack = 0;
   this->fin = 0;
@@ -264,7 +288,7 @@ nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, std::string& pl, 
   this->stream_id = str_id;
   this->payload = pl.substr(0, pl_len);
 }
-nar::Packet::make_fin(unsigned int str_id) {
+void nar::Packet::make_fin(unsigned int str_id) {
   this->syn = 0;
   this->ack = 0;
   this->fin = 1;
@@ -275,5 +299,19 @@ nar::Packet::make_fin(unsigned int str_id) {
   this->acknum = 0;
   this->payload_len = 0;
   this->stream_id = str_id;
-  this->payload = std::string("")
+  this->payload = std::string("");
+}
+
+void nar::Packet::print() {
+  std::cout << this->syn << std::endl;
+  std::cout << this->ack << std::endl;
+  std::cout << this->fin << std::endl;
+  std::cout << "nat: " << this->nat << std::endl;
+  std::cout << this->data << std::endl;
+  std::cout << this->ran << std::endl;
+  std::cout << "seqnum: " << this->seqnum << std::endl;
+  std::cout << "acknum: " << this->acknum << std::endl;
+  std::cout << this->payload_len << std::endl;;
+  std::cout << "stream id: " << this->stream_id << std::endl;
+  std::cout << this->payload << std::endl;
 }
