@@ -79,7 +79,7 @@ namespace nar {
       void make_randevous(std::string server_ip, unsigned short server_port);
       void randevous_server(); // makes this socket a randevous server, call this to make socket arrange randevouses
       int recv(char* buf, int len);
-      int send(char* buf, int len);
+      int send(char * buf, int len);
       unsigned short get_port();
   };
 }

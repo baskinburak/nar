@@ -78,7 +78,7 @@ void nar::USocket::receive_thread() {
     recvd.set_header(buf);
     recvd.set_payload(buf + nar::Packet::HEADER_LEN);
 
-    recvd.print();
+   // recvd.print();
 
     if(len != recvd.get_payloadlen() + nar::Packet::HEADER_LEN) continue;
 
@@ -364,7 +364,7 @@ int nar::USocket::recv(char* buf, int len) {
   if(recv_flag) {
     this->receive_buffer_mtx.lock();
     int rlen = std::min(len, (int)this->receive_buffer.size());
-    memcpy(buf, this->receive_buffer.c_str(), rlen);
+    memcpy(buf, (char*)this->receive_buffer.c_str(), rlen);
     receive_buffer.erase(0, rlen);
     if(receive_buffer.size() == 0) {
       recv_flag = false;
@@ -384,7 +384,7 @@ int nar::USocket::recv(char* buf, int len) {
 
   this->receive_buffer_mtx.lock();
   int rlen = std::min(len, (int)this->receive_buffer.size());
-  memcpy(buf, this->receive_buffer.c_str(), rlen);
+  memcpy(buf, (char*)this->receive_buffer.c_str(), rlen);
   receive_buffer.erase(0, rlen);
   if(receive_buffer.size() == 0) {
     recv_flag = false;
@@ -410,16 +410,18 @@ int nar::USocket::send(char* buf, int len) {
 
   nar::Packet pqpacket;
 
-  static int seqnum = 0;
-  int first_seqnum = seqnum; // that is not acked
+  std::cout << "yarak" << std::endl;
+  static unsigned int seqnum = 0;
+  unsigned int first_seqnum = seqnum; // that is not acked
   int first_idx = 0;
-  for(int cur=0, i=0; cur<len; cur+=MAX_PAYLOAD_LEN, i++) {
+  for(int cur=0, i=0; cur<len; cur += MAX_PAYLOAD_LEN, i++) {
+    printf("%p %x\n", buf, buf);
     std::string payload(buf + cur, std::min(MAX_PAYLOAD_LEN, len-cur));
     nar::Packet data_packet;
     data_packet.make_data(seqnum, this->stream_id, payload, payload.size());
     packets.push_back(data_packet);
     seqnum_packetidx[seqnum] = i;
-    data_packet.print();
+   // data_packet.print();
     seqnum++;
   }
   int last_seqnum = seqnum-1;
@@ -497,6 +499,7 @@ int nar::USocket::send(char* buf, int len) {
         }
       }
       this->acks_list_mutex.unlock();
+      std::cout << "bacin" << std::endl;
     }
     if(this->timeout_flag) {
       this->timer_mtx.lock();
@@ -518,4 +521,5 @@ int nar::USocket::send(char* buf, int len) {
     }
     this->flag_mtx.unlock();
   }
+  return len;
 }

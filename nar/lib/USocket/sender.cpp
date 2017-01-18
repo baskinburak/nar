@@ -1,5 +1,6 @@
 #include "USocket.h"
 #include <fstream>
+#include <cstring>
 int main(int argc, char* argv[]) {
   if(argc != 3) {
     std::cout << "give me compliments" << std::endl;
@@ -14,7 +15,13 @@ std::string str((std::istreambuf_iterator<char>(t)),
                  std::istreambuf_iterator<char>());
 
 
-  sck.send((char*)str.c_str(), str.size());
+  int total = 0;
+  char* buf = new char[str.size()+100];
+  memcpy(buf, str.c_str(), str.size());
+
+  while(total != 17306) {
+    total += sck.send(buf + total, std::min(1024, 17306-total));
+  }
 
   std::cout << "going to infinite loop" << std::endl;
   while(true);

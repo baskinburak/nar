@@ -10,8 +10,8 @@ int main(int argc, char* argv[]) {
 
   char buf[50000];
   int total = 0;
-  while(total != 16943) {
-    int len = sck.recv(buf, 50000);
+  while(total != 17306) {
+    int len = sck.recv(buf, std::min(1024, 17306-total));
     std::string etci(buf, len);
     std::cout << etci << std::endl;
     total+=len;

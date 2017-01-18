@@ -74,7 +74,7 @@ namespace nar {
       void make_synack(unsigned int str_id);
       void make_nat(unsigned int str_id);
       void make_ran(unsigned int str_id);
-      void make_data(unsigned int sqnm, unsigned int str_id, std::string& payload, unsigned int payload_len);
+      void make_data(unsigned int sqnm, unsigned int str_id, std::string payload, unsigned int payload_len);
       void make_fin(unsigned int str_id);
 
       void print();

@@ -264,7 +264,7 @@ void nar::Packet::make_ran(unsigned int str_id) {
   this->stream_id = str_id;
   this->payload = std::string("");
 }
-void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, std::string& pl, unsigned int pl_len) {
+void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, std::string pl, unsigned int pl_len) {
   this->syn = 0;
   this->ack = 0;
   this->fin = 0;
