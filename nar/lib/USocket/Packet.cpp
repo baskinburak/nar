@@ -273,9 +273,9 @@ void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, std::string&
   this->ran = 0;
   this->seqnum = sqnm;
   this->acknum = 0;
-  this->payload_len = pl_len;
+  this->payload_len = pl.size();
   this->stream_id = str_id;
-  this->payload = pl.substr(0, pl_len);
+  this->payload = pl
 }
 void nar::Packet::make_fin(unsigned int str_id) {
   this->syn = 0;
