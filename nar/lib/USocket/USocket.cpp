@@ -70,16 +70,26 @@ void nar::USocket::receive_thread() {
   nar::Packet pqpacket;
   while(!this->stop_thread) {
     int len = recvfrom(this->udp_sockfd, buf, nar::Packet::PACKET_LEN, 0, &addr, &fromlen);
-    std::cout << "new data!" << std::endl;
     if(len < nar::Packet::HEADER_LEN) continue;
     nar::Packet recvd;
     recvd.set_header(buf);
     recvd.set_payload(buf + nar::Packet::HEADER_LEN);
 
-    recvd.print();
+    //recvd.print();
 
     if(len != recvd.get_payloadlen() + nar::Packet::HEADER_LEN) continue;
-    std::cout << "header len ok" << std::endl;
+
+    if(recvd.is_ran()) {
+     // std::cout << "it is ran" << std::endl;
+      this->randevous_mtx.lock();
+      this->randevous_list.push_back(std::make_pair(recvd, addr));
+      this->randevous_mtx.unlock();
+      this->flag_mtx.lock();
+      this->ran_flag = true;
+      this->flag_mtx.unlock();
+      std::unique_lock<std::mutex> lck(this->event_cv_mtx);
+      this->event_cv.notify_all();
+    }
 
     if(this->stream_id != recvd.get_streamid()) continue;
 
@@ -102,6 +112,7 @@ void nar::USocket::receive_thread() {
       this->event_cv.notify_all();
       this->flag_mtx.unlock();
     } else if(recvd.is_ack()) {
+      std::cout << "ack???" << std::endl;
       this->acks_list_mutex.lock();
       this->acks.push(recvd);
       this->acks_list_mutex.unlock();
@@ -111,7 +122,7 @@ void nar::USocket::receive_thread() {
       this->event_cv.notify_all();
       this->flag_mtx.unlock();
     } else if(recvd.is_nat()) {
-      std::cout << "nat received" << std::endl;
+     // std::cout << "nat received" << std::endl;
       nar::Packet natback;
       natback.make_nat(this->stream_id);
       std::string packet = natback.make_packet();
@@ -142,21 +153,11 @@ void nar::USocket::receive_thread() {
         this->receive_buffer += res;
         this->receive_buffer_mtx.unlock();
         this->flag_mtx.lock();
-        recv_flag = true;
+        this->recv_flag = true;
         std::unique_lock<std::mutex> lck(this->event_cv_mtx);
         this->event_cv.notify_all();
         this->flag_mtx.unlock();
       }
-    } else if(recvd.is_ran()) {
-      std::cout << "it is ran" << std::endl;
-      this->randevous_mtx.lock();
-      this->randevous_list.push_back(std::make_pair(recvd, addr));
-      this->randevous_mtx.unlock();
-      this->flag_mtx.lock();
-      this->ran_flag = true;
-      this->flag_mtx.unlock();
-      std::unique_lock<std::mutex> lck(this->event_cv_mtx);
-      this->event_cv.notify_all();
     }
   }
 }
@@ -222,6 +223,8 @@ void nar::USocket::randevous_server() {
               sendto(this->udp_sockfd, pktstr.c_str(), pktstr.size(), 0, &addr, sizeof(struct sockaddr));
             }
             continue;
+          } else {
+            done_stream_ids.erase(streamid);
           }
         }
 
@@ -244,6 +247,7 @@ void nar::USocket::randevous_server() {
             sendto(this->udp_sockfd, pkt2str.c_str(), pkt2str.size(), 0, &addr, sizeof(struct sockaddr));
             done_stream_ids[streamid] = std::make_tuple(sec_pair.second, addr, std::time(0));
           }
+          std::cout << "lean onn" << std::endl;
         } else {
           randevous_map[streamid] = this->randevous_list[i];
         }
@@ -273,7 +277,7 @@ void nar::USocket::make_randevous(std::string server_ip, short server_port) {
   ran_packet.make_ran(this->stream_id);
   std::string packet = ran_packet.make_packet();
   
-  ran_packet.print();
+ // ran_packet.print();
 
   this->timer_mtx.lock();
   this->numberof_100us = 10000; // 1 secs
@@ -425,16 +429,23 @@ int nar::USocket::send(char* buf, int len) {
         this->timeout_flag = false;
       }
       if(ack_flag) {
+        std::cout << "ack flag" << std::endl;
+        ack_flag = false;
         this->acks_list_mutex.lock();
+        bool done = false;
         while(!this->acks.empty()) {
           pqpacket = this->acks.top();
           this->acks.pop();
+          std::cout << pqpacket.get_acknum() << " " << cur_packet.get_seqnum() << std::endl;
           if(pqpacket.get_acknum() == cur_packet.get_seqnum()) {
             this->acks_list_mutex.unlock();
             this->flag_mtx.unlock();
+            std::cout << " e tamam deil mi aga" << std::endl;
+            done = true;
             break;
           }
         }
+        if(done) break;
         this->acks_list_mutex.unlock();
       }
       this->flag_mtx.unlock();

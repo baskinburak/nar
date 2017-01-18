@@ -24,7 +24,7 @@ unsigned int nar::Packet::ntoh(const std::string& inp, int start, int len) {
   unsigned int res = 0;
   for(int i=start; i<start+len; i++) {
     res = res << 8;
-    res |= inp[i];
+    res |= (inp[i]&0xff);
   }
   return res;
 }
@@ -40,10 +40,6 @@ std::string nar::Packet::make_packet() const {
   pckt_str += this->htonl(this->stream_id);
   if(this->payload_len > 0)
     pckt_str += this->payload;
-
-  std::cout << "Send" << std::endl;
-  std::cout << "seqnum " << this->seqnum << std::endl;
-  std::cout << "nat " << (this->nat ? 1:0) << std::endl;
   return pckt_str;
 }
 
@@ -59,10 +55,6 @@ void nar::Packet::set_header(const std::string& hdr) {
   this->nat = (flags & (0x10)) >> 4;
   this->data = (flags & (0x8)) >> 3;
   this->ran = (flags & (0x4)) >> 2;
-
-  std::cout << "Received" << std::endl;
-  std::cout << "seqnum " << this->seqnum << std::endl;
-  std::cout << "nat " <<  (this->nat ? 1:0) << std::endl;
 }
 
 void nar::Packet::set_header(const char* hdr_c) {
@@ -78,10 +70,6 @@ void nar::Packet::set_header(const char* hdr_c) {
   this->nat = (flags & (0x10)) >> 4;
   this->data = (flags & (0x8)) >> 3;
   this->ran = (flags & (0x4)) >> 2;
-
-  std::cout << "Received" << std::endl;
-  std::cout << "seqnum " << this->seqnum << std::endl;
-  std::cout << "nat " <<  (this->nat ? 1:0) << std::endl;
 }
 
 void nar::Packet::set_payload(const std::string& pl) {
