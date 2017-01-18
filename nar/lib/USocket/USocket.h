@@ -75,7 +75,7 @@ namespace nar {
       time_t devrtt;
 
       unsigned int seqnum;
-      double window_size = 64.0;
+      double window_size = 1000.0;
       int used_window_size = 0;
 
     public:

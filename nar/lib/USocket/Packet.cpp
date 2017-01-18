@@ -307,15 +307,15 @@ void nar::Packet::make_fin(unsigned int str_id) {
 
 void nar::Packet::print() {
   std::cout << "------------- printing packet" << std::endl;
-  std::cout << this->syn << std::endl;
-  std::cout << this->ack << std::endl;
-  std::cout << this->fin << std::endl;
+  std::cout << "syn: " <<this->syn << std::endl;
+  std::cout << "ack: " <<this->ack << std::endl;
+  std::cout << "fin: " <<this->fin << std::endl;
   std::cout << "nat: " << this->nat << std::endl;
-  std::cout << this->data << std::endl;
-  std::cout << this->ran << std::endl;
+  std::cout << "data: " <<this->data << std::endl;
+  std::cout << "ran: " <<this->ran << std::endl;
   std::cout << "seqnum: " << this->seqnum << std::endl;
   std::cout << "acknum: " << this->acknum << std::endl;
-  std::cout << this->payload_len << std::endl;;
+  std::cout << "payloadlen: " <<this->payload_len << std::endl;;
   std::cout << "stream id: " << this->stream_id << std::endl;
   std::cout << this->payload << std::endl;
 }

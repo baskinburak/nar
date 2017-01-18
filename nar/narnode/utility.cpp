@@ -181,12 +181,12 @@ int nar::readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned lo
 }
 
 int nar::readFileWriteSck( nar::FileCryptor &file, nar::USocket &skt, unsigned long fileSize, unsigned long _offset) {
-	char *buffer = new char[1024];
+	char *buffer = new char[1000200];
 	//std::cout << "fileSizeinit " << fileSize << std::endl;
 	int offset = _offset;
 	do
 	{
-		int num = std::min(fileSize, (unsigned long int )1024);
+		int num = std::min(fileSize, (unsigned long int )1000000);
 		size_t readd = file.getBytes(offset, num, buffer);
 		offset += readd;
 
@@ -196,7 +196,7 @@ int nar::readFileWriteSck( nar::FileCryptor &file, nar::USocket &skt, unsigned l
 
 		fileSize -= readd;
 	} while (fileSize > 0);
-
+  delete[] buffer;
 	return 1;
 }
 
