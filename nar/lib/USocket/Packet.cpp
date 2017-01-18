@@ -85,6 +85,7 @@ void nar::Packet::set_payload(const std::string& pl, int start, int len) {
 void nar::Packet::set_payload(const char* pl, int len) {
   this->payload_len = len;
   this->payload = std::string(pl, len);
+  std::cout << this->payload_len << " " << this->payload.size() << " ************" << std::endl;
 }
 
 void nar::Packet::set_payload(const char* pl) {
@@ -291,6 +292,7 @@ void nar::Packet::make_fin(unsigned int str_id) {
 }
 
 void nar::Packet::print() {
+  std::cout << "------------- printing packet" << std::endl;
   std::cout << this->syn << std::endl;
   std::cout << this->ack << std::endl;
   std::cout << this->fin << std::endl;

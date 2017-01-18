@@ -65,6 +65,7 @@ unsigned short nar::USocket::get_port() {
 
 void nar::USocket::receive_thread() {
   unsigned int expectedseqnum = 0;
+  std::map<unsigned int, bool> seqnum_visited;
   std::priority_queue<nar::Packet, std::vector<nar::Packet>, SeqComparator> received_packets;
   char buf[nar::Packet::PACKET_LEN];
   struct sockaddr addr;
@@ -76,6 +77,8 @@ void nar::USocket::receive_thread() {
     nar::Packet recvd;
     recvd.set_header(buf);
     recvd.set_payload(buf + nar::Packet::HEADER_LEN);
+
+    recvd.print();
 
     if(len != recvd.get_payloadlen() + nar::Packet::HEADER_LEN) continue;
 
@@ -132,12 +135,15 @@ void nar::USocket::receive_thread() {
       std::unique_lock<std::mutex> lck(this->event_cv_mtx);
       this->event_cv.notify_all();
     } else if(recvd.is_data()) {
-      received_packets.push(recvd);
       nar::Packet ack;
       ack.make_ack(this->stream_id, recvd.get_seqnum());
       std::string packet = ack.make_packet();
       sendto(this->udp_sockfd, packet.c_str(), packet.size(), 0, &addr, fromlen);
 
+      if(seqnum_visited.find(recvd.get_seqnum()) != seqnum_visited.end()) continue;
+
+      received_packets.push(recvd);
+      seqnum_visited[recv.get_seqnum()] = true;
       std::string res;
       bool new_exists = false;
       while(!received_packets.empty() && (pqpacket = received_packets.top()).get_seqnum() == expectedseqnum) {
@@ -428,7 +434,9 @@ int nar::USocket::send(char* buf, int len) {
       nar::Packet& pkt = packets[i];
       if(acked.find(pkt.get_seqnum()) == acked.end() && is_sent_not_acked.find(pkt.get_seqnum()) == is_sent_not_acked.end()) {
         if(i==first_idx) first_idx++;
+        std::cout << "before " << pkt.get_payload() << " " << pkt.get_payload().size() << " " << pkt.get_payloadlen()<< std::endl;
         std::string pktstr = pkt.make_packet();
+        std::cout << "after" << std::endl;
         sendto(this->udp_sockfd, pktstr.c_str(), pktstr.size(), 0, &this->peer_addr, sizeof(struct sockaddr));
         used_window_size++;
         if(sent_not_acked.size() == 0) {
@@ -500,7 +508,9 @@ int nar::USocket::send(char* buf, int len) {
       sent_not_acked.pop();
       int packetidx = seqnum_packetidx[retry_seqnum];
       nar::Packet& pkt = packets[packetidx];
+        std::cout << "before2 " << pkt.get_payload().size() << " " << pkt.get_payloadlen()<< std::endl;
       std::string pktstr = pkt.make_packet();
+        std::cout << "after " << std::endl;
       sendto(this->udp_sockfd, pktstr.c_str(), pktstr.size(), 0, &this->peer_addr, sizeof(struct sockaddr));
       sent_not_acked.push(retry_seqnum);
       send_times[retry_seqnum] = std::time(0);
