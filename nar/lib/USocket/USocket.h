@@ -71,6 +71,12 @@ namespace nar {
       void receive_thread();
       void timer_thread();
 
+      time_t rtt;
+      time_t devrtt;
+
+      unsigned int seqnum;
+      double window_size = 64.0;
+      int used_window_size = 0;
 
     public:
 

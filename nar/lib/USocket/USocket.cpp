@@ -47,6 +47,12 @@ nar::USocket::USocket(unsigned int streamid) {
   this->numberof_100us = -1;
   this->stop_thread = false;
   this->stream_id = streamid;
+  this->rtt = 1000000; // 1 sec
+  this->devrtt = 0;
+  this->seqnum = 0;
+  this->window_size = 64.0;
+  this->used_window_size = 0;
+
 
   std::thread rcv(&USocket::receive_thread, this);
   rcv.detach();
@@ -410,13 +416,9 @@ int nar::USocket::send(char* buf, int len) {
   std::map<unsigned int, time_t> send_times;
   std::map<unsigned int, int> seqnum_packetidx;
   
-  static time_t rtt = 1000000; // 1 sec
-  static time_t devrtt = 0;
-
   nar::Packet pqpacket;
 
   std::cout << "yarak" << std::endl;
-  static unsigned int seqnum = 0;
   unsigned int first_seqnum = seqnum; // that is not acked
   int first_idx = 0;
   for(int cur=0, i=0; cur<len; cur += MAX_PAYLOAD_LEN, i++) {
@@ -432,8 +434,7 @@ int nar::USocket::send(char* buf, int len) {
   int last_seqnum = seqnum-1;
 
 
-  static double window_size = 64.0;
-  static int used_window_size = 0;
+
   while(true) {
     if(acked.size() == packets.size())
       break;
