@@ -83,22 +83,24 @@ void nar::task::PushFile::recvJson(nlohmann::json &req, nar::Socket *serverSck )
 	req = nlohmann::json::parse(json_string);
 }
 
-void nar::task::PushFile::getPeerInfo(std::string peerId, nar::Socket *serverSck){
+void nar::task::PushFile::getPeerInfo(std::string peerId,std::string token, nar::Socket *serverSck){
 	nlohmann::json req;
 	req["header"]["channel"] = "ps";
 	req["header"]["action"] = "peer_connection_request";
 	req["payload"]["peer-id"] = peerId;
+	req["payload"]["token"] = token;
 	sendJson(req, serverSck);
 }
 
 nar::Socket *nar::task::PushFile::sendTokenToPeer(nlohmann::json::iterator &it, nar::Socket *serverSck , int chunkSize){
 
 	nar::Socket *peerSck; std::cout << "Not here eitherX" << std::endl;
-	std::string peerId = (*it)["peer_id"].get<std::string>(); std::cout << "Not here eitherYYY" << std::endl;
-	getPeerInfo(peerId, serverSck);	std::cout << "Not here eitherZZ" << std::endl;
+	std::string peerId = (*it)["peer-id"].get<std::string>(); std::cout << "Not here eitherYYY      " << (*it).dump() << std::endl;
+	getPeerInfo(peerId, (*it)["token"],serverSck);	std::cout << "Not here eitherZZ" << std::endl;
 	nlohmann::json resp;
+	//recvJson(resp,serverSck);	std::cout << "Not here eitherKKKK" << std::endl;
 	recvJson(resp,serverSck);	std::cout << "Not here eitherKKKK" << std::endl;
-	std::cout << "Not here eitherLLL" << std::endl;
+	std::cout << "Not here eitherLLL" << resp.dump()<< std::endl;
 	int peerPort = resp["payload"]["peer-port"]; std::cout << "Not here eitherDDD" << std::endl;
 	std::string peerIp = resp["payload"]["peer-ip"]; std::cout << "Not here eitherOOO" << std::endl;
 
@@ -117,7 +119,7 @@ nar::Socket *nar::task::PushFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 		nlohmann::json resp;
 		recvJson(resp,serverSck);
 		peerId = (*it)["peer_id"].get<std::string>();
-		getPeerInfo(peerId,serverSck);
+		getPeerInfo(peerId, (*it)["token"],serverSck);
 		resp.clear();
 		recvJson(resp,serverSck);
 		peerPort = resp["payload"]["peer-port"];
@@ -132,7 +134,7 @@ std::cout << "Not here eitherTTTT" << std::endl;
 		req["header"]["channel"] = "pp";std::cout << "Not here eitherzsdsfvsdf" << std::endl;
 		req["header"]["action"] = "chunk_send_request"; std::cout << "Not here eitherzsdsfvsdf" << std::endl;
 		req["payload"]["token"] = (*it)["token"].get<std::string>(); std::cout << "Not here eitherzsdsfvsdf" << std::endl;
-		req["payload"]["chunk-id"] = (*it)["chunk_id"].get<std::string>(); std::cout << "Not here eitherzsdsfvsdf" << std::endl;
+		req["payload"]["chunk-id"] = (*it)["chunk-id"].get<std::string>(); std::cout << "Not here eitherzsdsfvsdf" << std::endl;
 		req["payload"]["chunk-size"] = chunkSize; std::cout << "Not here eitherzsdsfvsdf" << std::endl;
 		std::cout << "Not here eitherasdasda" << std::endl;
 		send_message(peerSck, req.dump()); 
@@ -160,8 +162,9 @@ void nar::task::PushFile::pushFileToPeer(nlohmann::json::iterator &it, nar::Sock
 }
 
 void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serverSck, nar::FileCryptor &file){
-	std::cout << "Not here either" << std::endl;
-	int chunkSize = msg["payload"]["chunk-size"].get<int>();std::cout << "Not here either" << std::endl;
+	std::cout << "Not here eitherEHE" << std::endl;
+	std::cout << msg.dump() << std::endl;
+	//int chunkSize = msg["payload"]["chunk-size"].get<int>();std::cout << "Not here eitherAHA" << std::endl;
 	
 	size_t fOffset = 0;
 	for(nlohmann::json::iterator it = msg["payload"]["peer-list"].begin(); it != msg["payload"]["peer-list"].end(); ++it){
@@ -182,12 +185,12 @@ void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serve
 		resp.clear();
 		resp["payload"][]*/
 		std::cout << "HERE MAYBE" << std::endl;
-		std::cout << (*it)["peer_id"] << std::endl;
+		std::cout << (*it)["peer-id"] << std::endl;
 
-		nar::Socket *peerSck = sendTokenToPeer(it,serverSck,msg["payload"]["chunk-size"]);
+		nar::Socket *peerSck = sendTokenToPeer(it,serverSck,(*it)["chunk-size"]);
 		std::cout << "Not MAYBE" << std::endl;
-		pushFileToPeer(it,peerSck, file , fOffset, msg["payload"]["chunk-size"]);
-		fOffset += msg["payload"]["chunk-size"].get<unsigned long>();
+		pushFileToPeer(it,peerSck, file , fOffset, (*it)["chunk-size"]);
+		fOffset += (*it)["chunk-size"].get<unsigned long>();
 	}
 }
 

@@ -12,7 +12,7 @@
 #include <nar/lib/rapidjson/allocators.h>
 #include <nar/lib/rapidjson/stringbuffer.h>
 #include <nar/lib/rapidjson/writer.h>
-#include <nar/lib/nlohJson/json.hpp>
+#include <nar/lib/nlohJson/json.hpp> 
 
 namespace nar {
     namespace task {
@@ -27,7 +27,7 @@ namespace nar {
 				bool sendJson(nlohmann::json &msg,nar::Socket *serverSck );
 				void recvJson(nlohmann::json &msg, nar::Socket *serverSck );
 				void distributeFile(nlohmann::json &msg, Socket *serverSck, FileCryptor &file);
-				void getPeerInfo(std::string peerId, nar::Socket *serverSck);
+				void getPeerInfo(std::string peerId, std::string token, nar::Socket *serverSck);
 				std::string getAesKey(nar::Socket *serverSck) ;
 
 				Socket *sendTokenToPeer(nlohmann::json::iterator &it, Socket *serverSck, int cSize);

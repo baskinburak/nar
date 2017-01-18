@@ -107,7 +107,6 @@ int nar::readdata(nar::Socket &sock, char *buf, int buflen)
 	////std::cout << "Pbuf1: " << std::string(buf) << std::endl << std::endl;
         int num = sock.recv( buf, buflen);
 	////std::cout << "Pbuf2: " << std::string(buf) << std::endl << std::endl;
-	//std::cout<<"NAM "<<num<<"\n\n\n\n";
 	    if (num < 1)
         {
             return 0;
@@ -153,7 +152,8 @@ int nar::readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned lo
 	do
 	{
 		int num = std::min(fileSize, (unsigned long int )1024);
-		//std::cout << "num " << num << std::endl;
+
+		////std::cout << "num " << num << std::endl;
 		size_t readd = file.getBytes(offset, num, buffer);
 
 		/*char* tbuf = buffer;
@@ -173,8 +173,7 @@ int nar::readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned lo
 		offset += readd;
 
 		////std::cout << "buffer: " << std::string(buffer) <<"\n\n\n\n"<< std::endl;
-		//std::cout << "off: " << offset << std::endl;
-		//std::cout << "fs: "<< fileSize << std::endl;
+
 
 		if (!nar::senddata(skt,buffer,readd) ) {
 			//std::cout << "Write to socket failed" << std::endl;
@@ -202,6 +201,7 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 		   return 0;
 		}
 
+
 		////std::cout <<  "buffer: "<<std::string(buffer) << std::endl << std::endl << std::endl ;
 
 
@@ -210,7 +210,6 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 
 
         fileSize -= num;
-		//std::cout << "FILE SIZE HERE !é!!! : " << fileSize << std::endl;
 
 	}
     while (fileSize > 0);
