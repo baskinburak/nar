@@ -1,4 +1,4 @@
-SRC_FILES := $(shell find ../../ ! -name "cryptor.cpp" ! -name "aes.cpp" ! -name "test.cpp" ! -name "server.cpp" ! -name "cli.cpp" ! -name "daemon.cpp" ! -name "FileKeeperTest.cpp" -name "*.cpp" ! -name "compressor.cpp")
+SRC_FILES := $(shell find ../../  ! -name "randevous_server.cpp" ! -name "receiver.cpp" ! -name "sender.cpp" ! -name "cryptor.cpp" ! -name "aes.cpp" ! -name "test.cpp" ! -name "server.cpp" ! -name "cli.cpp" ! -name "daemon.cpp" ! -name "FileKeeperTest.cpp" -name "*.cpp" ! -name "compressor.cpp")
 
 all: narserver
 
