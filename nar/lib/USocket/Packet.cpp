@@ -270,7 +270,7 @@ void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, std::string&
   this->nat = 0;
   this->data = 1;
   this->ran = 0;
-  this->seqnum = 0;
+  this->seqnum = sqnm;
   this->acknum = 0;
   this->payload_len = pl_len;
   this->stream_id = str_id;

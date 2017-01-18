@@ -1,15 +1,22 @@
 #include "USocket.h"
-int main() {
+int main(int argc, char* argv[]) {
   if(argc != 2) {
     std::cout << "give me compliments" << std::endl;
   }
   nar::USocket sck(8712766U);
-  sck.make_randevous(std::string(argv[0]), 45877);
+  std::cout << sck.get_port() << std::endl;
 
-  char buf[129];
-  sck.recv(buf, 15);
-  std::cout << buf << std::endl;
+  sck.make_randevous(std::string(argv[1]), 45877);
 
+  char buf[50000];
+  int total = 0;
+  while(total != 16943) {
+    int len = sck.recv(buf, 50000);
+    std::string etci(buf, len);
+    std::cout << etci << std::endl;
+    total+=len;
+  }
+  std::cout << "going to infinite loop" << std::endl;
   while(true);
   return 0;
 }

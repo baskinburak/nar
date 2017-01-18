@@ -22,14 +22,14 @@ namespace nar {
       class AckComparator {
         public:
           bool operator()(const nar::Packet& pkt1, const nar::Packet& pkt2) {
-            return pkt1.get_acknum() < pkt2.get_acknum();
+            return pkt1.get_acknum() > pkt2.get_acknum();
           }
       };
 
       class SeqComparator {
         public:
           bool operator()(const nar::Packet& pkt1, const nar::Packet& pkt2) {
-            return pkt1.get_seqnum() < pkt2.get_seqnum();
+            return pkt1.get_seqnum() > pkt2.get_seqnum();
           }
       };
       /* protected by timer_mtx */
@@ -70,7 +70,10 @@ namespace nar {
 
       void receive_thread();
       void timer_thread();
+
+
     public:
+
       USocket(unsigned int);
       USocket(const USocket& rhs);
       void make_randevous(std::string server_ip, short server_port);

@@ -15,6 +15,8 @@
 #include <map>
 #include <utility>
 #include <algorithm>
+#include <queue>
+#include <set>
 
 nar::USocket::USocket(unsigned int streamid) {
   this->stream_id = streamid;
@@ -75,8 +77,6 @@ void nar::USocket::receive_thread() {
     recvd.set_header(buf);
     recvd.set_payload(buf + nar::Packet::HEADER_LEN);
 
-    //recvd.print();
-
     if(len != recvd.get_payloadlen() + nar::Packet::HEADER_LEN) continue;
 
     if(recvd.is_ran()) {
@@ -112,7 +112,7 @@ void nar::USocket::receive_thread() {
       this->event_cv.notify_all();
       this->flag_mtx.unlock();
     } else if(recvd.is_ack()) {
-      std::cout << "ack???" << std::endl;
+      std::cout << "ack: " << recvd.get_acknum() << std::endl;
       this->acks_list_mutex.lock();
       this->acks.push(recvd);
       this->acks_list_mutex.unlock();
@@ -122,7 +122,6 @@ void nar::USocket::receive_thread() {
       this->event_cv.notify_all();
       this->flag_mtx.unlock();
     } else if(recvd.is_nat()) {
-     // std::cout << "nat received" << std::endl;
       nar::Packet natback;
       natback.make_nat(this->stream_id);
       std::string packet = natback.make_packet();
@@ -154,9 +153,9 @@ void nar::USocket::receive_thread() {
         this->receive_buffer_mtx.unlock();
         this->flag_mtx.lock();
         this->recv_flag = true;
+        this->flag_mtx.unlock();
         std::unique_lock<std::mutex> lck(this->event_cv_mtx);
         this->event_cv.notify_all();
-        this->flag_mtx.unlock();
       }
     }
   }
@@ -176,7 +175,6 @@ void nar::USocket::timer_thread() {
     }
     this->timer_mtx.unlock();
     if(expired) {
-      std::cout << "expired" << std::endl;
       //exit(0);
       this->flag_mtx.lock();
       this->timeout_flag = true;
@@ -206,16 +204,16 @@ void nar::USocket::randevous_server() {
         unsigned int streamid = pkt.get_streamid();
         if(done_stream_ids.find(streamid) != done_stream_ids.end()) {
           std::tuple<struct sockaddr, struct sockaddr, time_t> tpl = done_stream_ids[streamid];
-          if(std::time(0) - std::get<2>(tpl) < 60) { // if more than 60 seconds passed, resend
+          if(std::time(0) - std::get<2>(tpl) < 60) { // if less than 60 seconds passed, resend
             struct sockaddr f_sck = std::get<0>(tpl);
             struct sockaddr s_sck = std::get<1>(tpl);
-            if(memcpy(&f_sck, &addr, sizeof(struct sockaddr)) == 0) {
+            if(memcmp(&f_sck, &addr, sizeof(struct sockaddr)) == 0) {
               nar::Packet pkt;
               pkt.make_ran(streamid);
               pkt.set_payload((char*) &s_sck, sizeof(struct sockaddr));
               std::string pktstr = pkt.make_packet();
               sendto(this->udp_sockfd, pktstr.c_str(), pktstr.size(), 0, &addr, sizeof(struct sockaddr));
-            } else if(memcpy(&s_sck, &addr, sizeof(struct sockaddr)) == 0) {
+            } else if(memcmp(&s_sck, &addr, sizeof(struct sockaddr)) == 0) {
               nar::Packet pkt;
               pkt.make_ran(streamid);
               pkt.set_payload((char*) &f_sck, sizeof(struct sockaddr));
@@ -247,7 +245,6 @@ void nar::USocket::randevous_server() {
             sendto(this->udp_sockfd, pkt2str.c_str(), pkt2str.size(), 0, &addr, sizeof(struct sockaddr));
             done_stream_ids[streamid] = std::make_tuple(sec_pair.second, addr, std::time(0));
           }
-          std::cout << "lean onn" << std::endl;
         } else {
           randevous_map[streamid] = this->randevous_list[i];
         }
@@ -273,7 +270,6 @@ void nar::USocket::make_randevous(std::string server_ip, short server_port) {
   }
 
   nar::Packet ran_packet;
-  std::cout << this->stream_id << " ---- stream id" << std::endl;
   ran_packet.make_ran(this->stream_id);
   std::string packet = ran_packet.make_packet();
   
@@ -341,7 +337,7 @@ void nar::USocket::make_randevous(std::string server_ip, short server_port) {
       this->timer_mtx.unlock();
       this->timeout_flag = false;
     }
-    if(nat_flag) {
+    if(this->nat_flag) {
       std::cout << "nat_flag" << std::endl;
       this->nat_flag = false;
       this->timer_mtx.lock();
@@ -352,6 +348,8 @@ void nar::USocket::make_randevous(std::string server_ip, short server_port) {
     }
     this->flag_mtx.unlock();
   }
+
+  std::cout << "randevous ended" << std::endl;
 }
 
 
@@ -392,63 +390,125 @@ int nar::USocket::recv(char* buf, int len) {
 }
 
 int nar::USocket::send(char* buf, int len) {
+  std::cout << "send start" << std::endl;
   std::vector<nar::Packet> packets;
   int MAX_PAYLOAD_LEN = nar::Packet::PACKET_LEN - nar::Packet::HEADER_LEN;
+  std::set<unsigned int> acked; // contains seqns
+  std::queue<unsigned int> sent_not_acked; // contains seqns
+  std::map<unsigned int, bool> is_sent_not_acked;
+  std::map<unsigned int, time_t> send_times;
+  std::map<unsigned int, int> seqnum_packetidx;
+  
+  static time_t rtt = 1000000; // 1 sec
+  static time_t devrtt = 0;
 
   nar::Packet pqpacket;
 
-  int seqnum = 0;
-  for(int cur=0; cur<len; cur+=MAX_PAYLOAD_LEN) {
+  static int seqnum = 0;
+  int first_seqnum = seqnum; // that is not acked
+  int first_idx = 0;
+  for(int cur=0, i=0; cur<len; cur+=MAX_PAYLOAD_LEN, i++) {
     std::string payload(buf + cur, std::min(MAX_PAYLOAD_LEN, len-cur));
     nar::Packet data_packet;
-    data_packet.make_data(seqnum++, this->stream_id, payload, payload.size());
+    data_packet.make_data(seqnum, this->stream_id, payload, payload.size());
     packets.push_back(data_packet);
+    seqnum_packetidx[seqnum] = i;
+    data_packet.print();
+    seqnum++;
   }
+  int last_seqnum = seqnum-1;
 
-  for(int i=0; i<packets.size(); i++) {
-    nar::Packet& cur_packet = packets[i];
-    std::string packet = cur_packet.make_packet();
-    
-    this->timer_mtx.lock();
-    this->numberof_100us = 10000; // 1 secs
-    this->timer_mtx.unlock();
+
+  static double window_size = 64.0;
+  static int used_window_size = 0;
+  while(true) {
+    if(acked.size() == packets.size())
+      break;
+    for(int i=first_idx; i<=last_seqnum && window_size > used_window_size; i++) {
+      nar::Packet& pkt = packets[i];
+      if(acked.find(pkt.get_seqnum()) == acked.end() && is_sent_not_acked.find(pkt.get_seqnum()) == is_sent_not_acked.end()) {
+        if(i==first_idx) first_idx++;
+        std::string pktstr = pkt.make_packet();
+        sendto(this->udp_sockfd, pktstr.c_str(), pktstr.size(), 0, &this->peer_addr, sizeof(struct sockaddr));
+        used_window_size++;
+        if(sent_not_acked.size() == 0) {
+          this->timer_mtx.lock();
+          this->numberof_100us = (rtt + 4*devrtt) / 100;
+          this->timer_mtx.unlock();
+          this->flag_mtx.lock();
+          this->timeout_flag = false;
+          this->flag_mtx.unlock();
+        }
+        sent_not_acked.push(pkt.get_seqnum());
+        is_sent_not_acked[pkt.get_seqnum()] = true;
+        send_times[pkt.get_seqnum()] = std::time(0);
+      }
+    }
+
+    std::cout << "zu" << std::endl;
+
+    std::unique_lock<std::mutex> lck(this->event_cv_mtx);
+    this->event_cv.wait(lck);
 
     this->flag_mtx.lock();
-    this->timeout_flag = false;
-    this->flag_mtx.unlock();
+    if(this->ack_flag) {
+      std::cout << "ack" << std::endl;
+      this->ack_flag = false;
+      this->acks_list_mutex.lock();
+      while(!this->acks.empty()) {
+        nar::Packet ack = acks.top();
+        acks.pop();
+        unsigned int ackseqnum = ack.get_acknum();
+        if(acked.find(ackseqnum) != acked.end()) { // if this is already acked, ignore it.
+          continue;
+        }
 
-    while(true) {
-      sendto(this->udp_sockfd, packet.c_str(), packet.size(), 0, &this->peer_addr, sizeof(struct sockaddr));
-      std::unique_lock<std::mutex> lck(this->event_cv_mtx);
-      this->event_cv.wait(lck);
-      this->flag_mtx.lock();
-      if(timeout_flag) {
-        this->timer_mtx.lock();
-        this->numberof_100us = 10000;
-        this->timer_mtx.unlock();
-        this->timeout_flag = false;
-      }
-      if(ack_flag) {
-        std::cout << "ack flag" << std::endl;
-        ack_flag = false;
-        this->acks_list_mutex.lock();
-        bool done = false;
-        while(!this->acks.empty()) {
-          pqpacket = this->acks.top();
-          this->acks.pop();
-          std::cout << pqpacket.get_acknum() << " " << cur_packet.get_seqnum() << std::endl;
-          if(pqpacket.get_acknum() == cur_packet.get_seqnum()) {
-            this->acks_list_mutex.unlock();
-            this->flag_mtx.unlock();
-            std::cout << " e tamam deil mi aga" << std::endl;
-            done = true;
-            break;
+        if(is_sent_not_acked.find(ackseqnum) != is_sent_not_acked.end()) { // if it is sent but not acked
+          is_sent_not_acked.erase(ackseqnum);
+          used_window_size--;
+          while(!sent_not_acked.empty() && acked.find(sent_not_acked.front()) != acked.end()) {
+            sent_not_acked.pop();
+          }
+          time_t cur_rtt = std::time(0) - send_times[ackseqnum];
+          devrtt = 0.5 * devrtt + 0.5 * std::abs(rtt-cur_rtt);
+          rtt = 0.75 * rtt + 0.25 * cur_rtt;
+          acked.insert(ackseqnum);
+          if(sent_not_acked.front() == ackseqnum) {
+            this->timer_mtx.lock();
+            sent_not_acked.pop();
+            while(!sent_not_acked.empty() && acked.find(sent_not_acked.front()) != acked.end()) {
+              sent_not_acked.pop();
+            }
+            if(sent_not_acked.size() == 0) {
+              this->timeout_flag = false;
+              this->numberof_100us = -1;
+            } else {
+              time_t sent_interval = rtt + 4*devrtt - (std::time(0) - send_times[sent_not_acked.front()]);
+              this->timeout_flag = false;
+              this->numberof_100us = sent_interval / 100; 
+            }
+            this->timer_mtx.unlock();
           }
         }
-        if(done) break;
-        this->acks_list_mutex.unlock();
       }
-      this->flag_mtx.unlock();
+      this->acks_list_mutex.unlock();
     }
+    if(this->timeout_flag) {
+      this->timer_mtx.lock();
+      this->timeout_flag = false;
+      int retry_seqnum = sent_not_acked.front();
+      sent_not_acked.pop();
+      int packetidx = seqnum_packetidx[retry_seqnum];
+      nar::Packet& pkt = packets[packetidx];
+      std::string pktstr = pkt.make_packet();
+      sendto(this->udp_sockfd, pktstr.c_str(), pktstr.size(), 0, &this->peer_addr, sizeof(struct sockaddr));
+      sent_not_acked.push(retry_seqnum);
+      send_times[retry_seqnum] = std::time(0);
+      unsigned int new_first = sent_not_acked.front();
+      time_t sent_interval = rtt + 4*devrtt - (std::time(0) - send_times[new_first]);
+      this->numberof_100us = sent_interval / 100;
+      this->timer_mtx.unlock();
+    }
+    this->flag_mtx.unlock();
   }
 }
