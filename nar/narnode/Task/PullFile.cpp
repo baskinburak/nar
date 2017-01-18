@@ -99,12 +99,13 @@ void nar::task::PullFile::getResultJsonFake(nlohmann::json &j_resp, nar::Socket 
     return;
 }
 
-void nar::task::PullFile::getPeerInfo(std::string peerId, nar::Socket *serverSck){
+void nar::task::PullFile::getPeerInfo(std::string peerId, nar::Socket *serverSck, std::string _token){
     //std::cout << "gotham artik" << std::endl;
     nlohmann::json req;
 	req["header"]["channel"] = "ps";
-	req["header"]["action"] = "peer_connection_request";
+	req["header"]["action"] = "peer_connection_request_pull";
 	req["payload"]["peer-id"] = peerId;
+	req["payload"]["token"] = _token;
     //std::cout << "hadi canim" << std::endl;
 	sendRequestJson(req, serverSck);
     std::cout << "hadi canim1" << std::endl;
@@ -117,16 +118,16 @@ nar::Socket* nar::task::PullFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 	nar::Socket *peerSck;
 	std::string peerId = (*it)["peer_id"].get<std::string>();
     //std::cout << "asd" << std::endl;
-    getPeerInfo(peerId, serverSck);
+    getPeerInfo(peerId, serverSck,(*it)["token"].get<std::string>());
     //std::cout << "gotham starts1" << std::endl;
     nlohmann::json resp;
 	getResultJson(resp,serverSck);
 	int peerPort = resp["payload"]["peer-port"];
 	std::string peerIp = resp["payload"]["peer-ip"];
     std::cout << peerIp << std::endl;
-    std::cout << peerPort << std::endl;
+    std::cout << peerPort << std::endl;std::cout << "gotham startsXXX" << std::endl;
 	peerSck = connectToPeer(peerIp,peerPort);
-    //std::cout << "gotham starts2" << std::endl;
+    std::cout << "gotham starts2" << std::endl;
 
     while(peerSck == NULL){
 		nlohmann::json req;
@@ -142,7 +143,7 @@ nar::Socket* nar::task::PullFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 
 		peerId = (*it)["peer_id"].get<std::string>();
         std::cout << "peer id: " << peerId << std::endl;
-		getPeerInfo(peerId,serverSck);
+		getPeerInfo(peerId,serverSck,(*it)["token"].get<std::string>());
 
         //std::cout << "gotham starts5" << std::endl;
 
@@ -156,7 +157,7 @@ nar::Socket* nar::task::PullFile::sendTokenToPeer(nlohmann::json::iterator &it, 
 
         //std::cout << "gotham starts7" << std::endl;
 	}
-
+	std::cout<<"abov"<<std::endl;
 	nlohmann::json req;
 	resp.clear();
 	req["header"]["channel"] = "pp";
@@ -165,6 +166,7 @@ nar::Socket* nar::task::PullFile::sendTokenToPeer(nlohmann::json::iterator &it, 
     req["payload"]["chunk-id"] = (*it)["chunk_id"].get<std::string>();
     req["payload"]["chunk-size"] = chunkSize;
     //std::cout << "token: " << req["payload"]["token"] << std::endl;
+	std::cout << "bla" << std::endl;
     sendRequestJson(req, peerSck);
     std::cout << get_message(*peerSck) << std::endl;
 
@@ -205,9 +207,14 @@ void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::So
 
 
 																	//nar::FileDecryptor fdec(nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize), aes);
-																	//nar::FileKeeper* f = fdec.decrypt(destination);	
+																	//nar::FileKeeper* f = fdec.decrypt(destination);
+	std::cout << "CS: " << chunkSize << std::endl;
 	std::string cnk = nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize);
+
+		std::cout << "HERE" << std::endl;
+
 	nar::FileKeeper::writeToFile(file, chunkSize, cnk.c_str());	
+	std::cout << "ENDK" << std::endl;
     return;
 
 }
@@ -225,7 +232,7 @@ void nar::task::PullFile::comeTogether(nlohmann::json &j_resp, nar::Socket *serv
         nar::Socket *peerSck = sendTokenToPeer(it, serverSck,(*it)["chunk_size"]);
         std::cout << "are you here,in come1?" << std::endl;
         pullFileFromPeer(it, peerSck,(*it)["chunk_size"],aes,holder); // 100 -> chunksize
-        //std::cout << "are you here,in come2?" << std::endl;
+        std::cout << "are you here,in come2?" << std::endl;
     }
 	close(holder);
 

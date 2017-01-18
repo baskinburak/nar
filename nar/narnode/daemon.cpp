@@ -149,6 +149,7 @@ void pushFileToPeer(unsigned long int chunkSize, nar::Socket *peerSck, nar::File
     std::cout << "CHUNK" << chunk << std::endl;
 	peerSck->send(chunk, len);
 	fOffset += len;
+	delete[] chunk;
 }
 
 void sendChunkToPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkSize, std::string token, nar::Global *globals){
@@ -191,7 +192,6 @@ void sendChunkToPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkS
     std::string path(globals->get_narFolder() + std::string("/c"));
     std::cout << "PATH: " << (path+chunkId ).c_str() << std::endl;
     nar::FileKeeper f( (path+chunkId ).c_str() );
-    //(unsigned long chunkSize, nar::Socket *peerSck, nar::FileKeeper &file, size_t &fOffset)
     pushFileToPeer(chunkSize, &peerSkt,f,0);
 
     std::cout << "LOOKING GOOD" << std::endl;
