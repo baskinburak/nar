@@ -143,8 +143,9 @@ int wait_on_sock(int sock, long timeout, int r, int w)
 }
 void pushFileToPeer(unsigned long int chunkSize, nar::Socket *peerSck, nar::FileKeeper &file, size_t fOffset){
 	    	// MAKE IT UNSIGNED LONG
-
+    std::cout<<"before"<<std::endl;
 	char *chunk = new char[chunkSize];
+    std::cout<<"after"<<std::endl;
 	unsigned long len = file.getBytes(fOffset, chunkSize, chunk);
     std::cout << "CHUNK" << chunk << std::endl;
 	peerSck->send(chunk, len);
@@ -176,21 +177,24 @@ void sendChunkToPeer(nar::Socket* skt, std::string chunkId, unsigned long chunkS
 	std::cout << msg << std::endl;
 	if( (peerReq["payload"]["token"].get<std::string>() != token )||( peerReq["payload"]["chunk-id"].get<std::string>() != chunkId) || (peerReq["payload"]["chunk-size"].get<unsigned long>() != chunkSize)  )
 	{
+        std::cout<<"utkunun coutu"<<std::endl;
 		peerSkt.close();
 		skt->close();
 		delete skt;
 		return;
 	}
-
+    std::cout<<"utkunun coutu1"<<std::endl;
     nlohmann::json tmp;
     tmp["header"]["channel"] = "pp" ;
     tmp["header"]["reply-to"] = "chunk_receive_request";
     tmp["header"]["status-code"] = 200;
     send_message( peerSkt, tmp.dump());
+    std::cout<<"utkunun coutu2"<<std::endl;
 
     std::string path(globals->get_narFolder() + std::string("/c"));
     std::cout << "PATH: " << (path+chunkId ).c_str() << std::endl;
     nar::FileKeeper f( (path+chunkId ).c_str() );
+    std::cout<< "olur" <<std::endl;
     //(unsigned long chunkSize, nar::Socket *peerSck, nar::FileKeeper &file, size_t &fOffset)
     pushFileToPeer(chunkSize, &peerSkt,f,0);
 

@@ -104,7 +104,6 @@ namespace nar {
             std::vector<nar::User> getUserFromFile(long long int fileId);
             struct User getUser(std::string name);
             struct User getUser(long long int userId);
-            struct Machine getMachine(long long int userId);
             struct Machine getMachine(std::string machine_id);
             std::vector<struct File> getUserFiles(long long int user_id);
             struct File getFile(long long int file_id);

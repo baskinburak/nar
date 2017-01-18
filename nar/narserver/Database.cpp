@@ -298,35 +298,6 @@ nar::User nar::Database::getUser(long long int userId)
     return a;
 }
 
-nar::Machine nar::Database::getMachine(long long int userId)
-{
-    sql::SQLString user_id = std::to_string(userId);
-    sql::PreparedStatement *prep_stmt;
-            sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT Machine_id,  Machine_quota, Machine_diskSpace, "
-                                        "UNIX_TIMESTAMP(Change_time) As Time "
-                                        "FROM Machines "
-                                        "WHERE Machines.User_id = ?;");
-
-    prep_stmt -> setBigInt(1, user_id);
-
-    res = prep_stmt -> executeQuery();
-
-    delete prep_stmt;
-    nar::Machine a;
-    a.machine_id = std::string("-1");
-    while (res->next()) {
-
-        a.machine_id = res->getString("Machine_id").asStdString();
-        a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
-        a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
-
-        a.change_time = res->getUInt64("Time");
-
-    }
-    delete res;
-    return a;
-}
 
 nar::Machine nar::Database::getMachine(std::string machine_id)
 {
@@ -396,7 +367,7 @@ nar::Chunk nar::Database::getChunk(long long int chunkId)
     sql::ResultSet  *res;
     prep_stmt = _con -> prepareStatement("SELECT Chunk_id,File_id,Chunk_size, "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
-                                        "FROM Chunks"
+                                        "FROM Chunks "
                                         "WHERE Chunks.Chunk_id = ?;");
 
     prep_stmt -> setBigInt(1, chunk_id);

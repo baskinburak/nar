@@ -59,7 +59,6 @@ CREATE TABLE IF NOT EXISTS `nar`.`Chunks` (
   `Change_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`Chunk_id`),
   UNIQUE INDEX `Chunk_id_UNIQUE` (`Chunk_id` ASC),
-  UNIQUE INDEX `File_id_UNIQUE` (`File_id` ASC),
   CONSTRAINT `File_id`
     FOREIGN KEY (`File_id`)
     REFERENCES `nar`.`Files` (`File_id`)
