@@ -265,6 +265,18 @@ void createRespHeader( nlohmann::json &msg ,std::string reply, std::string chann
 	msg["header"]["status"] = status;
 }
 
+void chunk_push_replier(unsigned int stream_id, nar::Global* globals, int chunk_size, unsigned short rand_port, std::string chunk_id) {
+  nar::USocket peer_sock(stream_id);
+  peer_sock.make_randevous(globals->get_narServerIp(), rand_port);
+
+  char* buf = new char[chunk_size];
+  nar::readdata(peer_sock, buf, chunk_size);
+  std::string path(globals->get_narFolder() + std::string("/c"));
+  path = path + chunk_id;
+  std::cout << path << std::endl;
+  int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
+  nar::FileKeeper::writeToFile( fd,  chunk_size, buf);
+}
 
 void keepAlive( nar::Socket *skt, nar::Global *globals){
 	std::map <std::string, std::pair< std::pair< std::string, unsigned long > ,std::pair < nar::Socket *, int > > > peerList; // token-> <chunkid,chunksize>,<socket,port>
@@ -293,16 +305,8 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 				std::string resp(peer_msg.dump());
 				nar::send_message( skt, resp);
 
-                nar::USocket peer_sock(stream_id);
-                peer_sock.make_randevous(globals->get_narServerIp(), rand_port);
-
-                char* buf = new char[chunk_size];
-                nar::readdata(peer_sock, buf, chunk_size);
-                std::string path(globals->get_narFolder() + std::string("/c"));
-                path = path + chunk_id;
-                std::cout << path << std::endl;
-                int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
-                nar::FileKeeper::writeToFile( fd,  chunk_size, buf);
+          std::thread thr(&chunk_push_replier, stream_id, globals, chunk_size, rand_port, chunk_id);
+          thr.detach();
 			}
 			else if(action == "peer_port_request"){
 				std::string chunkId = peerList[serverReq["payload"]["token"]].first.first;

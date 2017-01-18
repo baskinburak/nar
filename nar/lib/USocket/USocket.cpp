@@ -507,6 +507,7 @@ int nar::USocket::send(char* buf, int len) {
       std::cout << "bacin" << std::endl;
     }
     if(this->timeout_flag) {
+      std::cout << "timeout" << std::endl;
       this->timer_mtx.lock();
       this->timeout_flag = false;
       int retry_seqnum = sent_not_acked.front();
