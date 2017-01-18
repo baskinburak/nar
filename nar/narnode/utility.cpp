@@ -60,14 +60,17 @@ std::string nar::get_message(nar::Socket& skt) {
 std::string nar::get_string_sckt(int sockfd, int len) {
     std::string res;
     int idx = 0;
-    int l;
+    int l = 0;
     char buf[129];
+    int val = len;
     while(idx < len) {
-        if((l = recv(sockfd, buf, std::min(len, 128), 0)) > 0) {
+        if((l = recv(sockfd, buf, std::min(val, 128), 0)) > 0) {
             res.append(buf, l);
             idx+=l;
+            val -= l;
         } else {
-            throw nar::Exception("nar::get_string_sckt - Recv error.");
+            //throw nar::Exception("nar::get_string_sckt - Recv error.");
+            break;
         }
     }
     return res;
@@ -190,17 +193,17 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 
 	char *buffer = new char[1024];
 
-	//std::cout << "FILE SIZE HERE !é!!! : " << fileSize << std::endl;
-
+	std::cout << "FILE SIZE HERE !é!!! : " << fileSize << std::endl;
+    unsigned long total = 0;
     do
     {
         int num = std::min(fileSize, (unsigned long int)1024);
 		//std::cout << "Num: "<< num << std::endl;
         if (! nar::readdata(skt,buffer, num) ) {
-		   //std::cout << "Read Data Failed from peer Skt" << std::endl;
+		   std::cout << "Read Data Failed from peer Skt" << std::endl;
 		   return 0;
 		}
-
+        total+=num;
 
 		////std::cout <<  "buffer: "<<std::string(buffer) << std::endl << std::endl << std::endl ;
 
@@ -213,7 +216,7 @@ int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize )
 
 	}
     while (fileSize > 0);
-
+    std::cout<<"total ->>>> "<<total<<std::endl;
 	delete buffer;
 
 	return 1;
