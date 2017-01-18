@@ -157,17 +157,12 @@ bool nar::Socket::accept ( Socket& new_socket, const sockaddr_in * addr  ) const
 
 
 int nar::Socket::send (const char * offset, int length ) const
-{
-  int len = ::send ( m_sock, offset, length, MSG_NOSIGNAL );
-  int tmp = errno;
-  if ( length == -1 )
-  {
-      error("Sending Data",tmp);
-      return -1;
+{ 
+  int idx = 0;
+  while(idx<length) {
+    idx+= ::send ( m_sock, offset+idx, length-idx, MSG_NOSIGNAL );
   }
-  offset += len;
-  length -= tmp;
-  return len;
+  return length;
 }
 
 
