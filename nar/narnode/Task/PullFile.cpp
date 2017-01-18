@@ -6,7 +6,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstdio>
-
+#include <fstream>
 void nar::task::PullFile::initialize()
 {
     nar::FileKeeper file(file_name);
@@ -211,7 +211,7 @@ void nar::task::PullFile::pullFileFromPeer(nlohmann::json::iterator &it, nar::So
 	std::cout << "CS: " << chunkSize << std::endl;
 	std::string cnk = nar::get_string_sckt(peerSck->getSckDescriptor(),chunkSize);
 
-		std::cout << "HERE" << std::endl;
+		std::cout << "HERE  " << cnk.substr(0,5) << std::endl;
 
 	nar::FileKeeper::writeToFile(file, chunkSize, cnk.c_str());	
 	std::cout << "ENDK" << std::endl;
@@ -238,9 +238,14 @@ void nar::task::PullFile::comeTogether(nlohmann::json &j_resp, nar::Socket *serv
 
 	nar::FileKeeper keep(destination);
 	int size = keep.getFileSize();
-    char* buff = (char*) malloc(sizeof(char)* size);
+	std::cout<<"SIIIIIIIZZZZZZZZZZZZE "<<size<<std::endl;
+    char* buff = (char*) malloc(sizeof(char) * size);
     keep.getBytes(0, size, buff);
-	nar::FileDecryptor fdec(std::string(buff), aes);
+std::cout<<"SIIIIIIIZZZZZZZZZZZZE2 "<<size<<std::endl;
+	std::string var(buff,size);
+	//std::cout << var << std::endl << std::endl;
+	std::cout << "size aes**********:  " << var.size() << " " << aes << std::endl;
+	nar::FileDecryptor fdec(var, aes);
 	delete[] buff;
 	fdec.decrypt( cur_dir + std::string("/") + file_name );
 	std::remove(destination.c_str());

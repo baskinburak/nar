@@ -236,6 +236,7 @@ void getChunkFromPeer(nar::Socket* skt, std::string chunkId, unsigned long chunk
 		delete skt;
 		return;
     }
+
     std::string path(globals->get_narFolder() + std::string("/c"));
 	path = path + chunkId;
 	std::cout << path << std::endl;
