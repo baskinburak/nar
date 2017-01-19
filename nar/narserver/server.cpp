@@ -328,7 +328,7 @@ namespace nar {
             std::string fName = jsn["payload"]["file-name"];
             unsigned long fSize = jsn["payload"]["file-size"];
             std::string fDir = jsn["payload"]["directory"];
-            long int onemb = 1024*1024;
+            long int onemb = 1024*1024*20;
             std::cout<<"here 2"<<std::endl;
             if(inf->isAuthenticated()) {
                 if(keepalives.size() < 2) {
