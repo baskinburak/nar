@@ -333,8 +333,9 @@ void nar::USocket::make_randevous(std::string server_ip, unsigned short server_p
         this->numberof_100us = -1;
         this->timer_mtx.unlock();
         break;
+      } else {
+        this->randevous_mtx.unlock();
       }
-      this->randevous_mtx.unlock();
     } else {
       this->flag_mtx.unlock();
     }
