@@ -83,6 +83,7 @@ void nar::USocket::receive_thread() {
   unsigned int fromlen = sizeof(addr);
   nar::Packet pqpacket;
   while(!this->stop_thread) {
+    std::cout << "here i am " << std::endl;
     int len = recvfrom(this->udp_sockfd, buf, nar::Packet::PACKET_LEN, 0, &addr, &fromlen);
     std::cout << "zu hast " << errno << std::endl;
     if(len < nar::Packet::HEADER_LEN) continue;
@@ -511,17 +512,13 @@ int nar::USocket::send(char* buf, int len) {
               sent_not_acked.pop();
             }
             if(sent_not_acked.size() == 0) {
-              this->flag_mtx.lock();
               this->timeout_flag = false;
-              this->flag_mtx.unlock();
               this->timer_mtx.lock();
               this->numberof_100us = -1;
               this->timer_mtx.unlock();
             } else {
               time_t sent_interval = rtt + 4*devrtt - (std::time(0) - send_times[sent_not_acked.front()]);
-              this->flag_mtx.lock();
               this->timeout_flag = false;
-              this->flag_mtx.unlock();
               this->timer_mtx.lock();
               this->numberof_100us = std::max((time_t)10, sent_interval / 100); 
               this->timer_mtx.unlock();

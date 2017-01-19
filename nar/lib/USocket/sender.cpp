@@ -19,10 +19,10 @@ std::string str((std::istreambuf_iterator<char>(t)),
   char* buf = new char[str.size()+100];
   memcpy(buf, str.c_str(), str.size());
 
-  while(total != 17306) {
-    total += sck.send(buf + total, std::min(1024, 17306-total));
+  while(total != 18378) {
+    total += sck.send(buf + total, std::min(1024, 18378-total));
   }
-
+  sck.stop_thread = true;
   std::cout << "going to infinite loop" << std::endl;
   while(true);
   return 0;

@@ -10,12 +10,13 @@ int main(int argc, char* argv[]) {
 
   char buf[50000];
   int total = 0;
-  while(total != 17306) {
-    int len = sck.recv(buf, std::min(1024, 17306-total));
+  while(total != 18378) {
+    int len = sck.recv(buf, std::min(1024, 18378-total));
     std::string etci(buf, len);
     std::cout << etci << std::endl;
     total+=len;
   }
+  sck.stop_thread = true;
   std::cout << "going to infinite loop" << std::endl;
   while(true);
   return 0;

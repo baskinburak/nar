@@ -40,7 +40,6 @@ namespace nar {
       std::mutex receive_buffer_mtx;
       std::string receive_buffer;
       unsigned int stream_id;
-      std::atomic<bool> stop_thread;
 
 
       /* protected by flag_mtx */
@@ -79,7 +78,7 @@ namespace nar {
       int used_window_size = 0;
 
     public:
-
+      std::atomic<bool> stop_thread;
       USocket(unsigned int);
       USocket(const USocket& rhs);
       ~USocket();
