@@ -298,8 +298,6 @@ void chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int chunk_
   nar::USocket peer_sock(stream_id);
   peer_sock.make_randevous(globals->get_narServerIp(), rand_port);
 
-//void pushFileToPeer(unsigned long int chunkSize, nar::USocket &peerSck, nar::FileKeeper &file, size_t fOffset){
-	    	// MAKE IT UNSIGNED LONG
 
     std::string path(globals->get_narFolder() + std::string("/c"));
     std::cout << "PATH: " << (path+chunk_id ).c_str() << std::endl;

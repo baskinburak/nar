@@ -208,16 +208,16 @@ void nar::task::PullFile::comeTogether(nlohmann::json &j_resp, nar::Socket *serv
     std::cout << j_resp.dump() << std::endl;
 	int holder = nar::FileKeeper::openFdWrtonlyAppend(destination.c_str());
   	
+        unsigned short rand_port = j_resp["payload"]["rand-port"];
     for(nlohmann::json::iterator it = j_resp["payload"]["peer-list"].begin(); it != j_resp["payload"]["peer-list"].end(); ++it) {
         unsigned int stream_id = (*it)["token"];
         unsigned long chunk_size = (*it)["chunk-size"];
-        unsigned short rand_port = (*it)["rand-port"];
 
         nar::USocket peerSck(stream_id);
         peerSck.make_randevous(globals->get_narServerIp(), rand_port);
 
         
-        pullFileFromPeer(it, peerSck,(*it)["chunk_size"], aes, holder); // 100 -> chunksize
+        pullFileFromPeer(it, peerSck,chunk_size, aes, holder); // 100 -> chunksize
         std::cout << "are you here,in come2?" << std::endl;
     }
 	close(holder);

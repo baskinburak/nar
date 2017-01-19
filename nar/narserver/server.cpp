@@ -222,6 +222,7 @@ namespace nar {
 
             real_peer["payload"]["file-id"] = fId;
             real_peer["payload"]["peer-list"] = json::array();
+            real_peer["payload"]["rand-port"] = (unsigned int) randevous_port;
 
             for(int i=0;i<cTom.size();i++){
                 std::cout<<"eb 41"<<cTom[i].first<<std::endl;
@@ -229,10 +230,10 @@ namespace nar {
                 std::cout<<"eb 42"<<std::endl;
                 for(int j=0;j<cTom[i].second.size();j++){
                     json per_peer;
-                    per_peer["peer_id"] = cTom[i].second[j].machine_id;
-                    per_peer["chunk_id"] = std::to_string(curChunk.chunk_id);
+                    per_peer["peer-id"] = cTom[i].second[j].machine_id;
+                    per_peer["chunk-id"] = std::to_string(curChunk.chunk_id);
                     per_peer["token"] = ctokens[i].second[j];                                                  // should be updated in the case of multiple copies of the same chunk
-                    per_peer["chunk_size"] = curChunk.chunk_size;
+                    per_peer["chunk-size"] = curChunk.chunk_size;
                     real_peer["payload"]["peer-list"][i] = per_peer;
                 }
             }
