@@ -467,7 +467,7 @@ int nar::USocket::send(char* buf, int len) {
         this->timeout_flag = false;
         this->flag_mtx.unlock();
         this->timer_mtx.lock();
-        this->numberof_100us = std::max((time_t)10, (rtt + 4*devrtt) / 100);
+        this->numberof_100us = std::max((time_t)1000, (rtt + 4*devrtt) / 100);
         this->timer_mtx.unlock();
       }
       sent_not_acked.push(pkt.get_seqnum());
@@ -520,7 +520,7 @@ int nar::USocket::send(char* buf, int len) {
               time_t sent_interval = rtt + 4*devrtt - (std::time(0) - send_times[sent_not_acked.front()]);
               this->timeout_flag = false;
               this->timer_mtx.lock();
-              this->numberof_100us = std::max((time_t)10, sent_interval / 100); 
+              this->numberof_100us = std::max((time_t)1000, sent_interval / 100); 
               this->timer_mtx.unlock();
             }
           }
@@ -545,7 +545,7 @@ int nar::USocket::send(char* buf, int len) {
       send_times[retry_seqnum] = std::time(0);
       unsigned int new_first = sent_not_acked.front();
       time_t sent_interval = rtt + 4*devrtt - (std::time(0) - send_times[new_first]);
-      this->numberof_100us = std::max((time_t)10, sent_interval / 100);
+      this->numberof_100us = std::max((time_t)1000, sent_interval / 100);
       this->timer_mtx.unlock();
     }
     this->flag_mtx.unlock();
