@@ -143,6 +143,19 @@ int wait_on_sock(int sock, long timeout, int r, int w)
         return -errno;
     }
 }
+void pushFileToPeer(unsigned long int chunkSize, nar::USocket &peerSck, nar::FileKeeper &file, size_t fOffset){
+	    	// MAKE IT UNSIGNED LONG
+    std::cout<<"before"<<std::endl;
+	char *chunk = new char[chunkSize];
+    std::cout<<"after"<<std::endl;
+	unsigned long len = file.getBytes(fOffset, chunkSize, chunk);
+    std::cout << "CHUNK" << chunk << std::endl;
+    std::cout << len << std::endl;
+	nar::senddata(peerSck, chunk, len);
+	fOffset += len;
+	delete[] chunk;
+}
+
 void pushFileToPeer(unsigned long int chunkSize, nar::Socket *peerSck, nar::FileKeeper &file, size_t fOffset){
 	    	// MAKE IT UNSIGNED LONG
     std::cout<<"before"<<std::endl;
@@ -278,6 +291,19 @@ void chunk_push_replier(unsigned int stream_id, nar::Global* globals, int chunk_
   nar::FileKeeper::writeToFile( fd,  chunk_size, buf);
 }
 
+void chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int chunk_size, unsigned short rand_port, std::string chunk_id) {
+  nar::USocket peer_sock(stream_id);
+  peer_sock.make_randevous(globals->get_narServerIp(), rand_port);
+
+//void pushFileToPeer(unsigned long int chunkSize, nar::USocket &peerSck, nar::FileKeeper &file, size_t fOffset){
+	    	// MAKE IT UNSIGNED LONG
+
+    std::string path(globals->get_narFolder() + std::string("/c"));
+    std::cout << "PATH: " << (path+chunk_id ).c_str() << std::endl;
+    nar::FileKeeper f( (path+chunk_id ).c_str() );
+    pushFileToPeer(chunk_size, peer_sock, f, 0);
+}
+
 void keepAlive( nar::Socket *skt, nar::Global *globals){
 	std::map <std::string, std::pair< std::pair< std::string, unsigned long > ,std::pair < nar::Socket *, int > > > peerList; // token-> <chunkid,chunksize>,<socket,port>
 	setServerConnection(*skt,globals);
@@ -343,10 +369,10 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 
 			}
             else if(action == "wait_chunk_pull_request"){
-                std::pair< std::string, unsigned long > p1 = std::make_pair(serverReq["payload"]["chunk-id"].get<std::string>(),serverReq["payload"]["chunk-size"].get<unsigned long>());
-				std::cout << "Begin" << std::endl;
-				std::pair< nar::Socket *, int > p2 = wait_chunk();
-				peerList[serverReq["payload"]["token"]] = std::make_pair(p1,p2);
+              unsigned int stream_id = serverReq["payload"]["token"];
+              std::string chunk_id = serverReq["payload"]["chunk-id"];
+              unsigned long chunk_size = serverReq["payload"]["chunk-size"];
+              unsigned short rand_port = serverReq["payload"]["rand-port"];
 
                 nlohmann::json jres;
                 jres["header"]["channel"] = "ps";
@@ -354,6 +380,10 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
                 jres["header"]["reply-to"] = "wait_chunk_pull_request";
                 send_message(*skt, jres.dump());
                 std::cout << "wait i attim" << std::endl;
+
+              //void chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int chunk_size, unsigned short rand_port, std::string chunk_id) {
+              std::thread thr(&chunk_pull_replier, stream_id, globals, chunk_size, rand_port, chunk_id);
+              thr.detach();
             }
 		}
 		catch ( nar::Exception ex){

@@ -30,6 +30,7 @@ nar::Database db;
 std::map<std::string, bool> activetokens;
 std::string charlist("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&'()*+,-./:;<=>?@[]^_`{|}~");
 std::atomic<unsigned short> randevous_port;
+std::atomic<unsigned int> stream_id;
 
 
 std::string generate_secure_token(int TOKENLEN) {
@@ -213,7 +214,7 @@ namespace nar {
             send_message( inf->getSck() , rspMsg);
             return true;
         }
-        bool sendMachineListPull(nar::SockInfo* inf, int status, std::vector< std::pair<long long int, std::vector<nar::Machine> > > & cTom, std::vector< std::pair<long long int,std::vector<std::string> > > & ctokens,long long int fId){
+        bool sendMachineListPull(nar::SockInfo* inf, int status, std::vector< std::pair<long long int, std::vector<nar::Machine> > > & cTom, std::vector< std::pair<long long int,std::vector<unsigned int> > > & ctokens,long long int fId){
             json real_peer;
             real_peer["header"]["channel"] = "sp";
             real_peer["header"]["status-code"] = status;
@@ -320,7 +321,6 @@ namespace nar {
         }
 
         bool file_push_request(nar::SockInfo* inf, json& jsn) {
-            static unsigned int stream_id = 1;
             std::cout<<"here 1"<<std::endl;
             json resp;
             resp["header"]["channel"] = "sp";
@@ -447,26 +447,27 @@ namespace nar {
                         nar::File desf = ::db.getFile(file_id);
                         std::vector<nar::Chunk> chunks = ::db.getChunks(file_id);
                         std::cout<<chunks.size()<<std::endl;
-                        std::vector< std::pair<long long int, std::vector<std::string > > > ctokens;
+                        std::vector< std::pair<long long int, std::vector<unsigned int > > > ctokens;
                         std::vector< std::pair<long long int ,std::vector<nar::Machine> > > cTom;
                         for(int i=0;i<chunks.size();i++){
                             std::cout<<"eb 1"<<std::endl;
                             std::vector<nar::Machine> machines = ::db.getMachines(chunks[i].chunk_id);
                             std::pair<long long int ,std::vector<nar::Machine> > temp_pair(chunks[i].chunk_id,machines);
                             cTom.push_back(temp_pair);
-                            std::vector<std::string> tokens;
+                            std::vector<unsigned int> tokens;
                             std::cout<<"eb 2"<<std::endl;
                             for(int j =0;j<machines.size();j++){
-                                std::string token = generate_secure_token(32);
-                                tokens.push_back(token);
+                                unsigned int str_id = stream_id++;
+                                tokens.push_back(str_id);
                                 auto it = keepalives[machines[j].machine_id];
                                 json peer_msg;
                                 peer_msg["header"]["channel"] = "sp";
                                 peer_msg["header"]["action"] = "wait_chunk_pull_request";
-                                peer_msg["payload"]["token"] = token;
+                                peer_msg["payload"]["token"] = str_id;
                                 std::cout<<"eb 3"<<std::endl;
                                 peer_msg["payload"]["chunk-id"] = std::to_string(chunks[i].chunk_id);
-                                peer_msg["payload"]["chunk-size"] =chunks[i].chunk_size;
+                                peer_msg["payload"]["chunk-size"] = chunks[i].chunk_size;
+                                peer_msg["payload"]["rand-port"] = (unsigned short)randevous_port;
                                 std::cout<<"eb 4"<<std::endl;
                                 std::string peer_str(peer_msg.dump());
                                 std::cout<<peer_str<<std::endl;
@@ -475,7 +476,7 @@ namespace nar {
                                 std::cout<<temp_str_come<<std::endl;
                             }
                             std::cout<<"eb 11"<<std::endl;
-                            std::pair<long long int, std::vector<std::string> > temp_tokens(chunks[i].chunk_id,tokens);
+                            std::pair<long long int, std::vector<unsigned int> > temp_tokens(chunks[i].chunk_id,tokens);
                             std::cout<<"eb 12"<<std::endl;
                             ctokens.push_back(temp_tokens);
                             std::cout<<"eb 13"<<std::endl;
@@ -696,6 +697,7 @@ void randevous_thread() {
 
 int main(int argc, char *argv[])
 {
+    stream_id = 1;
     std::srand(std::time(NULL));
     db.setUser(std::string("root"));
     db.setPass(std::string("123"));
