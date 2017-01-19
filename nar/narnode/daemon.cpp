@@ -288,7 +288,7 @@ void chunk_push_replier(unsigned int stream_id, nar::Global* globals, int chunk_
   path = path + chunk_id;
   std::cout << path << std::endl;
   int fd = nar::FileKeeper::openFdWrtonly( path.c_str());
-  nar::FileKeeper::writeToFile( fd,  chunk_size, buf);
+  nar::FileKeeper::writeToFile(fd,  chunk_size, buf);
 }
 
 void chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int chunk_size, unsigned short rand_port, std::string chunk_id) {

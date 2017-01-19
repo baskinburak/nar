@@ -179,7 +179,6 @@ void nar::USocket::receive_thread() {
       std::cout << "mich"<< std::endl;
     }
   }
-  std::terminate();
 }
 
 void nar::USocket::timer_thread() {
@@ -203,7 +202,6 @@ void nar::USocket::timer_thread() {
       event_cv.notify_all();
     }
   }
-  std::terminate();
 }
 
 
