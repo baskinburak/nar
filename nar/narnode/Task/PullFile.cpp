@@ -279,7 +279,7 @@ void nar::task::PullFile::run(int unx_sockfd, nar::Global* globals) {
 
     std::cout << "aes key " << aes << std::endl;
 
-    nar::send_message(server_sck, j_sent);
+    nar::send_message(server_sck, j_sent.dump());
 
     getResultJson(j_resp, server_sck); // and parse
     std::cout << j_resp << std::endl;
