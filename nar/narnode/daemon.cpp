@@ -291,7 +291,7 @@ void chunk_push_replier(unsigned int stream_id, nar::Global* globals, int chunk_
   nar::FileKeeper::writeToFile(fd,  chunk_size, buf);
 
   peer_sock.stop_thread = true;
-  usleep(1000);
+  usleep(1000000);
 }
 
 void chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int chunk_size, unsigned short rand_port, std::string chunk_id) {
@@ -307,7 +307,7 @@ void chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int chunk_
     pushFileToPeer(chunk_size, peer_sock, f, 0);
 
     peer_sock.stop_thread = true;
-    usleep(1000);
+    usleep(1000000);
 }
 
 void keepAlive( nar::Socket *skt, nar::Global *globals){
