@@ -84,6 +84,7 @@ void nar::USocket::receive_thread() {
   nar::Packet pqpacket;
   while(!this->stop_thread) {
     int len = recvfrom(this->udp_sockfd, buf, nar::Packet::PACKET_LEN, 0, &addr, &fromlen);
+    std::cout << "zu hast" << std::endl;
     if(len < nar::Packet::HEADER_LEN) continue;
     nar::Packet recvd;
     recvd.set_header(buf);
@@ -108,7 +109,7 @@ void nar::USocket::receive_thread() {
     if(this->stream_id != recvd.get_streamid()) continue;
 
     
-
+    std::cout <<" rainererr" << std::endl;
     if(recvd.is_syn() && recvd.is_ack()) {
       this->flag_mtx.lock();
       this->synack_flag = true;
@@ -164,6 +165,7 @@ void nar::USocket::receive_thread() {
         new_exists = true;
       }
 
+      std::cout << "ramm" << std::endl;
       if(new_exists) {
         this->receive_buffer_mtx.lock();
         this->receive_buffer += res;
@@ -174,6 +176,7 @@ void nar::USocket::receive_thread() {
         std::unique_lock<std::mutex> lck(this->event_cv_mtx);
         this->event_cv.notify_all();
       }
+      std::cout << "mich"<< std::endl;
     }
   }
 }
