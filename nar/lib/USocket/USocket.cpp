@@ -363,6 +363,8 @@ void nar::USocket::make_randevous(std::string server_ip, unsigned short server_p
       this->timer_mtx.lock();
       this->numberof_100us = 10000;
       this->timer_mtx.unlock();
+    } else {
+      this->flag_mtx.unlock();
     }
     this->flag_mtx.lock();
     if(this->nat_flag) {
