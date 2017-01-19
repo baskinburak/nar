@@ -8,15 +8,15 @@
 
 namespace nar {
     class FileCompressor {
-        private:
-            nar::FileKeeper* file;
-            nar::FileKeeper* compressedfile;
         public:
-            FileCompressor(nar::FileKeeper *myfile) : file(myfile) {}
-            unsigned long file_size(char *filename);
-            int decompress_one_file(char *infilename, char *outfilename);
-            int compress_one_file(char *infilename, char *outfilename);
+            FileCompressor()=default;
+            unsigned long file_size(std::string fileName);
+            int decompress_one_file(std::string inFilename, std::string outFilename);
+            int decompress_one_file(FileKeeper *in, FileKeeper *out);
+            int compress_one_file(std::string inFilename, std::string outFilename);
+            int compress_one_file(FileKeeper *in, FileKeeper *out);
     };
 }
 
 #endif
+

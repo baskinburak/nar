@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <fstream>
 #include <nar/lib/USocket/USocket.h>
+#include <nar/narnode/FileKeeper/FileCompressor.h>
 void nar::task::PullFile::initialize()
 {
     nar::FileKeeper file(file_name);
@@ -233,7 +234,11 @@ std::cout<<"SIIIIIIIZZZZZZZZZZZZE2 "<<size<<std::endl;
 	std::cout << "size aes**********:  " << var.size() << " " << aes << std::endl;
 	nar::FileDecryptor fdec(var, aes);
 	delete[] buff;
-	fdec.decrypt( cur_dir + std::string("/") + file_name );
+	fdec.decrypt( cur_dir + std::string("/") + "decryFile" );
+    nar::FileCompressor fcomp;
+    fcomp.decompress_one_file(cur_dir + std::string("/") + "decryFile",cur_dir + std::string("/") + file_name);
+
+    std::remove( (cur_dir + std::string("/") + std::string("decryFile")).c_str() );
 	std::remove(destination.c_str());
     return;
 }

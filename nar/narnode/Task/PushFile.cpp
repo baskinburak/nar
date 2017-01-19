@@ -1,7 +1,7 @@
 #include <nar/narnode/Task/PushFile.h>
 #include <nar/narnode/utility.h>
 #include <iostream>
-
+#include <nar/narnode/FileKeeper/FileCompressor.h>
 
 static const char* kTypeNames[] =
     { "Null", "False", "True", "Object", "Array", "String", "Number" };
@@ -228,16 +228,28 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 
 	std::string aes = getAesKey(serverSck);
 
-	nar::FileKeeper f(file_path);
+	nar::FileCompressor fcomp;
+    std::string comPath(std::getenv("HOME"));
+    comPath += std::string("/nar/compFile");
+    fcomp.compress_one_file(file_path,comPath);
+
+  std::string filename = file_path;
+  std::string res;
+  while(filename[filename.size()-1] != '/') {
+      res.push_back(filename[filename.size()-1]);
+     filename.pop_back();
+  }
+  std::reverse(res.begin(), res.end());
+
+    nar::FileKeeper f(comPath);
 	nar::FileCryptor file(&f, aes);
 	unsigned long file_size = file.getFileSize();
-
 
 	rapidjson::Document header(&msg.GetAllocator());		// Create Header
 	getJsonHeader(header);
 
 	rapidjson::Document payload(&msg.GetAllocator());		// Create Payload
-	getJsonPayload(payload,f.getFileName(),file.getFileSize(),globals->get_curdir());
+	getJsonPayload(payload,res,file.getFileSize(),globals->get_curdir());
 
 	msg.AddMember("header", header, msg.GetAllocator());
 	msg.AddMember("payload", payload, msg.GetAllocator());
@@ -250,6 +262,7 @@ void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 	recvJson(response, serverSck);
 
 	distributeFile(response, serverSck, file, globals);
+  std::remove(comPath.c_str());
 	std::string endMsg("END");
 	nar::send_ipc_message(unx_sockfd, endMsg);
 }
