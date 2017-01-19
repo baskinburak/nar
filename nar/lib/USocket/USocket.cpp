@@ -84,7 +84,7 @@ void nar::USocket::receive_thread() {
   nar::Packet pqpacket;
   while(!this->stop_thread) {
     int len = recvfrom(this->udp_sockfd, buf, nar::Packet::PACKET_LEN, 0, &addr, &fromlen);
-    std::cout << "zu hast" << std::endl;
+    std::cout << "zu hast " << errno << std::endl;
     if(len < nar::Packet::HEADER_LEN) continue;
     nar::Packet recvd;
     recvd.set_header(buf);
@@ -113,9 +113,9 @@ void nar::USocket::receive_thread() {
     if(recvd.is_syn() && recvd.is_ack()) {
       this->flag_mtx.lock();
       this->synack_flag = true;
+      this->flag_mtx.unlock();
       std::unique_lock<std::mutex> lck(this->event_cv_mtx);
       event_cv.notify_all();
-      this->flag_mtx.unlock();
     } else if(recvd.is_syn()) {
       nar::Packet synack;
       synack.make_synack(this->stream_id);
@@ -123,9 +123,9 @@ void nar::USocket::receive_thread() {
       sendto(this->udp_sockfd, packet.c_str(), packet.size(), 0, &addr, fromlen);
       this->flag_mtx.lock();
       this->syn_flag = true;
+      this->flag_mtx.unlock();
       std::unique_lock<std::mutex> lck(this->event_cv_mtx);
       this->event_cv.notify_all();
-      this->flag_mtx.unlock();
     } else if(recvd.is_ack()) {
       //std::cout << "ack: " << recvd.get_acknum() << std::endl;
       this->acks_list_mutex.lock();
@@ -214,6 +214,7 @@ void nar::USocket::randevous_server() {
 
     this->flag_mtx.lock();
     if(this->ran_flag) {
+      this->flag_mtx.unlock();
       this->randevous_mtx.lock();
       for(int i=0; i<this->randevous_list.size(); i++) {
         std::pair<nar::Packet, struct sockaddr>& rand = this->randevous_list[i];
@@ -271,8 +272,9 @@ void nar::USocket::randevous_server() {
       }
       this->randevous_list.clear();
       this->randevous_mtx.unlock();
+    } else {
+      this->flag_mtx.unlock();
     }
-    this->flag_mtx.unlock();
   }
 }
 
@@ -310,28 +312,32 @@ void nar::USocket::make_randevous(std::string server_ip, unsigned short server_p
     this->event_cv.wait(lck);
     this->flag_mtx.lock();
     if(this->timeout_flag) {
+      this->timeout_flag = false;
+      this->flag_mtx.unlock();
       this->timer_mtx.lock();
       this->numberof_100us = 10000;
       this->timer_mtx.unlock();
-      this->timeout_flag = false;
+    } else {
+      this->flag_mtx.unlock();
     }
+    this->flag_mtx.lock();
     if(this->ran_flag) {
+      this->flag_mtx.unlock();
       this->randevous_mtx.lock();
       if(this->randevous_list.size() > 0) {
         nar::Packet& ran_pck = randevous_list[0].first;
         std::string payload = ran_pck.get_payload();
         memcpy(&this->peer_addr, payload.c_str(), payload.size());
         this->randevous_mtx.unlock();
-        this->flag_mtx.unlock();
         this->timer_mtx.lock();
         this->numberof_100us = -1;
         this->timer_mtx.unlock();
         break;
       }
       this->randevous_mtx.unlock();
-      this->ran_flag = false;
+    } else {
+      this->flag_mtx.unlock();
     }
-    this->flag_mtx.unlock();
   }
 
   nar::Packet nat_packet;
@@ -352,21 +358,24 @@ void nar::USocket::make_randevous(std::string server_ip, unsigned short server_p
     this->event_cv.wait(lck);
     this->flag_mtx.lock();
     if(this->timeout_flag) {
+      this->timeout_flag = false;
+      this->flag_mtx.unlock();
       this->timer_mtx.lock();
       this->numberof_100us = 10000;
       this->timer_mtx.unlock();
-      this->timeout_flag = false;
     }
+    this->flag_mtx.lock();
     if(this->nat_flag) {
-      std::cout << "nat_flag" << std::endl;
       this->nat_flag = false;
+      this->flag_mtx.unlock();
+      std::cout << "nat_flag" << std::endl;
       this->timer_mtx.lock();
       this->numberof_100us = -1;
       this->timer_mtx.unlock();
-      this->flag_mtx.unlock();
       break;
+    } else {
+      this->flag_mtx.unlock();
     }
-    this->flag_mtx.unlock();
   }
 
   std::cout << "randevous ended" << std::endl;
@@ -376,35 +385,44 @@ void nar::USocket::make_randevous(std::string server_ip, unsigned short server_p
 int nar::USocket::recv(char* buf, int len) {
   this->flag_mtx.lock();
   if(recv_flag) {
+    this->flag_mtx.unlock();
     this->receive_buffer_mtx.lock();
     int rlen = std::min(len, (int)this->receive_buffer.size());
     memcpy(buf, (char*)this->receive_buffer.c_str(), rlen);
     receive_buffer.erase(0, rlen);
     if(receive_buffer.size() == 0) {
+      this->receive_buffer_mtx.unlock();
+      this->flag_mtx.lock();
       recv_flag = false;
+      this->flag_mtx.unlock();
+    } else {
+      this->receive_buffer_mtx.unlock();
     }
-    this->receive_buffer_mtx.unlock();
-    this->flag_mtx.unlock();
     return rlen;
   }
 
-  
+  this->flag_mtx.lock();
   while(!this->recv_flag) {
     this->flag_mtx.unlock();
     std::unique_lock<std::mutex> lck(this->event_cv_mtx);
     this->event_cv.wait(lck);
     this->flag_mtx.lock();
   }
+  this->flag_mtx.unlock();
+
 
   this->receive_buffer_mtx.lock();
   int rlen = std::min(len, (int)this->receive_buffer.size());
   memcpy(buf, (char*)this->receive_buffer.c_str(), rlen);
   receive_buffer.erase(0, rlen);
   if(receive_buffer.size() == 0) {
+    this->receive_buffer_mtx.unlock();
+    this->flag_mtx.lock();
     recv_flag = false;
+    this->flag_mtx.unlock();
+  } else {
+    this->receive_buffer_mtx.unlock();
   }
-  this->receive_buffer_mtx.unlock();
-  this->flag_mtx.unlock();
 
   return rlen;
 }
@@ -480,10 +498,12 @@ int nar::USocket::send(char* buf, int len) {
     if(this->ack_flag) {
     //  std::cout << "ack" << std::endl;
       this->ack_flag = false;
+      this->flag_mtx.unlock();
       this->acks_list_mutex.lock();
       while(!this->acks.empty()) {
         nar::Packet ack = acks.top();
         acks.pop();
+        this->acks_list_mutex.unlock();
         unsigned int ackseqnum = ack.get_acknum();
         if(acked.find(ackseqnum) != acked.end()) { // if this is already acked, ignore it.
           continue;
@@ -503,27 +523,38 @@ int nar::USocket::send(char* buf, int len) {
           rtt = 0.875 * rtt + 0.125 * cur_rtt;
           acked.insert(ackseqnum);
           if(sent_not_acked.front() == ackseqnum) {
-            this->timer_mtx.lock();
             sent_not_acked.pop();
             while(!sent_not_acked.empty() && acked.find(sent_not_acked.front()) != acked.end()) {
               sent_not_acked.pop();
             }
             if(sent_not_acked.size() == 0) {
+              this->flag_mtx.lock();
               this->timeout_flag = false;
+              this->flag_mtx.unlock();
+              this->timer_mtx.lock();
               this->numberof_100us = -1;
+              this->timer_mtx.unlock();
             } else {
               time_t sent_interval = rtt + 4*devrtt - (std::time(0) - send_times[sent_not_acked.front()]);
+              this->flag_mtx.lock();
               this->timeout_flag = false;
+              this->flag_mtx.unlock();
+              this->timer_mtx.lock();
               this->numberof_100us = std::max((time_t)10, sent_interval / 100); 
+              this->timer_mtx.unlock();
             }
-            this->timer_mtx.unlock();
           }
         }
+        this->acks_list_mutex.lock();
       }
       this->acks_list_mutex.unlock();
       //std::cout << "bacin" << std::endl;
+    } else {
+      this->flag_mtx.unlock();
     }
+    this->flag_mtx.lock();
     if(this->timeout_flag) {
+      this->flag_mtx.unlock();
       //std::cout << "timeout" << std::endl;
       this->timer_mtx.lock();
       this->timeout_flag = false;
@@ -541,6 +572,7 @@ int nar::USocket::send(char* buf, int len) {
       time_t sent_interval = rtt + 4*devrtt - (std::time(0) - send_times[new_first]);
       this->numberof_100us = std::max((time_t)10, sent_interval / 100);
       this->timer_mtx.unlock();
+      this->flag_mtx.lock();
     }
     this->flag_mtx.unlock();
   }
