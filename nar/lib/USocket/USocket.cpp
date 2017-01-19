@@ -463,12 +463,12 @@ int nar::USocket::send(char* buf, int len) {
       sendto(this->udp_sockfd, pktstr.c_str(), pktstr.size(), 0, &this->peer_addr, sizeof(struct sockaddr));
       used_window_size++;
       if(sent_not_acked.size() == 0) {
-        this->timer_mtx.lock();
-        this->numberof_100us = std::max((time_t)10, (rtt + 4*devrtt) / 100);
-        this->timer_mtx.unlock();
         this->flag_mtx.lock();
         this->timeout_flag = false;
         this->flag_mtx.unlock();
+        this->timer_mtx.lock();
+        this->numberof_100us = std::max((time_t)10, (rtt + 4*devrtt) / 100);
+        this->timer_mtx.unlock();
       }
       sent_not_acked.push(pkt.get_seqnum());
       is_sent_not_acked[pkt.get_seqnum()] = true;
