@@ -6,8 +6,7 @@
 #include <crypto++/filters.h>
 #include <string>
 #include <nar/narnode/FileKeeper/FileCryptor.h>
-#include <nar/lib/USocket/Packet.h>
-#include <nar/lib/USocket/USocket.h>
+#include <nar/lib/Socket/USocket.h>
 namespace nar {
     const char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     std::string get_string_sckt(int sockfd, int len);

@@ -10,7 +10,7 @@
 #include <nar/lib/rapidjson/writer.h>
 #include <nar/lib/nlohJson/json.hpp>
 #include <string>
-#include <nar/lib/USocket/USocket.h>
+#include <nar/lib/Socket/USocket.h>
 
 namespace nar {
     namespace task {

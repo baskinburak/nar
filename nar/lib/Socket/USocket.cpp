@@ -19,6 +19,7 @@
 #include <set>
 
 nar::USocket::USocket(unsigned int streamid) {
+  std::cout << "naber lol yaraklar" << std::endl;
   this->stream_id = streamid;
   if((this->udp_sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
     throw "USocket create error.";

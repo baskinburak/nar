@@ -24,8 +24,7 @@
 #include <algorithm>
 #include <nar/narnode/FileKeeper/FileKeeper.h>
 #include <pwd.h>
-#include <nar/lib/USocket/Packet.h>
-#include <nar/lib/USocket/USocket.h>
+#include <nar/lib/Socket/USocket.h>
 
 void handle_cli_ipc(int sockfd, nar::Global* globals) {
     char buf[129];

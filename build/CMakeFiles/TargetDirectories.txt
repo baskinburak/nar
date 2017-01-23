@@ -1,6 +1,0 @@
-/home/baskin/nar/nar/narnode/build/CMakeFiles/rebuild_cache.dir
-/home/baskin/nar/nar/narnode/build/CMakeFiles/naripc.dir
-/home/baskin/nar/nar/narnode/build/CMakeFiles/narcli.dir
-/home/baskin/nar/nar/narnode/build/CMakeFiles/narfile.dir
-/home/baskin/nar/nar/narnode/build/CMakeFiles/edit_cache.dir
-/home/baskin/nar/nar/narnode/build/CMakeFiles/nardaemon.dir

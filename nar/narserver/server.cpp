@@ -18,8 +18,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <iterator>
-#include <nar/lib/USocket/Packet.h>
-#include <nar/lib/USocket/USocket.h>
+#include <nar/lib/Socket/Packet.h>
+#include <nar/lib/Socket/USocket.h>
 #include <mutex>
 #include <atomic>
 

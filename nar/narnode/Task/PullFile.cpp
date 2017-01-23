@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <cstdio>
 #include <fstream>
-#include <nar/lib/USocket/USocket.h>
+#include <nar/lib/Socket/USocket.h>
 #include <nar/narnode/FileKeeper/FileCompressor.h>
 void nar::task::PullFile::initialize()
 {
