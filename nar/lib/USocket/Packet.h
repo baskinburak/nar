@@ -13,8 +13,8 @@ namespace nar {
       STREAM_ID - 4 bytes
     */
     private:
-      static std::string htons(unsigned short num);
-      static std::string htonl(unsigned int num);
+      static std::string htons_u(unsigned short num);
+      static std::string htonl_u(unsigned int num);
       static unsigned int ntoh(const std::string& in, int start, int len);
       char syn; // start stream with another peer
       char ack; // ack given seqnum

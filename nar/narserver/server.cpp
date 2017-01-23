@@ -9,7 +9,7 @@
 #include <nar/lib/rapidjson/stringbuffer.h>
 #include <nar/lib/rapidjson/writer.h>
 #include <nar/narnode/utility.h>
-#include <nar/narnode/Exception/exception.h>
+#include <nar/lib/Exception/exception.h>
 #include <nar/lib/json.hpp>
 #include <nar/narserver/Database.h>
 #include <nar/narserver/dbstructs.h>

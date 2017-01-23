@@ -2,7 +2,7 @@
 #include <cassert>
 #include <iostream>
 
-std::string nar::Packet::htons(unsigned short num) {
+std::string nar::Packet::htons_u(unsigned short num) {
   std::string res;
   res.resize(2);
   res[1] = (num & 0xff);
@@ -10,7 +10,7 @@ std::string nar::Packet::htons(unsigned short num) {
   return res;
 }
 
-std::string nar::Packet::htonl(unsigned int num) {
+std::string nar::Packet::htonl_u(unsigned int num) {
   std::string res;
   res.resize(4);
   res[3] = (num & 0xff);
@@ -33,11 +33,11 @@ std::string nar::Packet::make_packet() const {
   assert(this->payload_len == (this->payload).size());
   char flags = (syn<<7) | (ack<<6) | (fin<<5) | (nat<<4) | (data<<3) | (ran<<2);
   std::string pckt_str;
-  pckt_str = this->htonl(this->seqnum);
-  pckt_str += this->htonl(this->acknum);
+  pckt_str = this->htonl_u(this->seqnum);
+  pckt_str += this->htonl_u(this->acknum);
   pckt_str.push_back(flags);
-  pckt_str += this->htons(this->payload_len);
-  pckt_str += this->htonl(this->stream_id);
+  pckt_str += this->htons_u(this->payload_len);
+  pckt_str += this->htonl_u(this->stream_id);
   if(this->payload_len > 0)
     pckt_str += this->payload;
   return pckt_str;

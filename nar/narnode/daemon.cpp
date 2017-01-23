@@ -6,7 +6,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <thread>
-#include <nar/narnode/Exception/exception.h>
+#include <nar/lib/Exception/exception.h>
 #include <nar/narnode/utility.h>
 #include <nar/lib/rapidjson/document.h>
 #include <nar/lib/rapidjson/allocators.h>

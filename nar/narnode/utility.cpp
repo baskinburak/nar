@@ -1,5 +1,5 @@
 #include <nar/narnode/utility.h>
-#include <nar/narnode/Exception/exception.h>
+#include <nar/lib/Exception/exception.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -23,7 +23,6 @@ std::string nar::get_message(nar::Socket& skt) {
             break;
         }
         if(buf[idx] > '9' || buf[idx] < '0') {
-            //std::cout << "bad request" << std::endl;
             skt.send((char*) "bad request", 11);
             skt.close();
             throw nar::Exception("such exception");
@@ -32,7 +31,6 @@ std::string nar::get_message(nar::Socket& skt) {
         len*=10;
         len += buf[idx] - '0';
         if(prev_len > len) {
-            //std::cout << "overflow" << std::endl;
             skt.send((char*) "integer overflow", 16);
             skt.close();
             throw nar::Exception("wowowo");

@@ -285,7 +285,7 @@ void nar::USocket::make_randevous(std::string server_ip, unsigned short server_p
   std::memset((char*) &si_remote, 0, sizeof(si_remote));
 
   si_remote.sin_family = AF_INET;
-  si_remote.sin_port = ::htons(server_port);
+  si_remote.sin_port = htons(server_port);
 
   if(inet_aton(server_ip.c_str(), &si_remote.sin_addr) == 0) {
     throw "inet_aton error";
@@ -429,7 +429,6 @@ int nar::USocket::send(char* buf, int len) {
   unsigned int first_seqnum = seqnum; // that is not acked
   int first_idx = 0;
   for(int cur=0, i=0; cur<len; cur += MAX_PAYLOAD_LEN, i++) {
-    printf("%p %x\n", buf, buf);
     std::string payload(buf + cur, std::min(MAX_PAYLOAD_LEN, len-cur));
     nar::Packet data_packet;
     data_packet.make_data(seqnum, this->stream_id, payload, payload.size());

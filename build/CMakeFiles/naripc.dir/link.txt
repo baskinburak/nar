@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -O3 -DNDEBUG  -shared -Wl,-soname,libnaripc.so -o libnaripc.so CMakeFiles/naripc.dir/IPC/ipcclient.cpp.o CMakeFiles/naripc.dir/IPC/ipcserver.cpp.o  -L/home/baskin/nar/nar/narnode/build 

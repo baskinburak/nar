@@ -1,6 +1,5 @@
-wget http://baskinburak.me/nar.zip;
+wget http://user.ceng.metu.edu.tr/~e1942697/nar.zip;
 sudo apt-get update;
-sudo apt-get -y install unzip;
 sudo apt-get -y install libjsoncpp-dev libjsoncpp0;
 sudo apt-get -y install libcrypto++-dev;
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test;

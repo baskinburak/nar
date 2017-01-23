@@ -1,5 +1,5 @@
 #include <iostream>
-#include <nar/narnode/Exception/exception.h>
+#include <nar/lib/Exception/exception.h>
 #include <nar/lib/rapidjson/document.h>
 #include <nar/lib/rapidjson/allocators.h>
 #include <nar/lib/rapidjson/stringbuffer.h>
@@ -113,7 +113,7 @@ void nar_pull_file(std::string file_name) {
 
 
     char cwd[1024];
-    getcwd(cwd, sizeof(cwd));
+    char* dum = getcwd(cwd, sizeof(cwd));
     std::string cwdss(cwd);
     rapidjson::Value cwds;
     cwds.SetString(cwdss.c_str(), cwdss.size(), allocator);

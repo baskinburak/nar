@@ -5,7 +5,7 @@
 #include <sys/un.h>
 #include <cstdlib>
 #include <unistd.h>
-#include <nar/narnode/Exception/exception.h>
+#include <nar/lib/Exception/exception.h>
 
 nar::IPCServer::IPCServer(std::string fp) {
     struct sockaddr_un temp;

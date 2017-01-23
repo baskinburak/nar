@@ -5,7 +5,7 @@
 #include <cstring>
 #include <string>
 #include <unistd.h>
-#include <nar/narnode/Exception/exception.h>
+#include <nar/lib/Exception/exception.h>
 #include <algorithm>
 #include <nar/narnode/utility.h>
 
