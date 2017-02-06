@@ -1,0 +1,1 @@
+/usr/bin/c++   -O3 -DNDEBUG   CMakeFiles/narcli.dir/nar/narnode/cli.cpp.o CMakeFiles/narcli.dir/nar/narnode/utility.cpp.o  -o narcli  -L/home/fatih/bitirme/nar/build -rdynamic -lnaripc -lnarfile -lnarsocket -lpthread -lcryptopp -lz -Wl,-rpath,/home/fatih/bitirme/nar/build 

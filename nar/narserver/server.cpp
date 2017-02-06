@@ -403,7 +403,7 @@ namespace nar {
 
                         std::cout << "\n"<< peer_str << std::endl;
                         send_message( peer_sock->getSck() , peer_str);
-                        
+
                         json rspX = json::parse(get_message( *(peer_sock->getSck())) );
                         std::cout << rspX << std::endl;
 
@@ -704,7 +704,7 @@ int main(int argc, char *argv[])
     db.setPass(std::string("123"));
     db.setDbname(std::string("nar"));
     db.connect();
-    
+
     std::thread rand(&randevous_thread);
     rand.detach();
 

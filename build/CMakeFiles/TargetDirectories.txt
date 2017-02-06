@@ -1,0 +1,8 @@
+/home/fatih/bitirme/nar/build/CMakeFiles/rebuild_cache.dir
+/home/fatih/bitirme/nar/build/CMakeFiles/narserver.dir
+/home/fatih/bitirme/nar/build/CMakeFiles/narcli.dir
+/home/fatih/bitirme/nar/build/CMakeFiles/edit_cache.dir
+/home/fatih/bitirme/nar/build/CMakeFiles/nardaemon.dir
+/home/fatih/bitirme/nar/build/CMakeFiles/narsocket.dir
+/home/fatih/bitirme/nar/build/CMakeFiles/narfile.dir
+/home/fatih/bitirme/nar/build/CMakeFiles/naripc.dir
