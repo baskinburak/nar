@@ -13,6 +13,7 @@ namespace nar {
     class File {
         private:
             std::fstream _file_handle;
+            std::string _mode;
         public:
             /*
              * Default constructor. This should do nothing.
@@ -20,14 +21,13 @@ namespace nar {
              * @author: baskin
              * @tested: no
             */
-            File();
-            File(const char* file_path);
-            File(std::string file_path);
+            File(const char* file_path, const char* mode);
+            File(std::string file_path, const char* mode);
             ~File();
             int read(char* buffer, int offset, int len);
             int write(char* buffer, int offset, int len);
             int write(char* buffer, int len);
-            unsigned long size() const;
+            unsigned long size();
     };
 }
 
