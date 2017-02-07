@@ -14,6 +14,8 @@
 #include <string.h>
 #include <iostream>
 
+#include <fstream>
+
 namespace nar {
 	class FileKeeper {
 		private:

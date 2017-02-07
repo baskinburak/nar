@@ -147,29 +147,21 @@ int nar::readdata(nar::USocket &sock, char *buf, int buflen)
 
 int nar::senddata(nar::Socket &sock, char *buf, int buflen)
 {
-     std::cout << "siktirtmeyin" << std::endl; // bunu sil
-    exit(0);
+  std::cout << "siktirtmeyin" << std::endl; // bunu sil
+  exit(0);
 }
 
-int nar::senddata(nar::USocket &sock, char *buf, int buflen)
-{
-     char *pbuf = ( char *) buf;
-
-    while (buflen > 0)
-    {
-		//std::cout <<" pBuf: " << "bufLen: "<<buflen << "xxx" <<std::string(pbuf) << std::endl<<std::endl;
-        int num = sock.send( pbuf, buflen);
-        if (num < 0)
-        {
-			//std::cout << "IAM HEREEEEé!!!!!!!!!!!!" << std::endl;
-            return 0;
-        }
-
-        pbuf += num;
-        buflen -= num;
+int nar::senddata(nar::USocket &sock, char *buf, int buflen) {
+  char *pbuf = (char *) buf;
+  while (buflen > 0){
+    int num = sock.send(pbuf, buflen);
+    if (num < 0) {
+        return 0;
     }
-
-    return 1;
+    pbuf += num;
+    buflen -= num;
+  }
+  return 1;
 }
 
 

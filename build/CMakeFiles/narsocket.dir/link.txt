@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -O3 -DNDEBUG  -shared -Wl,-soname,libnarsocket.so -o libnarsocket.so CMakeFiles/narsocket.dir/nar/lib/Socket/Packet.cpp.o CMakeFiles/narsocket.dir/nar/lib/Socket/Socket.cpp.o CMakeFiles/narsocket.dir/nar/lib/Socket/USocket.cpp.o  -L/home/fatih/bitirme/nar/build 
