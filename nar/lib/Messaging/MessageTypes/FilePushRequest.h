@@ -20,6 +20,7 @@ namespace nar {
                     unsigned long long int get_filesize();
                     void sendMessage();
                     void receiveMessage(nlohmann::json push_req_recv);
+                    nlohmann::json test_json();
             };
 
             class Response : public ResponseHeader {
@@ -37,6 +38,7 @@ namespace nar {
                     std::vector<struct PeerListElement>& get_elements();
                     unsigned short get_randevous_port();
                     void sendMessage();
+                    nlohmann::json test_json();
                     /**
                       * A function that receives response message of the File Push Request
                       *

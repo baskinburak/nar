@@ -53,6 +53,14 @@ void nar::messagetypes::FilePushRequest::Request::receiveMessage(nlohmann::json 
     this->filename = push_req_recv["payload"]["file_name"];
     return;
 }
+nlohmann::json nar::messagetypes::FilePushRequest::Request::test_json() {
+    nlohmann::json push_req_test;
+    push_req_test["header"] = sendHead();
+    push_req_test["payload"]["file_size"] = this->filesize;
+    push_req_test["payload"]["dir"] = this->dir;
+    push_req_test["payload"]["file_name"] = this->filename;
+    return push_req_test;
+}
 void nar::messagetypes::FilePushRequest::Response::sendMessage(){
     nlohmann::json push_resp_send;
     push_resp_send["header"] = sendHead();
@@ -82,4 +90,18 @@ void nar::messagetypes::FilePushRequest::Response::receiveMessage(nlohmann::json
         this->add_element(mid,cid,sid,csize);
     }
     return;
+}
+nlohmann::json nar::messagetypes::FilePushRequest::Response::test_json() {
+    nlohmann::json push_resp_test;
+    push_resp_test["header"] = sendHead();
+    push_resp_test["payload"]["rand_port"] = this->randevous_port;
+    push_resp_test["payload"]["peer_list"] = nlohmann::json::array();
+    push_resp_test["payload"]["size"] = elements.size();
+    for(int i = 0;i < elements.size();i++) {
+        push_resp_test["payload"]["peer_list"][i]["machine_id"] = elements[i].machine_id;
+        push_resp_test["payload"]["peer_list"][i]["chunk_id"] = elements[i].chunk_id;
+        push_resp_test["payload"]["peer_list"][i]["stream_id"] = elements[i].stream_id;
+        push_resp_test["payload"]["peer_list"][i]["chunk_size"] = elements[i].chunk_size;
+    }
+    return push_resp_test;
 }

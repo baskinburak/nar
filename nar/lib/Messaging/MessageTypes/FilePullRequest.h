@@ -18,6 +18,7 @@ namespace nar {
                     std::string& get_dir();
                     void sendMessage();
                     void receiveMessage(nlohmann::json pull_req_recv);
+                    nlohmann::json test_json();
             };
 
             class Response : public ResponseHeader {
@@ -39,6 +40,7 @@ namespace nar {
                 private:
                     unsigned short randevous_port;
                     std::vector<struct PeerListElement> elements;
+                    nlohmann::json test_json();
 
             };
         }

@@ -16,6 +16,51 @@ using namespace nar::messagetypes;
 
 
 int main() {
+    /*INFOCHUNKPUSH TEST START*/
+        std::cout << "INFOCHUNKPUSH TEST START" << std::endl<<std::endl;
+        std::cout << "INFOCHUNKPUSH TEST END" << std::endl<<std::endl;
+    /*INFOCHUNKPUSH TEST END*/
+
+    /*INFOCHUNKPULL TEST START*/
+        std::cout << "INFOCHUNKPULL TEST START" << std::endl<<std::endl;
+        std::cout << "INFOCHUNKPULL TEST END" << std::endl<<std::endl;
+    /*INFOCHUNKPULL TEST END*/
+
+    /*WAITCHUNKPULLREQUEST TEST START*/
+        std::cout << "WAITCHUNKPULLREQUEST TEST START" << std::endl<<std::endl;
+        std::cout << "WAITCHUNKPULLREQUEST TEST END" << std::endl<<std::endl;
+    /*WAITCHUNKPULLREQUEST TEST END*/
+
+    /*WAITCHUNKPUSHREQUEST TEST START*/
+        std::cout << "WAITCHUNKPUSHREQUEST TEST START" << std::endl<<std::endl;
+        std::cout << "WAITCHUNKPUSHREQUEST TEST END" << std::endl<<std::endl;
+    /*WAITCHUNKPUSHREQUEST TEST END*/
+
+    /*FILEPULLREQUEST TEST START*/
+        std::cout << "FILEPULLREQUEST TEST START" << std::endl<<std::endl;
+        std::cout << "FILEPULLREQUEST TEST END" << std::endl<<std::endl;
+    /*FILEPULLREQUEST TEST END*/
+
+    /*FILEPUSHREQUEST TEST START*/
+        std::cout << "FILEPUSHREQUEST TEST START" << std::endl<<std::endl;
+        std::cout << "FILEPUSHREQUEST TEST END" << std::endl<<std::endl;
+    /*FILEPUSHREQUEST TEST END*/
+
+    /*MACHINEREGISTER TEST START*/
+        std::cout << "MACHINEREGISTER TEST START" << std::endl<<std::endl;
+        std::cout << "MACHINEREGISTER TEST END" << std::endl<<std::endl;
+    /*MACHINEREGISTER TEST END*/
+
+    /*USERREGISTER TEST START*/
+        std::cout << "USERREGISTER TEST START" << std::endl<<std::endl;
+        std::cout << "USERREGISTER TEST END" << std::endl<<std::endl;
+    /*USERREGISTER TEST END*/
+
+
+    /*KEEPALIVE TEST START*/
+        std::cout << "KEEPALIVE TEST START" << std::endl<<std::endl;
+        std::cout << "KEEPALIVE TEST END" << std::endl<<std::endl;
+    /*KEEPALIVE TEST END*/
 
     /*HANDSHAKE TEST START*/
         std::cout << "HANDSHAKE TEST START" << std::endl<<std::endl;
