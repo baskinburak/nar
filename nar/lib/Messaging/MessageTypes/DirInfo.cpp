@@ -1,18 +1,18 @@
 #include "DirInfo.h"
 
-std::string& nar::messagetypes::DirInfo::Request::get_dir() {
+std::string& nar::Messagetypes::DirInfo::Request::get_dir() {
     return dir;
 }
 
-std::vector<struct nar::messagetypes::DirInfo::Response::DirListElement>& nar::messagetypes::DirInfo::Response::get_elements() {
+std::vector<struct nar::Messagetypes::DirInfo::Response::DirListElement>& nar::Messagetypes::DirInfo::Response::get_elements() {
     return elements;
 }
 
-void nar::messagetypes::DirInfo::Response::add_element(struct nar::messagetypes::DirInfo::Response::DirListElement& ele) {
+void nar::Messagetypes::DirInfo::Response::add_element(struct nar::Messagetypes::DirInfo::Response::DirListElement& ele) {
     elements.push_back(ele);
 }
 
-void nar::messagetypes::DirInfo::Response::add_element(std::string ct, std::string ei, std::string en, unsigned long long int s, bool t) {
+void nar::Messagetypes::DirInfo::Response::add_element(std::string ct, std::string ei, std::string en, unsigned long long int s, bool t) {
     struct DirListElement ele = {
         ct,
         ei,
@@ -22,27 +22,30 @@ void nar::messagetypes::DirInfo::Response::add_element(std::string ct, std::stri
     };
     elements.push_back(ele);
 }
-void nar::messagetypes::DirInfo::Request::sendMessage(){
+void nar::Messagetypes::DirInfo::Request::send_mess(nar::Socket* skt){
     nlohmann::json dir_req_send;
     dir_req_send["header"] = sendHead();
     dir_req_send["payload"]["dir_name"] = dir;
-    std::cout<<dir_req_send.dump()<<std::endl;
+    send_message(skt,dir_req_send.dump());
+    std::string temp = get_message(skt);
+    nlohmann::json dir_req_recv = nlohmann::json::parse(temp);
+    receive_message(dir_req_recv);
     return;
 }
-void nar::messagetypes::DirInfo::Request::receiveMessage(nlohmann::json dir_req_recv){
+void nar::Messagetypes::DirInfo::Request::receive_message(nlohmann::json &dir_req_recv){
     nlohmann::json head = dir_req_recv["header"];
     recvFill(head);
     dir = dir_req_recv["payload"]["dir_name"];
     return;
 }
 
-nlohmann::json nar::messagetypes::DirInfo::Request::test_json() {
+nlohmann::json nar::Messagetypes::DirInfo::Request::test_json() {
     nlohmann::json dir_req_test;
     dir_req_test["header"] = sendHead();
     dir_req_test["payload"]["dir_name"] = dir;
     return dir_req_test;
 }
-void nar::messagetypes::DirInfo::Response::sendMessage(){
+void nar::Messagetypes::DirInfo::Response::send_mess(nar::Socket* skt){
 
     nlohmann::json dir_resp_send;
     dir_resp_send["header"] = sendHead();
@@ -55,10 +58,13 @@ void nar::messagetypes::DirInfo::Response::sendMessage(){
         dir_resp_send["payload"]["item_list"][i]["entity_size"] = elements[i].entity_size;
         dir_resp_send["payload"]["item_list"][i]["type"] = elements[i].type;
     }
-    std::cout<<dir_resp_send.dump()<<std::endl;
+    send_message(skt,dir_resp_send.dump());
+    std::string temp = get_message(skt);
+    nlohmann::json dir_resp_recv = nlohmann::json::parse(temp);
+    receive_message(dir_resp_recv);
     return;
 }
-nlohmann::json nar::messagetypes::DirInfo::Response::test_json(){
+nlohmann::json nar::Messagetypes::DirInfo::Response::test_json(){
 
     nlohmann::json dir_resp_test;
     dir_resp_test["header"] = sendHead();
@@ -74,7 +80,7 @@ nlohmann::json nar::messagetypes::DirInfo::Response::test_json(){
     return dir_resp_test;
 }
 
-void nar::messagetypes::DirInfo::Response::receiveMessage(nlohmann::json dir_resp_recv){
+void nar::Messagetypes::DirInfo::Response::receive_message(nlohmann::json &dir_resp_recv){
     nlohmann::json head = dir_resp_recv["header"];
     recvFill(head);
     int size = dir_resp_recv["payload"]["size"];

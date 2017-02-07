@@ -4,9 +4,9 @@
 
 #include <vector>
 
-#include "../../nlohJson/json.hpp"
+#include <nar/lib/nlohJson/json.hpp>
 namespace nar {
-    namespace messagetypes {
+    namespace Messagetypes {
         class ResponseHeader {
             private:
                 int statuscode;
