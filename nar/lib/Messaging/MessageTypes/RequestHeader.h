@@ -2,9 +2,9 @@
 #define NAR_MESSREQUESTHEADER_H
 #include <string>
 #include <vector>
-#include "../../nlohJson/json.hpp"
+#include <nar/lib/nlohJson/json.hpp>
 namespace nar {
-    namespace messagetypes{
+    namespace Messagetypes{
         class RequestHeader {
             private:
                 std::string action;

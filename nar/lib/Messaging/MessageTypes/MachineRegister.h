@@ -4,16 +4,17 @@
 #include <string>
 #include "RequestHeader.h"
 #include "ResponseHeader.h"
-#include "../../nlohJson/json.hpp"
-
+#include <nar/lib/nlohJson/json.hpp>
+#include <nar/narnode/utility.h>
 namespace nar {
-    namespace messagetypes {
+    namespace Messagetypes {
         namespace MachineRegister {
             class Request : public RequestHeader {
                 public:
                     Request(): RequestHeader(std::string("machine_register")) {}
-                    void sendMessage();
-                    void receiveMessage(nlohmann::json macreg_req_recv);
+                    void send_mess(nar::Socket* skt);
+                    void receive_message(nlohmann::json macreg_req_recv);
+                    nlohmann::json test_json();
 
             };
             class Response : public ResponseHeader {
@@ -21,9 +22,10 @@ namespace nar {
                     std::string machine_id;
                 public:
                     Response(int statcode , std::string _machine_id) : ResponseHeader(statcode, std::string("machine_register")), machine_id(_machine_id) {}
-                    std::string& getMachineId();
-                    void sendMessage();
-                    void receiveMessage(nlohmann::json macreg_resp_recv);
+                    std::string& get_machine_id();
+                    void send_mess(nar::Socket* skt);
+                    void receive_message(nlohmann::json macreg_resp_recv);
+                    nlohmann::json test_json();
             };
         }
     }

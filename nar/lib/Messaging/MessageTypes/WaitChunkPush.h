@@ -1,13 +1,14 @@
-#ifndef NAR_MESSWAITCHUNKPUSHREQUEST_H
-#define NAR_MESSWAITCHUNKPUSHREQUEST_H
+#ifndef NAR_MESSWAITCHUNKPUSH_H
+#define NAR_MESSWAITCHUNKPUSH_H
 
 #include <string>
 #include "RequestHeader.h"
 #include "ResponseHeader.h"
-#include "../../nlohJson/json.hpp"
+#include <nar/lib/nlohJson/json.hpp>
+#include <nar/narnode/utility.h>
 namespace nar {
-    namespace messagetypes {
-        namespace WaitChunkPushRequest {
+    namespace Messagetypes {
+        namespace WaitChunkPush {
             class Request : public RequestHeader {
                 private:
                     unsigned short rand_port;
@@ -20,15 +21,17 @@ namespace nar {
                     unsigned short get_randevous_port();
                     long long int  get_chunk_id();
                     long long int  get_chunk_size();
-                    void sendMessage();
-                    void receiveMessage(nlohmann::json wpush_req_recv);
+                    void send_mess(nar::Socket* skt);
+                    void receive_message(nlohmann::json wpush_req_recv);
+                    nlohmann::json test_json();
 
             };
             class Response : public ResponseHeader {
                 public:
                     Response(int statcode) : ResponseHeader(statcode, std::string("wait_chunk_push_request")) {}
-                    void sendMessage();
-                    void receiveMessage(nlohmann::json wpush_resp_recv);
+                    void send_mess(nar::Socket* skt);
+                    void receive_message(nlohmann::json wpush_resp_recv);
+                    nlohmann::json test_json();
             };
         }
     }

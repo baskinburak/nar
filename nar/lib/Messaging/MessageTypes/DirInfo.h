@@ -3,18 +3,17 @@
 
 #include "RequestHeader.h"
 #include "ResponseHeader.h"
-#include "../../nlohJson/json.hpp"
+#include <nar/lib/nlohJson/json.hpp>
+#include <nar/nardaemon/utility.h>
 #include <string>
 #include <vector>
 namespace nar {
-    namespace messagetypes {
+    namespace Messagetypes {
         namespace DirInfo {
             /*
              * Requests specific directory information
              *
-             *
-             *
-             * @author: Fatih Can Kurnaz
+             * @author: Fatih
              * @privar: dir, std::string, holds the directory name for requesting that directories information
              * @tested: Yes
              * @todo: add exception for error status_codes
@@ -22,6 +21,7 @@ namespace nar {
             class Request : public RequestHeader {
                 private:
                     std::string dir;
+
                 public:
 
 
@@ -52,7 +52,7 @@ namespace nar {
                      * @todo: Will give socket as input to send directly
                      * @tested: Yes
                     */
-                    void sendMessage();
+                    void send_mess(nar::Socket* skt);
 
 
                     /*
@@ -63,7 +63,7 @@ namespace nar {
                      * @todo: maybe it can take socket directly
                      * @tested: Yes
                     */
-                    void receiveMessage(nlohmann::json dir_req_recv);
+                    void receive_message(nlohmann::json dir_req_recv);
 
                     /*
                      * Used for testing purposes
@@ -96,8 +96,8 @@ namespace nar {
                     std::vector<struct DirListElement>& get_elements();
                     void add_element(struct DirListElement& ele);
                     void add_element(std::string ct, std::string ei, std::string en, unsigned long long int s, bool t);
-                    void sendMessage();
-                    void receiveMessage(nlohmann::json dir_resp_recv);
+                    void send_mess(nar::Socket* skt);
+                    void receive_message(nlohmann::json dir_req_recv);
                     nlohmann::json test_json();
                 private:
                     std::vector<struct DirListElement> elements;
