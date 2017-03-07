@@ -6,16 +6,16 @@
 
 #include <nar/lib/nlohJson/json.hpp>
 namespace nar {
-    namespace Messagetypes {
+    namespace MessageTypes {
         class ResponseHeader {
             private:
-                int statuscode;
+                int status_code;
                 std::string replyto;
             public:
-                ResponseHeader(int statcode, std::string r): statuscode(statcode), replyto(r){
+                ResponseHeader(int statcode, std::string r): status_code(statcode), replyto(r){
 
                 }
-                int get_statuscode();
+                int get_status_code();
                 std::string& get_replyto();
 
                 nlohmann::json sendHead();

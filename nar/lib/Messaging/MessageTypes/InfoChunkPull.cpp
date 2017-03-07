@@ -1,14 +1,14 @@
 #include "InfoChunkPull.h"
 
-long long int nar::Messagetypes::InfoChunkPull::Request::get_chunk_id() {
+long long int nar::MessageTypes::InfoChunkPull::Request::get_chunk_id() {
     return chunk_id;
 }
 
-bool nar::Messagetypes::InfoChunkPull::Request::get_success() {
+bool nar::MessageTypes::InfoChunkPull::Request::get_success() {
     return success;
 }
 
-void nar::Messagetypes::InfoChunkPull::Request::send_mess(nar::Socket* skt) {
+void nar::MessageTypes::InfoChunkPull::Request::send_mess(nar::Socket* skt) {
     nlohmann::json ipull_req_send;
     ipull_req_send["header"] = sendHead();
     ipull_req_send["payload"]["chunk_id"] = this->chunk_id;
@@ -20,7 +20,7 @@ void nar::Messagetypes::InfoChunkPull::Request::send_mess(nar::Socket* skt) {
     return;
 
 }
-void nar::Messagetypes::InfoChunkPull::Request::receive_message(nlohmann::json ipull_req_recv) {
+void nar::MessageTypes::InfoChunkPull::Request::receive_message(nlohmann::json ipull_req_recv) {
     nlohmann::json head = ipull_req_recv["header"];
     recvFill(head);
     this->chunk_id = ipull_req_recv["payload"]["chunk_id"];
@@ -28,7 +28,7 @@ void nar::Messagetypes::InfoChunkPull::Request::receive_message(nlohmann::json i
     return;
 }
 
-nlohmann::json nar::Messagetypes::InfoChunkPull::Request::test_json() {
+nlohmann::json nar::MessageTypes::InfoChunkPull::Request::test_json() {
     nlohmann::json ipull_req_test;
     ipull_req_test["header"] = sendHead();
     ipull_req_test["payload"]["chunk_id"] = this->chunk_id;
@@ -36,7 +36,7 @@ nlohmann::json nar::Messagetypes::InfoChunkPull::Request::test_json() {
     return ipull_req_test;
 }
 
-void nar::Messagetypes::InfoChunkPull::Response::send_mess(nar::Socket* skt) {
+void nar::MessageTypes::InfoChunkPull::Response::send_mess(nar::Socket* skt) {
     nlohmann::json ipull_resp_send;
     ipull_resp_send["header"] = sendHead();
     send_message(skt,ipull_resp_send.dump());
@@ -46,13 +46,13 @@ void nar::Messagetypes::InfoChunkPull::Response::send_mess(nar::Socket* skt) {
     return;
 }
 
-void nar::Messagetypes::InfoChunkPull::Response::receive_message(nlohmann::json ipull_resp_recv) {
+void nar::MessageTypes::InfoChunkPull::Response::receive_message(nlohmann::json ipull_resp_recv) {
     nlohmann::json head = ipull_resp_recv["header"];
     recvFill(head);
     return;
 }
 
-nlohmann::json nar::Messagetypes::InfoChunkPull::Response::test_json() {
+nlohmann::json nar::MessageTypes::InfoChunkPull::Response::test_json() {
     nlohmann::json ipull_resp_test;
     ipull_resp_test["header"] = sendHead();
     return ipull_resp_test;

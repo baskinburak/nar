@@ -7,23 +7,8 @@
 #include <nar/narnode/utility.h>
 #include <vector>
 namespace nar {
-    namespace Messagetypes {
+    namespace MessageTypes {
         namespace FilePush {
-            class Request : public RequestHeader {
-                private:
-                    unsigned long long int filesize;
-                    std::string dir;
-                    std::string filename;
-                public:
-                    Request(std::string fn, std::string d, unsigned long long int fs): RequestHeader(std::string("file_push_request")), filesize(fs), dir(d), filename(fn) {}
-                    std::string& get_filename();
-                    std::string& get_dir();
-                    unsigned long long int get_filesize();
-                    void send_mess(nar::Socket* skt);
-                    void receive_message(nlohmann::json push_req_recv);
-                    nlohmann::json test_json();
-            };
-
             class Response : public ResponseHeader {
                 public:
                     struct PeerListElement {
@@ -55,6 +40,23 @@ namespace nar {
                     std::vector<struct PeerListElement> elements;
 
             };
+            
+            class Request : public RequestHeader {
+                private:
+                    unsigned long long int filesize;
+                    std::string dir;
+                    std::string filename;
+                public:
+                    Request(std::string fn, std::string d, unsigned long long int fs): RequestHeader(std::string("file_push_request")), filesize(fs), dir(d), filename(fn) {}
+                    std::string& get_filename();
+                    std::string& get_dir();
+                    unsigned long long int get_filesize();
+                    void send_mess(nar::Socket* skt,  nar::MessageTypes::FilePush::Response & resp);
+                    void receive_message(nlohmann::json push_req_recv);
+                    nlohmann::json test_json();
+            };
+
+
         }
     }
 }

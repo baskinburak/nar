@@ -4,7 +4,7 @@
 #include <vector>
 #include <nar/lib/nlohJson/json.hpp>
 namespace nar {
-    namespace Messagetypes{
+    namespace MessageTypes{
         class RequestHeader {
             private:
                 std::string action;

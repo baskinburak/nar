@@ -6,8 +6,16 @@
 #include <nar/lib/nlohJson/json.hpp>
 #include <nar/narnode/utility.h>
 namespace nar {
-    namespace Messagetypes {
+    namespace MessageTypes {
         namespace InfoChunkPull {
+            class Response : public ResponseHeader {
+                public:
+                    Response(int statcode): ResponseHeader(statcode, std::string("info_chunk_pull"))  {}
+                    void send_mess(nar::Socket* skt);
+                    void receive_message(nlohmann::json ipull_resp_recv);
+                    nlohmann::json test_json();
+            };
+            
             class Request : public RequestHeader {
                 private:
                     long long int chunk_id;
@@ -21,13 +29,7 @@ namespace nar {
                     nlohmann::json test_json();
             };
 
-            class Response : public ResponseHeader {
-                public:
-                    Response(int statcode): ResponseHeader(statcode, std::string("info_chunk_pull"))  {}
-                    void send_mess(nar::Socket* skt);
-                    void receive_message(nlohmann::json ipull_resp_recv);
-                    nlohmann::json test_json();
-            };
+
         }
     }
 }

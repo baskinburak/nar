@@ -7,16 +7,8 @@
 #include <nar/lib/nlohJson/json.hpp>
 #include <nar/narnode/utility.h>
 namespace nar {
-    namespace Messagetypes {
+    namespace MessageTypes {
         namespace MachineRegister {
-            class Request : public RequestHeader {
-                public:
-                    Request(): RequestHeader(std::string("machine_register")) {}
-                    void send_mess(nar::Socket* skt);
-                    void receive_message(nlohmann::json macreg_req_recv);
-                    nlohmann::json test_json();
-
-            };
             class Response : public ResponseHeader {
                 private:
                     std::string machine_id;
@@ -27,6 +19,15 @@ namespace nar {
                     void receive_message(nlohmann::json macreg_resp_recv);
                     nlohmann::json test_json();
             };
+            class Request : public RequestHeader {
+                public:
+                    Request(): RequestHeader(std::string("machine_register")) {}
+                    void send_mess(nar::Socket* skt);
+                    void receive_message(nlohmann::json macreg_req_recv);
+                    nlohmann::json test_json();
+
+            };
+
         }
     }
 }

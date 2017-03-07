@@ -12,7 +12,7 @@
 
 #include <iostream>
 
-using namespace nar::Messagetypes;
+using namespace nar::MessageTypes;
 
 
 int main() {

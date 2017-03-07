@@ -7,21 +7,21 @@
 #include <nar/lib/nlohJson/json.hpp>
 #include <nar/narnode/utility.h>
 namespace nar {
-    namespace Messagetypes {
+    namespace MessageTypes {
         namespace KeepAlive {
-            class Request : public RequestHeader {
-                public:
-                    Request(): RequestHeader(std::string("keepalive")) {}
-                    void send_mess(nar::Socket* skt);
-                    void receive_message(nlohmann::json keep_req_recv);
-                    nlohmann::json test_json();
-            };
-
             class Response : public ResponseHeader {
                 public:
                     Response(int statcode) : ResponseHeader(statcode, std::string("keepalive")) {}
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json keep_resp_recv);
+                    nlohmann::json test_json();
+            };
+
+            class Request : public RequestHeader {
+                public:
+                    Request(): RequestHeader(std::string("keepalive")) {}
+                    void send_mess(nar::Socket* skt, nar::MessageTypes::KeepAlive::Response & resp);
+                    void receive_message(nlohmann::json keep_req_recv);
                     nlohmann::json test_json();
             };
         }
