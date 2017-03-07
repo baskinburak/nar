@@ -85,11 +85,17 @@ void nar::Packet::set_payload(const std::string& pl, int start, int len) {
 void nar::Packet::set_payload(const char* pl, int len) {
   this->payload_len = len;
   this->payload = std::string(pl, len);
-  std::cout << this->payload_len << " " << this->payload.size() << " ************" << std::endl;
 }
 
 void nar::Packet::set_payload(const char* pl) {
   this->payload = std::string(pl, this->payload_len);
+}
+
+void nar::Packet::set_payload_check(const char* pl, int start, int len) {
+    if(len != this->payload_len) {
+        throw nar::Exception::Packet::PacketLenMatchError("Packet length does not match", start, len);
+    }
+    this->payload = std::string(pl, start, len);
 }
 
 void nar::Packet::hdr_set_syn(char n_syn) {

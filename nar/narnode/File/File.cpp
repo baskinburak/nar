@@ -8,11 +8,11 @@ nar::File::File(const char* file_path, const char* mode): _mode(mode) {
     }
     try {
         if(mod == "w")
-            _file_handle.open(file_path, std::ios::out);
+            _file_handle.open(file_path, std::ios::out | std::ios::binary);
         else if(mod == "r")
-            _file_handle.open(file_path, std::ios::in);
+            _file_handle.open(file_path, std::ios::in | std::ios::binary);
     } catch(std::ios_base::failure& Exp) {
-        throw nar::Exception::File::DoesNotExist(Exp.what(), file_path);
+        throw nar::Exception::File::OpenFail(Exp.what(), file_path);
     }
 }
 
@@ -23,16 +23,20 @@ nar::File::File(std::string file_path, const char* mode): _mode(mode) {
     }
     try {
         if(mod == "w")
-            _file_handle.open(file_path.c_str(), std::ios::out);
+            _file_handle.open(file_path.c_str(), std::ios::out | std::ios::binary);
         else if(mod == "r")
-            _file_handle.open(file_path.c_str(), std::ios::in);
+            _file_handle.open(file_path.c_str(), std::ios::in | std::ios::binary);
     } catch(std::ios_base::failure& Exp) {
-        throw nar::Exception::File::DoesNotExist(Exp.what(), file_path.c_str());
+        throw nar::Exception::File::OpenFail(Exp.what(), file_path.c_str());
     }
 }
 
 nar::File::~File() {
-    _file_handle.close();
+    try {
+        _file_handle.close();
+    } catch(std::ios_base::failure& Exp) {
+        throw nar::Exception::Unknown(Exp.what());
+    }
 }
 
 int nar::File::read(char* buffer, int offset, int len) {
@@ -46,8 +50,12 @@ int nar::File::read(char* buffer, int offset, int len) {
         if(len < 0)
             throw nar::Exception::DomainError::Negative("read() size given negative", len);
         int read_len = std::min(file_len - offset, len);
-        _file_handle.seekg(offset, _file_handle.beg);
-        _file_handle.read(buffer, read_len);
+        try {
+            _file_handle.seekg(offset, _file_handle.beg);
+            _file_handle.read(buffer, read_len);
+        } catch(std::ios_base::failure& Exp) {
+            throw nar::Exception::File::ReadError(Exp.what(), offset, read_len);
+        }
         return read_len;
     } else {
         throw nar::Exception::File::NotOpen("read() called before file is opened.");
@@ -64,8 +72,12 @@ int nar::File::write(char* buffer, int offset, int len) {
             throw nar::Exception::File::OffsetOutOfBounds("Offset is greater than file length in write()", offset);
         if(len < 0)
             throw nar::Exception::DomainError::Negative("write() size given negative", len);
-        _file_handle.seekg(offset, _file_handle.beg);
-        _file_handle.write(buffer, len);
+        try {
+            _file_handle.seekg(offset, _file_handle.beg);
+            _file_handle.write(buffer, len);
+        } catch(std::ios_base::failure& Exp) {
+            throw nar::Exception::File::WriteError(Exp.what(), offset, len);
+        }
         return len;
     } else {
         throw nar::Exception::File::NotOpen("write() called before file is opened.");
@@ -79,8 +91,12 @@ int nar::File::write(char* buffer, int len) {
     if(_file_handle.is_open()) {
         if(len < 0)
             throw nar::Exception::DomainError::Negative("write() size given negative", len);
-        _file_handle.seekg(0, _file_handle.end);
-        _file_handle.write(buffer, len);
+        try {
+            _file_handle.seekg(0, _file_handle.end);
+            _file_handle.write(buffer, len);
+        } catch(std::ios_base::failure& Exp) {
+            throw nar::Exception::File::WriteError(Exp.what(), -1, len);
+        }
         return len;
     } else {
         throw nar::Exception::File::NotOpen("write() called before file is opened.");
@@ -89,9 +105,21 @@ int nar::File::write(char* buffer, int len) {
 
 unsigned long nar::File::size() {
     if(_file_handle.is_open()) {
-        _file_handle.seekg(0, _file_handle.end);
-        return _file_handle.tellg();
+        try {
+            _file_handle.seekg(0, _file_handle.end);
+            return _file_handle.tellg();
+        } catch(std::ios_base::failure& Exp) {
+            throw nar::Exception::Unknown(Exp.what());
+        }
     } else {
         throw nar::Exception::File::NotOpen("size() called before file is opened.");
+    }
+}
+
+void nar::File::close() {
+    try {
+        _file_handle.close();
+    } catch(std::ios_base::failure& Exp) {
+        throw nar::Exception::Unknown(Exp.what());
     }
 }

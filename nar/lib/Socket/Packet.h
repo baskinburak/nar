@@ -28,7 +28,7 @@ namespace nar {
       unsigned int acknum; // acknum of the seqnum that packet acks.
       std::string payload;
     public:
-      static const unsigned short PACKET_LEN = 1000; // bytes
+      static const unsigned short PACKET_LEN = 508; // bytes
       static const unsigned short HEADER_LEN = 15; // bytes
 
       Packet(char s, char a, char f, char n, char d, char r, unsigned int sqnm, unsigned int acknm, unsigned short p, unsigned int strid, std::string pl): syn(s), ack(a), fin(f), nat(n), data(d), seqnum(sqnm), acknum(acknm), payload_len(p), stream_id(strid), payload(pl), ran(r) {}
@@ -41,6 +41,7 @@ namespace nar {
       void set_payload(const char* pl, int len);
       void set_payload(const std::string& pl, int start, int len);
       void set_payload(const char* pl);
+      void set_payload_check(const char* pl, int start, int len);
       void hdr_set_syn(char n_syn);
       void hdr_set_ack(char n_ack);
       void hdr_set_fin(char n_fin);
