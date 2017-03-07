@@ -69,13 +69,18 @@ namespace nar {
                     int _start;
                     int _len;
                 public:
-                    PacketLenMatchError(const char* mess, int start, int len): _start(start), _len(len) {}
+                    PacketLenMatchError(const char* mess, int start, int len): ExcpBase(mess), _start(start), _len(len) {}
                     int get_start() { return _start; }
                     int get_len() { return _len; }
             };
         };
 
         namespace USocket {
+            class NoAvailablePort : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    NoAvailablePort(const char* mess) : ExcpBase(mess) {}
+            };
             class ResolveError : public nar::Exception::ExcpBase {
                 private:
                     std::string _ip;
