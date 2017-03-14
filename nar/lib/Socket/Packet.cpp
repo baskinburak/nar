@@ -243,7 +243,7 @@ void nar::Packet::make_syn(unsigned int str_id) {
   this->payload = std::string("");
 }
 
-void nar::Packet::make_synack(unsigned int str_id) {
+void nar::Packet::make_synack(unsigned int str_id, unsigned int seqnum, unsigned int acknum) {
   this->syn = 1;
   this->ack = 1;
   this->fin = 0;
@@ -280,7 +280,6 @@ void nar::Packet::make_ran(unsigned int str_id) {
   this->seqnum = 0;
   this->acknum = 0;
   this->payload_len = 0;
-  std::cout << "--------------------" << str_id << std::endl;
   this->stream_id = str_id;
   this->payload = std::string("");
 }
@@ -309,6 +308,53 @@ void nar::Packet::make_fin(unsigned int str_id) {
   this->payload_len = 0;
   this->stream_id = str_id;
   this->payload = std::string("");
+}
+/*
+    stream id will be 0
+    str_id will be attached to payload
+*/
+void nar::Packet::make_ran_request(unsigned int str_id) {
+  this->syn = 0;
+  this->ack = 0;
+  this->fin = 0;
+  this->nat = 0;
+  this->data = 0;
+  this->ran = 1;
+  this->seqnum = 0;
+  this->acknum = 0;
+  this->payload_len = 0;
+  this->stream_id = 0;
+  this->payload = nar::Packet::htonl_u(str_id);
+}
+
+
+/*
+    stream id will be str_id
+    endpoint will be attached to payload
+*/
+void nar::Packet::make_ran_response(unsigned int str_id, udp::endpoint& ep) {
+    this->syn = 0;
+    this->ack = 0;
+    this->fin = 0;
+    this->nat = 0;
+    this->data = 0;
+    this->ran = 1;
+    this->seqnum = 0;
+    this->acknum = 0;
+    this->payload_len = 0;
+    this->stream_id = str_id;
+    unsigned int addr = ep.address().to_v4().t_ulong();
+    unsigned short prt = ep.port();
+    this->payload = nar::Packet::htonl_u(addr) + nar::Packet::htons_u(prt);
+}
+
+udp::endpoint nar::Packet::get_endpoint() {
+    if(this->payload.size() != 6) {
+        throw nar::Exception::Packet::NotEndpoint("Packet does not contain an endpoint in its payload field.");
+    }
+    boost::asio::ip::address addr(boost::asio::ip::address_v4(nar::Packet::ntoh(this->payload, 0, 4)));
+    unsigned short port = nar::packet::ntoh(this->payload, 4, 2);
+    return udp::endpoint(addr, port);
 }
 
 void nar::Packet::print() {

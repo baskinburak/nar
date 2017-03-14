@@ -95,9 +95,12 @@ namespace nar {
 
             void make_ack(unsigned int str_id, unsigned int acknm);
             void make_syn(unsigned int str_id);
-            void make_synack(unsigned int str_id);
+            void make_synack(unsigned int str_id, unsigned int seqnum, unsigned int acknum);
             void make_nat(unsigned int str_id);
             void make_ran(unsigned int str_id);
+            void make_ran_request(unsigned int str_id);
+            void make_ran_response(unsigned int str_id, udp::endpoint& ep);
+            udp::endpoint get_endpoint();
             void make_data(unsigned int sqnm, unsigned int str_id, std::string payload, unsigned int payload_len);
             void make_fin(unsigned int str_id);
 

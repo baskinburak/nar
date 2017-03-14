@@ -73,6 +73,12 @@ namespace nar {
                     int get_start() { return _start; }
                     int get_len() { return _len; }
             };
+
+            class NotEndpoint : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    NotEndpoint(const char* mess): ExcpBase(mess) {}
+            };
         };
 
         namespace USocket {
