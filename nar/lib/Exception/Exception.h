@@ -29,7 +29,7 @@ namespace nar {
                 public:
                     BindError(const char* mess, unsigned short port, char type): ExcpBase(mess), _port(port), _type(type) {}
                     unsigned short get_port() const { return _port; }
-                    char get_type() const { return _type; } 
+                    char get_type() const { return _type; }
             };
 
             class SystemError : public nar::Exception::ExcpBase {
@@ -44,7 +44,7 @@ namespace nar {
                     WrongSocketType(const char* mess, char type): ExcpBase(mess), _type(type) {}
                     char get_type() const { return _type; }
             };
-            
+
             class ConnectionError : public nar::Exception::ExcpBase {
                 private:
                     unsigned short _port;
@@ -54,7 +54,7 @@ namespace nar {
                     ConnectionError(const char* mess, const std::string& host, const unsigned short port, char type): ExcpBase(mess), _host(host), _port(port), _type(type) {}
                     unsigned short get_port() const { return _port; }
                     char get_type() const { return _type; }
-                    std::string get_host() const { return _host; } 
+                    std::string get_host() const { return _host; }
             };
         };
 
@@ -69,7 +69,7 @@ namespace nar {
                     int _start;
                     int _len;
                 public:
-                    PacketLenMatchError(const char* mess, int start, int len): _start(start), _len(len) {}
+                    PacketLenMatchError(const char* mess, int start, int len):nar::Exception::ExcpBase(mess), _start(start), _len(len) {}
                     int get_start() { return _start; }
                     int get_len() { return _len; }
             };

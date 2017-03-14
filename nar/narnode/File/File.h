@@ -1,6 +1,7 @@
 #ifndef NAR_FILE_H
 #define NAR_FILE_H
 #include <fstream>
+
 namespace nar {
     /*
      * Utility class to write/read to/from files.
@@ -122,6 +123,28 @@ namespace nar {
              *
             */
             void close();
+
+            /*
+             * Compress the given file and returns the compressed file
+             *
+             * @author: Fatih
+             * @param: tempfile, nar::File&, file object that will contain compressed file
+             * @throws: nar::Exception::File::WrongMode, if file is opened with mode "w".
+             * @throws: nar::Exception::File::WrongMode, if tempfile is opened with mode "r".
+             * @tested: yes
+            */
+            void compress(nar::File& tempfile);
+
+            /*
+             * Decompress the given file and returns the decompressed file
+             *
+             * @author: Fatih
+             * @param: file, nar::File&, file object which will contain decompressed file
+             * @throws: nar::Exception::File::WrongMode, if compressed file is opened with mode "w".
+             * @throws: nar::Exception::File::WrongMode, if the output file  is opened with mode "r".
+             * @tested: yes
+            */
+            void decompress(nar::File& file);
     };
 }
 
