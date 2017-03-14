@@ -1,0 +1,85 @@
+#ifndef NAR_IPCREQUEST_H
+#define NAR_IPCREQUEST_H
+
+#include <string>
+
+namespace nar {
+    namespace Messagetypes {
+        class IPCRequest {
+            /*
+             * IPC Request information
+             *
+             * @author: Dogu
+             * @privar: std::string action_name, holds the action name
+             * @tested: No
+             * @todo: exceptions
+            */
+            private:
+                std::string action_name;
+                std::string file_name;
+            public:
+                /*
+                 * Getter of action name
+                 *
+                 * @author: Dogu
+                 * @tested: No
+                */
+                std::string get_action_name();
+                /*
+                 * Getter of file name
+                 *
+                 * @author: Dogu
+                 * @tested: No
+                */
+                std::string get_file_name();
+                /*
+                 * Setter of action name
+                 *
+                 * @author: Dogu
+                 * @tested: No
+                */
+                void set_action_name(std::string an);
+                /*
+                 * Setter of file name
+                 *
+                 * @author: Dogu
+                 * @tested: No
+                */
+                void set_file_name(std::string fn);
+
+                /*
+                 * Constructor
+                 *
+                 * @author: Dogu
+                 * @param:  std::string an, holds the name of the action,
+                            std::string fn, holds the name of the file
+                 * @tested: No
+                */
+                IPCResponse(std::string an, std::string fn)
+                                : action_name(an)
+                                , file_name(fn)
+                                {}
+
+                /*
+                 * fills the class with the received information
+                 *
+                 * @author: Dogu
+                 * @param:  nlohmann::json &received, received json data
+                 * @tested: No
+                */
+                std:string&  get_action_result(nlohmann::json &received);
+                /*
+                 * sends the related info to other side
+                 *
+                 * @author: Dogu
+                 * @param:  std::string s, it is implemented for user friendly purposes.
+                            It constantly sends message until 'END' message has come.
+                 * @tested: No
+                */
+                void send_action(std::string action_name, std::string file_name);
+
+        };
+    }
+}
+
+#endif
