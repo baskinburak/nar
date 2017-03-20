@@ -11,7 +11,8 @@
 #include "../../lib/Exception/Exception.h"
 #include <stdio.h>
 
-nar::File::File(const char* file_path, const char* mode): _mode(mode) {
+nar::File::File(const char* file_path, const char* mode, bool is_temp): _mode(mode), _is_temp(is_temp), _file_path(file_path){
+
     std::string mod(mode);
     if(mod != "w" && mod != "r") {
         throw nar::Exception::File::UnrecognizedFileMode("File open mode unrecognized.", mode);
@@ -26,7 +27,7 @@ nar::File::File(const char* file_path, const char* mode): _mode(mode) {
     }
 }
 
-nar::File::File(std::string file_path, const char* mode): _mode(mode) {
+nar::File::File(std::string file_path, const char* mode, bool is_temp): _mode(mode), _is_temp(is_temp), _file_path(file_path) {
     std::string mod(mode);
     if(mod != "w" && mod != "r") {
         throw nar::Exception::File::UnrecognizedFileMode("File open mode unrecognized.", mode);
@@ -44,6 +45,9 @@ nar::File::File(std::string file_path, const char* mode): _mode(mode) {
 nar::File::~File() {
     try {
         _file_handle.close();
+        if(_is_temp) {
+            boost::filesystem::remove(_file_path.c_str());
+        }
     } catch(std::ios_base::failure& Exp) {
         throw nar::Exception::Unknown(Exp.what());
     }
@@ -130,34 +134,52 @@ unsigned long nar::File::size() {
 void nar::File::close() {
     try {
         _file_handle.close();
+        if(_is_temp) {
+            boost::filesystem::remove(_file_path.c_str());
+        }
     } catch(std::ios_base::failure& Exp) {
         throw nar::Exception::Unknown(Exp.what());
     }
 }
 
-void nar::File::compress(nar::File& tempfile) {
+nar::File* nar::File::compress() {
+    boost::filesystem::path temp;
+    try {
+        temp = boost::filesystem::unique_path();
+    } catch(std::ios_base::failure& Exp) {
+        throw nar::Exception::Unknown(Exp.what());
+    }
+    std::string temp_file =temp.native();
+    temp_file += std::string(".z");
+    nar::File tempfile(temp_file, "w", false);
     if(this->_mode != "r") {
         throw nar::Exception::File::WrongMode("File is not opened with 'r'", _mode.c_str());
-    }
-    if(tempfile._mode != "w") {
-        throw nar::Exception::File::WrongMode("Tempfile should be created with 'w'", _mode.c_str());
     }
     boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
     in.push(boost::iostreams::zlib_compressor());
     in.push(this->_file_handle);
     boost::iostreams::copy(in, tempfile._file_handle);
-    return  ;
+    nar::File* r_version = new nar::File(temp_file, "r", true);
+    return  r_version;
 }
-void nar::File::decompress(nar::File& file) {
-    if(this->_mode != "r") {
-        throw nar::Exception::File::WrongMode("Compressed file is not opened with 'r'", _mode.c_str());
+nar::File* nar::File::decompress() {
+    boost::filesystem::path temp;
+    try {
+        temp = boost::filesystem::unique_path();
+    } catch(std::ios_base::failure& Exp) {
+        throw nar::Exception::Unknown(Exp.what());
     }
-    if(file._mode != "w") {
-        throw nar::Exception::File::WrongMode("Decompressed file should be created with 'w'", _mode.c_str());
+    std::string temp_file =temp.native();
+    temp_file += std::string(".txt");
+    nar::File tempfile(temp_file, "w", false);
+    if(this->_mode != "r") {
+        throw nar::Exception::File::WrongMode("Compressed file should have opened with 'r'", _mode.c_str());
     }
     boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
     in.push(boost::iostreams::zlib_decompressor());
     in.push(this->_file_handle);
-    boost::iostreams::copy(in, file._file_handle);
-    return  ;
+    boost::iostreams::copy(in, tempfile._file_handle);
+
+    nar::File* r_version = new nar::File(temp_file, "r", true);
+    return  r_version;
 }
