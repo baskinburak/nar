@@ -17,6 +17,7 @@ namespace nar {
      * Socket class that implements RDT over UDP with NAT.
      *
      * @author: baskin
+     * @privar: _iserv, boost::asio::io_service*, stores the io service for access to OS functionalities.
      * @privar: _server_ip, std::string, stores the randezvous server ip
      * @privar: _server_port, std::string, stores the randezvous server port
      * @privar: _socket, boost::asio::ip::udp::socket, udp socket handle to do operations over boost
@@ -32,6 +33,7 @@ namespace nar {
      * @privar: _event_cv, std::condition_variable, this cv is notified whenever a new flag is set.
      * @privar: _recv_buffer, std::string, receive buffer in which the received data is stored as it comes.
      * @privar: _nat_flag, bool, is set whenever a nat packet is received.
+     * @privar: _timer_flag, bool, is set whenever timer expires.
      * @privar: _recv_flag, bool, is set whenever a new data arrives to _recv_buffer.
      * @privar: _ack_flag, bool, is set whenever a new ack arrives to _acks.
      * @privar: _ran_flag, bool, is set whenever a new ran arrives to _ran_packs
@@ -43,7 +45,13 @@ namespace nar {
     class USocket {
         private:
             static void receive_thread(nar::USocket* sock);
-            static void timer_thread();
+            void timer_thread(unsigned long usec, bool* stop_timer);
+
+            bool* start_timer(unsigned long usec);
+            void stop_timer(bool* stp_tmr);
+
+            boost::asio::io_service* _iserv;
+
             std::string _server_ip;
             std::string _server_port;
             udp::socket _socket;
@@ -60,6 +68,7 @@ namespace nar {
 
             std::string _recv_buffer;
 
+            bool _timer_flag;
             bool _nat_flag;
             bool _recv_flag;
             bool _ack_flag;
@@ -78,6 +87,8 @@ namespace nar {
 
             void randezvous_server();
             void connect();
+            int recv(char* buf, int len);
+            bool send(nar::File& file);
     };
 }
 

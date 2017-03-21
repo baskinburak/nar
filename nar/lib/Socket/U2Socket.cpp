@@ -7,13 +7,14 @@
 #include <thread>
 #include <random>
 #include <limits>
+#include <nar/narnode/File/File.h>
 
 using std::cout;
 using std::endl;
 using boost::asio::ip::udp;
 using std::pair;
 
-nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id) {
+nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id), _iserv(&io_serv) {
     this->_server_ip = server_ip;
     this->_server_port = std::to_string(server_port);
     udp::resolver resolver(io_serv);
@@ -50,6 +51,38 @@ nar::USocket::USocket(boost::asio::io_service& io_serv, const char* server_ip, u
 
 nar::USocket::~USocket() {
     _socket.close();
+}
+
+void nar::USocket::timer_thread(unsigned long usec, bool* stop_timer) {
+    boost::asio::deadline_timer timer(*(this->_iserv), boost::posix_time::microseconds(usec));
+    try {
+        timer.wait();
+    } catch(boost::system::system_error& Exp) {
+    }
+
+    std::unique_lock<std::mutex> lck(this->_work_mutex);
+    if(!(*stop_timer)) {
+        this->_timer_flag = true;
+        this->_event_cv.notify_all();
+    }
+    delete stop_timer;
+    lck.unlock();
+}
+
+bool* nar::USocket::start_timer(unsigned long usec) {
+    bool* stp_tmr = new bool;
+    *stp_tmr = false;
+    std::thread thr(&nar::USocket::timer_thread, this, usec, stp_tmr);
+    thr.detach();
+    return stp_tmr;
+}
+
+void nar::USocket::stop_timer(bool* stp_tmr) {
+    if(this->_timer_flag) {
+        this->_timer_flag = false;
+    } else {
+        *stp_tmr = true;
+    }
 }
 
 void nar::USocket::receive_thread(nar::USocket* sock) {
@@ -188,7 +221,7 @@ void nar::USocket::randezvous_server() {
                     continue;
                 }
 
-                if(prev_rands.find(stream_id) != prev_rands.end()) {
+                if(prev_rands.find(stream_id) != prev_rands.end() && *ep != *prev_rands[stream_id]) {
                     nar::Packet first_packet;
                     nar::Packet second_packet;
 
@@ -221,8 +254,10 @@ void nar::USocket::connect() {
     std::string ranpck = ran_packet.make_packet();
     while(true) {
         this->_socket.send_to(boost::asio::buffer(ranpck), this->_server_endpoint);
+        bool *stp_tmr = this->start_timer(1000000);
         this->_event_cv.wait(lck);
         if(this->_ran_flag) {
+            this->_ran_flag = false;
             // i have a randezvous response
             if(this->_ran_packs.size() == 0) {
                 cout << "nar::USocket::connect THIS SHOULD NOT HAPPEN !" << endl;
@@ -234,13 +269,48 @@ void nar::USocket::connect() {
                     continue;
                 }
             }
+            stop_timer(stp_tmr);
             break;
+        } else if(this->_timer_flag) {
+            this->_timer_flag = false;
         }
     }
 
 
-    cout << "here" << endl;
-    // now i have peer in _peer_endpoint. start natting !
+    nar::Packet nat_packet;
+    nat_packet.make_nat(this->_stream_id);
+    std::string natpck = nat_packet.make_packet();
 
+    while(true) {
+        this->_socket.send_to(boost::asio::buffer(natpck), this->_peer_endpoint);
+        bool *stp_tmr = this->start_timer(1000000);
+        this->_event_cv.wait(lck);
+        if(this->_nat_flag) {
+            this->_nat_flag = false;
+            stop_timer(stp_tmr);
+            break;
+        } else if(this->_timer_flag) {
+            this->_timer_flag = false;
+        }
+    }
+
+    cout << "randezvouz successful." << endl; // debug
     lck.unlock();
+}
+
+
+int nar::USocket::recv(char* buf, int len) {
+    std::unique_lock<std::mutex> lck(this->_work_mutex);
+    while(!this->_recv_flag) {
+        this->_event_cv.wait(lck);
+    }
+    int read_len = this->_recv_buffer.copy(buf, len, 0);
+    this->_recv_buffer.erase(0, read_len);
+    this->_recv_flag = this->_recv_buffer.size() > 0;
+    lck.unlock();
+    return read_len;
+}
+
+int nar::USocket::send(nar::File& file) {
+    
 }
