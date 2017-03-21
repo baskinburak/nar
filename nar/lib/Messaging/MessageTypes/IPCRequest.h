@@ -44,6 +44,13 @@ namespace nar {
                 */
                 std::string get_user_name();
                 /*
+                 * Getter of isEnd
+                 *
+                 * @author: Dogu
+                 * @tested: No
+                */
+                bool get_isEnd();
+                /*
                  * Setter of action name
                  *
                  * @author: Dogu
@@ -64,7 +71,13 @@ namespace nar {
                  * @tested: No
                 */
                 void set_user_name(std::string un);
-
+                /*
+                 * Setter of isEnd
+                 *
+                 * @author: Dogu
+                 * @tested: No
+                */
+                void set_isEnd(bool ie);
                 /*
                  * Constructor
                  *
@@ -79,7 +92,22 @@ namespace nar {
                     user_name = un;
                     isEnd = false;
                 }
-
+                /*
+                 * return all things in a json
+                 *
+                 * @author: Dogu
+                 * @param: None
+                 * @tested: No
+                */
+                nlohmann::json get_myrequestjson();
+                /*
+                 * get a message
+                 *
+                 * @author: Dogu
+                 * @param:  None
+                 * @tested: No
+                */
+                void print_loop(nar::Socket* skt);
                 /*
                  * sends the related info to other side
                  *

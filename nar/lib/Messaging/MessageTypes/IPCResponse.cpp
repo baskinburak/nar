@@ -32,20 +32,21 @@ void nar::Messagetypes::IPCResponse::set_file_name(std::string fn) {
     file_name = fn;
 }
 
-nlohmann::json nar::Messagetypes::IPCResponse::loop_send_message(nar::Socket* skt) {
-    while(1){
-        if(progress == 100){
-            nlohmann::json json_to_sent;
-            json_to_sent["header"]["process_name"] = "END";
-            send_message(skt,json_to_sent.dump());
-        }
-        else{
-            nlohmann::json json_to_sent;
-            json_to_sent["header"]["process_name"] = process_name;
-            json_to_sent["payload"]["status_code"] = status_code;
-            json_to_sent["payload"]["progress"] = progress;
-            json_to_sent["payload"]["file_name"] = file_name;
-            send_message(skt,json_to_sent.dump());
-        }
-    }
+nlohmann::json nar::Messagetypes::IPCResponse::get_myresponsejson() {
+    nlohmann::json my_response_json;
+    my_response_json["header"]["process_name"] = this -> process_name;
+    my_response_json["payload"]["progress"] = this -> progress;
+    my_response_json["payload"]["status_code"] = this -> status_code;
+    my_response_json["payload"]["file_name"] = this -> file_name;
+    return my_response_json;
+}
+
+void nar::Messagetypes::IPCResponse::send_message_progress(nar::Socket* skt, int p) {
+    nlohmann::json json_to_sent;
+    json_to_sent["header"]["process_name"] = this -> process_name;
+    json_to_sent["payload"]["status_code"] = this -> status_code;
+    json_to_sent["payload"]["progress"] = p;
+    json_to_sent["payload"]["file_name"] = this -> file_name;
+    send_message(skt,json_to_sent.dump());
+    return;
 }

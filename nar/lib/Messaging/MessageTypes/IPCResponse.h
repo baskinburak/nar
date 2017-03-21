@@ -88,6 +88,10 @@ namespace nar {
                  * @param:  long int prog, holds the information in integer like 40,65,
                             std::string pn, states the information like pull,push,
                             long int sc, states how the process is going,like error
+                                    200->success
+                                    300->fail
+                                    400->error
+                                    these can be changed
                             std::string fn, holds the file name
                  * @tested: No
                 */
@@ -98,13 +102,23 @@ namespace nar {
                             , file_name(fn)
                             { }
                 /*
+                 * get my json
+                 *
+                 * @author: Dogu
+                 * @param: None
+                 * @tested: No
+                 *
+                */
+                nlohmann::json get_myresponsejson();
+                /*
                  * sends the related info to other side
                  *
                  * @author: Dogu
-                 * @param:  nar::Socket* skt
+                 * @param:  nar::Socket* skt, it is socket pointer basically
+                            progress, update the progress by giving integer value
                  * @tested: No
                 */
-                nlohmann::json loop_send_message(nar::Socket* skt);
+                void send_message_progress(nar::Socket* skt, int progress);
         };
     }
 }

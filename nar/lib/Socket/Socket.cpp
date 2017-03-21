@@ -43,7 +43,7 @@ void nar::Socket::bind(const unsigned short port, const char* interface) {      
         }
         _acceptor->set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
         boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(interface), port);
-        _acceptor->bind(endpoint, ec);    
+        _acceptor->bind(endpoint, ec);
         if(ec) {
             throw nar::Exception::Socket::BindError("Error on Server Socket::bind", port, _type);
         }
@@ -69,7 +69,7 @@ void nar::Socket::bind(const unsigned short port) {
         }
         _acceptor->set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
         boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), port);
-        _acceptor->bind(endpoint, ec);    
+        _acceptor->bind(endpoint, ec);
         if(ec) {
             throw nar::Exception::Socket::BindError("Error on Server Socket::bind", port, _type);
         }
@@ -94,11 +94,11 @@ void nar::Socket::bind() {
             throw nar::Exception::Socket::BindError("Error on Server Socket::bind", 0, _type);
         }
         boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), 0);
-        _acceptor->bind(endpoint, ec);        
+        _acceptor->bind(endpoint, ec);
         if(ec) {
             throw nar::Exception::Socket::BindError("Error on Server Socket::bind", 0, _type);
         }
-         
+
         _acceptor->listen();
     } else {
         throw nar::Exception::Socket::UnknownType("Unknown type in Socket::bind.", _type);
@@ -107,10 +107,10 @@ void nar::Socket::bind() {
 
 void nar::Socket::accept(nar::Socket& acc) const {
     if(_type == 'c') {
-        throw nar::Exception::Socket::WrongSocketType("Accept call on a client Socket",_type); 
+        throw nar::Exception::Socket::WrongSocketType("Accept call on a client Socket",_type);
     }
     if(acc._type == 's') {
-        throw nar::Exception::Socket::WrongSocketType("Server socket is given as an argument to a accept call",_type); 
+        throw nar::Exception::Socket::WrongSocketType("Server socket is given as an argument to a accept call",_type);
     }
     boost::asio::ip::tcp::endpoint endpoint  = boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 12345);
     _acceptor->accept(*acc._sock,endpoint);
@@ -118,7 +118,7 @@ void nar::Socket::accept(nar::Socket& acc) const {
 
 void nar::Socket::connect(const std::string& host, const unsigned short port) {
     if(_type == 's') {
-        throw nar::Exception::Socket::WrongSocketType("Connect call on a server Socket",_type); 
+        throw nar::Exception::Socket::WrongSocketType("Connect call on a server Socket",_type);
     }
 
     boost::system::error_code ec = boost::asio::error::host_not_found;
@@ -131,23 +131,35 @@ void nar::Socket::connect(const std::string& host, const unsigned short port) {
 
 void nar::Socket::send(const char* offset, int length) const {
     if(_type == 's') {
-        throw nar::Exception::Socket::WrongSocketType("Send call on a server Socket",_type); 
+        throw nar::Exception::Socket::WrongSocketType("Send call on a server Socket",_type);
     }
     boost::system::error_code ec;
     boost::asio::write(*_sock, boost::asio::buffer((void *)offset, length), ec);
     if(ec) {
-        throw nar::Exception::Socket::SystemError("System error from socket->send");    
+        throw nar::Exception::Socket::SystemError("System error from socket->send");
     }
 }
 
+void nar::Socket::send(std::string s) const {
+    if(_type == 's') {
+        throw nar::Exception::Socket::WrongSocketType("Send call on a server Socket",_type);
+    }
+    boost::system::error_code ec;
+    boost::asio::write(*_sock, boost::asio::buffer((void *)s.c_str(), s.size()), ec);
+    if(ec) {
+        throw nar::Exception::Socket::SystemError("System error from socket->send");
+    }
+}
+
+
 int nar::Socket::recv(char* offset, int length) const {
     if(_type == 's') {
-        throw nar::Exception::Socket::WrongSocketType("Recv call on a server Socket",_type); 
+        throw nar::Exception::Socket::WrongSocketType("Recv call on a server Socket",_type);
     }
     boost::system::error_code ec;
     size_t len = _sock->read_some(boost::asio::buffer(offset,length), ec);
     if(ec) {
-        throw nar::Exception::Socket::SystemError("System error from socket->recv");    
+        throw nar::Exception::Socket::SystemError("System error from socket->recv");
     }
     return len;
 }
