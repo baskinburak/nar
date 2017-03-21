@@ -15,8 +15,8 @@ namespace nar {
                 std::string& get_action();
 
 
-                nlohmann::json sendHead();
-				void recvFill(nlohmann::json & received);
+                nlohmann::json send_head();
+				void recv_fill(nlohmann::json & received);
         };
     }
 }

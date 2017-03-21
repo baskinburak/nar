@@ -96,7 +96,54 @@ namespace nar {
                     int get_value() const { return _value; }
             };
         };
+        namespace MessageTypes {
+            class UserDoesNotExist : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    UserDoesNotExist(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
 
+            class ServerSocketAuthenticationError : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    ServerSocketAuthenticationError(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+
+            class PullFileDoesNotExist : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    PullFileDoesNotExist(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+
+            class NoValidPeerPull : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    NoValidPeerPull(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+
+            class NoValidPeerPush : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    NoValidPeerPush(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+            class UserNameAlreadyExist : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    UserNameAlreadyExist(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+        };
         namespace File {
             class WriteError : public nar::Exception::ExcpBase {
                 private:

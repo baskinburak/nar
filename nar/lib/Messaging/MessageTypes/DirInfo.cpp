@@ -24,7 +24,7 @@ void nar::MessageTypes::DirInfo::Response::add_element(std::string ct, long long
 }
 void nar::MessageTypes::DirInfo::Request::send_mess(nar::Socket* skt ,nar::MessageTypes::DirInfo::Response & resp){
     nlohmann::json dir_req_send;
-    dir_req_send["header"] = sendHead();
+    dir_req_send["header"] = send_head();
     dir_req_send["payload"]["dir_name"] = dir;
     send_message(skt,dir_req_send.dump());
     std::string temp = get_message(skt);
@@ -34,21 +34,21 @@ void nar::MessageTypes::DirInfo::Request::send_mess(nar::Socket* skt ,nar::Messa
 }
 void nar::MessageTypes::DirInfo::Request::receive_message(nlohmann::json dir_req_recv){
     nlohmann::json head = dir_req_recv["header"];
-    recvFill(head);
+    recv_fill(head);
     dir = dir_req_recv["payload"]["dir_name"];
     return;
 }
 
 nlohmann::json nar::MessageTypes::DirInfo::Request::test_json() {
     nlohmann::json dir_req_test;
-    dir_req_test["header"] = sendHead();
+    dir_req_test["header"] = send_head();
     dir_req_test["payload"]["dir_name"] = dir;
     return dir_req_test;
 }
 void nar::MessageTypes::DirInfo::Response::send_mess(nar::Socket* skt){
 
     nlohmann::json dir_resp_send;
-    dir_resp_send["header"] = sendHead();
+    dir_resp_send["header"] = send_head();
     dir_resp_send["payload"]["item_list"] = nlohmann::json::array();
     dir_resp_send["payload"]["size"] = elements.size();
     for(int i = 0;i<elements.size();i++){
@@ -59,15 +59,12 @@ void nar::MessageTypes::DirInfo::Response::send_mess(nar::Socket* skt){
         dir_resp_send["payload"]["item_list"][i]["type"] = elements[i].type;
     }
     send_message(skt,dir_resp_send.dump());
-    std::string temp = get_message(skt);
-    nlohmann::json dir_resp_recv = nlohmann::json::parse(temp);
-    receive_message(dir_resp_recv);
     return;
 }
 nlohmann::json nar::MessageTypes::DirInfo::Response::test_json(){
 
     nlohmann::json dir_resp_test;
-    dir_resp_test["header"] = sendHead();
+    dir_resp_test["header"] = send_head();
     dir_resp_test["payload"]["item_list"] = nlohmann::json::array();
     dir_resp_test["payload"]["size"] = elements.size();
     for(int i = 0;i<elements.size();i++){
@@ -82,7 +79,12 @@ nlohmann::json nar::MessageTypes::DirInfo::Response::test_json(){
 
 void nar::MessageTypes::DirInfo::Response::receive_message(nlohmann::json dir_resp_recv){
     nlohmann::json head = dir_resp_recv["header"];
-    recvFill(head);
+    recv_fill(head);
+    if(_status_code == 300) {
+        throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
+    } else if(_status_code == 301) {
+        throw nar::Exception::MessageTypes::UserDoesNotExist("This user does not exist for nar system so you can not get dirinfo for it", _status_code);
+    }
     int size = dir_resp_recv["payload"]["size"];
     for(int i=0;i<size;i++){
         std::string tchange_time = dir_resp_recv["payload"]["item_list"][i]["change_time"];

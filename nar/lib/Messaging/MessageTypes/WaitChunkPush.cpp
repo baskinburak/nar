@@ -14,7 +14,7 @@ long long int  nar::MessageTypes::WaitChunkPush::Request::get_chunk_size() {
 }
 void nar::MessageTypes::WaitChunkPush::Request::send_mess(nar::Socket* skt, nar::MessageTypes::WaitChunkPush::Response & resp) {
     nlohmann::json wpush_req_send;
-    wpush_req_send["header"] = sendHead();
+    wpush_req_send["header"] = send_head();
     wpush_req_send["payload"]["stream_id"] = this->stream_id;
     wpush_req_send["payload"]["rand_port"] = this->rand_port;
     wpush_req_send["payload"]["chunk_size"] =  this->chunk_size;
@@ -27,7 +27,7 @@ void nar::MessageTypes::WaitChunkPush::Request::send_mess(nar::Socket* skt, nar:
 }
 void nar::MessageTypes::WaitChunkPush::Request::receive_message(nlohmann::json wpush_req_recv) {
     nlohmann::json head = wpush_req_recv["header"];
-    recvFill(head);
+    recv_fill(head);
     this->stream_id = wpush_req_recv["payload"]["stream_id"];
     this->rand_port = wpush_req_recv["payload"]["rand_port"];
     this->chunk_size = wpush_req_recv["payload"]["chunk_size"];
@@ -36,7 +36,7 @@ void nar::MessageTypes::WaitChunkPush::Request::receive_message(nlohmann::json w
 }
 nlohmann::json nar::MessageTypes::WaitChunkPush::Request::test_json() {
     nlohmann::json wpush_req_test;
-    wpush_req_test["header"] = sendHead();
+    wpush_req_test["header"] = send_head();
     wpush_req_test["payload"]["stream_id"] = this->stream_id;
     wpush_req_test["payload"]["rand_port"] = this->rand_port;
     wpush_req_test["payload"]["chunk_size"] =  this->chunk_size;
@@ -46,18 +46,18 @@ nlohmann::json nar::MessageTypes::WaitChunkPush::Request::test_json() {
 
 void nar::MessageTypes::WaitChunkPush::Response::send_mess(nar::Socket* skt) {
     nlohmann::json wpush_resp_send;
-    wpush_resp_send["header"] = sendHead();
+    wpush_resp_send["header"] = send_head();
     send_message(skt,wpush_resp_send.dump());
     return;
 }
 
 void nar::MessageTypes::WaitChunkPush::Response::receive_message(nlohmann::json wpush_resp_recv) {
     nlohmann::json head = wpush_resp_recv["header"];
-    recvFill(head);
+    recv_fill(head);
     return;
 }
 nlohmann::json nar::MessageTypes::WaitChunkPush::Response::test_json() {
     nlohmann::json wpush_resp_test;
-    wpush_resp_test["header"] = sendHead();
+    wpush_resp_test["header"] = send_head();
     return wpush_resp_test;
 }

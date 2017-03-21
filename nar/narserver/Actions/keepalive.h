@@ -7,7 +7,7 @@
 #include <nar/narserver/ServerGlobal.h>
 #include <string>
 namespace nar {
-    namespace Actions {
+    namespace ServerActions {
         void keepalive(nar::SockInfo* inf, nar::MessageTypes::KeepAlive::Request & keep_req, nar::ServerGlobal* s_global) {
             int status;
             if(inf->isAuthenticated()) {

@@ -11,7 +11,7 @@ void test1() {      // test bind(port) and get_ip
     boost::asio::io_service io_serv;
     Socket cli(io_serv,'c');
     cli.connect(std::string("127.0.0.1"),12345);
-    cli.send("Fatih var ya hayvan :)", 22);
+    cli.send(".........Processing...... :)", 22);
     cout << "Ip: " << cli.get_dest_ip() << endl;
     char *buf = new char(250);
     cli.recv(buf,250);
@@ -26,7 +26,7 @@ void test2() {      // test bind(void)
     unsigned short port;
     std::cin >> port;
     cli.connect(std::string("127.0.0.1"),port);
-    cli.send("Fatih var ya hayvan :)", 22);
+    cli.send(".........Processing...... :)", 22);
 
     char *buf = new char(250);
     cli.recv(buf,250);
@@ -39,9 +39,9 @@ void test3() {
     Socket cli(io_serv,'c');
     unsigned short port;
     std::cin >> port;
-    cli.bind(66879,"127.0.0.1")
+    cli.bind(66879,"127.0.0.1");
     cli.connect(std::string("127.0.0.1"),port);
-    cli.send("Fatih var ya hayvan :)", 22);
+    cli.send(".........Processing...... :)", 22);
 
     char *buf = new char(250);
     cli.recv(buf,250);

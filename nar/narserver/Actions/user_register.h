@@ -11,14 +11,14 @@ using std::cout;
 using std::endl;
 
 namespace nar {
-    namespace Actions {
+    namespace ServerActions {
         void user_register(nar::SockInfo* inf, MessageTypes::UserRegister::Request & usreg_req, nar::Database* db) {
             std::string username = usreg_req.get_username();
             std::string aes = usreg_req.get_aes();
             nar::User usr = db->getUser(username);
             int status_code;
             if(usr.user_id != -1) {
-                status_code = 301; // username already exists
+                status_code = 300; // username already exists
             }
 
             usr.user_name = username;
