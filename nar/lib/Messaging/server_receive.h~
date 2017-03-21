@@ -100,7 +100,7 @@ namespace nar {
 
                 cout<<"aes_key>"<<endl;
 
-            } else if(jsn["header"]["action"] == "file_push") {
+            } else if(jsn["header"]["action"] == "get_aes_key") {
                 cout<<"<file_push_key"<<endl;
 
                 MessageTypes::FilePush::Request fpush_req(string(""),string(""),-1);
@@ -109,7 +109,7 @@ namespace nar {
 
                 cout<<"file_push_key>"<<endl;
 
-            } else if(jsn["header"]["action"] == "file_pull") {
+            } else if(jsn["header"]["action"] == "get_aes_key") {
                 cout<<"<file_pull_key"<<endl;
 
                 MessageTypes::FilePull::Request fpull_req(string(""),string(""));

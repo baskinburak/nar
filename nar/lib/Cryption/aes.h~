@@ -61,5 +61,3 @@ class AesCryptor {
         std::string _keyString;
         byte *_aes;
 };
-
-#endif

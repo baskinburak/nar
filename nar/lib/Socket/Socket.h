@@ -5,6 +5,7 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <nar/lib/Exception/Exception.h>
 
 namespace nar {
 

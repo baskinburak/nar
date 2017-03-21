@@ -109,7 +109,7 @@ void RsaCryptor::decrypt(std::string& crypted, std::string& data) {
         aes.decrypt(keyless_data,data);
     }
     catch {
-        throw nar::Exception::Cryption::RsaError("Error in Rsa decryption");
+        throw nar::Exception::Cryption::RsaError("Error in Rsa key-generation");
     }
     return;
 }

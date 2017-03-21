@@ -57,6 +57,19 @@ namespace nar {
                     std::string get_host() const { return _host; } 
             };
         };
+        
+        namespace Cryption {
+            class AesError : public nar::Exception::ExcpBase {
+                public:
+                    AesError(const char* mess): ExcpBase(mess) {}
+            };
+            class RsaError : public nar::Exception::ExcpBase {
+                public:
+                    RsaError(const char* mess): ExcpBase(mess) {}
+            };
+
+            
+        };
 
         class Unknown : public nar::Exception::ExcpBase {
             public:
