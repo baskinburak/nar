@@ -79,6 +79,14 @@ namespace nar {
                 public:
                     NotEndpoint(const char* mess): ExcpBase(mess) {}
             };
+
+            class NoStreamId : public nar::Exception::ExcpBase {
+                private:
+                    unsigned short _payload_len;
+                public:
+                    NoStreamId(const char* mess, unsigned short payload_len): ExcpBase(mess), _payload_len(payload_len) {}
+                    unsigned short get_payload_len() { return _payload_len; }
+            };
         };
 
         namespace USocket {

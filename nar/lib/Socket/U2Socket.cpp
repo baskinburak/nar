@@ -1,6 +1,6 @@
 #include "U2Socket.h"
 #include <boost/system/error_code.hpp>
-#include "../Exception/Exception.h"
+#include <nar/lib/Exception/Exception.h>
 #include <string>
 #include <iostream>
 #include "Packet.h"
@@ -11,6 +11,7 @@
 using std::cout;
 using std::endl;
 using boost::asio::ip::udp;
+using std::pair;
 
 nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id) {
     this->_server_ip = server_ip;
@@ -74,9 +75,12 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
         nar::Packet* rcvpck = new nar::Packet;
         rcvpck->set_header(buff);
 
+  
+
         if(rcvpck->get_streamid() != sock->_stream_id) {
             continue;
         }
+
 
         try {
             rcvpck->set_payload_check(buff, nar::Packet::HEADER_LEN, len - nar::Packet::HEADER_LEN);
@@ -84,7 +88,9 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
             continue;
         }
 
+
         rcvpck->print(); // debug
+
 
         if (rcvpck->is_syn() && rcvpck->is_ack()) {
             sock->_syned = true;
@@ -93,7 +99,7 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
         } else if(rcvpck->is_syn()) {
             if(sock->_syned) {
                 nar::Packet rplpck;
-                rplpck.make_synack(sock->stream_id, sock->_start_seqnum, rcvpck->get_seqnum());
+                rplpck.make_synack(sock->_stream_id, sock->_start_seqnum, rcvpck->get_seqnum());
                 std::string pckstr = rplpck.make_packet();
                 sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
             } else {
@@ -102,11 +108,11 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
                 sock->_expected_seqnum = rcvpck->get_seqnum() + 1;
                 std::random_device rd;
                 std::mt19937 rng(rd());
-                std::uniform_int_distribution<unsigned int> uni(0, std::numeric_limits<unsigned int>);
+                std::uniform_int_distribution<unsigned int> uni(0, std::numeric_limits<unsigned int>::max());
                 sock->_start_seqnum = uni(rng);
                 sock->_next_seqnum = sock->_start_seqnum + 1;
                 nar::Packet rplpck;
-                rplpck.make_synack(sock->stream_id, sock->_start_seqnum, rcvpck->get_seqnum());
+                rplpck.make_synack(sock->_stream_id, sock->_start_seqnum, rcvpck->get_seqnum());
                 std::string pckstr = rplpck.make_packet();
                 sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
             }
@@ -136,7 +142,8 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
                 sock->_recv_flag = true;
                 sock->_event_cv.notify_all();
                 sock->_expected_seqnum++;
-                for(; (auto it = received_packets.find(sock->_expected_seqnum)) != received_packets.end(); sock->_expected_seqnum++) {
+                std::map<unsigned int, nar::Packet*>::iterator it; 
+                for(; (it = received_packets.find(sock->_expected_seqnum)) != received_packets.end(); sock->_expected_seqnum++) {
                     nar::Packet* pck = it->second;
                     sock->_recv_buffer.append(pck->get_payload());
                     received_packets.erase(it);
@@ -150,8 +157,8 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
                     delete rcvpck;
                 }
             }
-        } else if(rcvpck.is_ran()) {
-            sock->_ran_pcks.push_back(make_pair(rcvpck, new udp::endpoint(remote_endpoint)));
+        } else if(rcvpck->is_ran()) {
+            sock->_ran_packs.push_back(std::make_pair(rcvpck, new udp::endpoint(remote_endpoint)));
             sock->_ran_flag = true;
             sock->_event_cv.notify_all();
         } else {
@@ -160,6 +167,51 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
         
     }
     cout << sock->_server_ip << endl;
+}
+
+void nar::USocket::randezvous_server() {
+    std::unique_lock<std::mutex> lck(this->_work_mutex);
+    std::map<unsigned int, udp::endpoint* > prev_rands; 
+    while(true) {
+        this->_event_cv.wait(lck);
+        if(this->_ran_flag) {
+            for(int i=0; i<this->_ran_packs.size(); i++) {
+                pair<nar::Packet*, udp::endpoint*>& ran = this->_ran_packs[i];
+                nar::Packet* ranpck = ran.first;
+                udp::endpoint* ep = ran.second;
+
+                unsigned int stream_id;
+
+                try {
+                    stream_id = ranpck->get_ran_streamid();
+                } catch(nar::Exception::Packet::NoStreamId& Exp) {
+                    continue;
+                }
+
+                if(prev_rands.find(stream_id) != prev_rands.end()) {
+                    nar::Packet first_packet;
+                    nar::Packet second_packet;
+
+                    udp::endpoint* prevep = prev_rands[stream_id];
+
+                    first_packet.make_ran_response(stream_id, *ep);
+                    second_packet.make_ran_response(stream_id, *prevep);
+
+                    std::string firstpck = first_packet.make_packet();
+                    std::string secondpck = second_packet.make_packet();
+
+                    this->_socket.send_to(boost::asio::buffer(firstpck), *prevep);
+                    this->_socket.send_to(boost::asio::buffer(secondpck), *ep);
+
+                    prev_rands.erase(stream_id);
+                } else {
+                    prev_rands[stream_id] = ep;
+                }
+            }
+            this->_ran_packs.clear();
+        }
+    }
+    lck.unlock();
 }
 
 void nar::USocket::connect() {
@@ -173,11 +225,11 @@ void nar::USocket::connect() {
         if(this->_ran_flag) {
             // i have a randezvous response
             if(this->_ran_packs.size() == 0) {
-                cout << "nar::USocket::connect THIS SHOULD NOT HAPPEN 1" << endl;
+                cout << "nar::USocket::connect THIS SHOULD NOT HAPPEN !" << endl;
                 continue; // should not happen
             } else {
                 try {
-                    this->_peer_endpoint = this->_ran_packs[this->_ran_packs.size()-1].first.get_endpoint();
+                    this->_peer_endpoint = this->_ran_packs[this->_ran_packs.size()-1].first->get_endpoint();
                 } catch(nar::Exception::Packet::NotEndpoint& exp) {
                     continue;
                 }
@@ -186,6 +238,8 @@ void nar::USocket::connect() {
         }
     }
 
+
+    cout << "here" << endl;
     // now i have peer in _peer_endpoint. start natting !
 
     lck.unlock();

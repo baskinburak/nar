@@ -2,6 +2,9 @@
 #define NAR_PACKET_H
 
 #include <string>
+#include <boost/asio.hpp>
+#include <nar/lib/Exception/Exception.h>
+using boost::asio::ip::udp;
 
 namespace nar {
     /*
@@ -88,6 +91,8 @@ namespace nar {
             unsigned int get_seqnum() const;
             unsigned int get_acknum() const;
             unsigned short get_payloadlen() const;
+            unsigned int get_ran_streamid() const;
+            udp::endpoint get_endpoint() const;
 
             std::string make_packet() const;
 
@@ -100,7 +105,6 @@ namespace nar {
             void make_ran(unsigned int str_id);
             void make_ran_request(unsigned int str_id);
             void make_ran_response(unsigned int str_id, udp::endpoint& ep);
-            udp::endpoint get_endpoint();
             void make_data(unsigned int sqnm, unsigned int str_id, std::string payload, unsigned int payload_len);
             void make_fin(unsigned int str_id);
 

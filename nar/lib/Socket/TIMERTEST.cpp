@@ -10,6 +10,7 @@ void timer_expire(boost::asio::io_service* io_serv, unsigned long usec, std::ato
     timer.wait();
     if(*stop_timer) {
         delete stop_timer;
+        delete timer_flag;
     } else {
         *timer_flag = true;
     }

@@ -5,9 +5,11 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
-#include <recursive_mutex>
+#include <mutex>
+#include <set>
 
 using boost::asio::ip::udp;
+using std::pair;
 
 namespace nar {
     /*
@@ -53,7 +55,7 @@ namespace nar {
             unsigned int _next_seqnum;
             unsigned int _expected_seqnum;
             bool _syned;
-            std::recursive_mutex _work_mutex;
+            std::mutex _work_mutex;
             std::condition_variable _event_cv;
 
             std::string _recv_buffer;
@@ -74,6 +76,7 @@ namespace nar {
             USocket(boost::asio::io_service& io_serv, const char* server_ip, unsigned short server_port, unsigned int stream_id);
             ~USocket();
 
+            void randezvous_server();
             void connect();
     };
 }

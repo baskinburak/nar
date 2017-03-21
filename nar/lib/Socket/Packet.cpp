@@ -1,7 +1,8 @@
 #include "Packet.h"
 #include <cassert>
 #include <iostream>
-
+using std::cout;
+using std::endl;
 std::string nar::Packet::htons_u(unsigned short num) {
   std::string res;
   res.resize(2);
@@ -95,7 +96,7 @@ void nar::Packet::set_payload_check(const char* pl, int start, int len) {
     if(len != this->payload_len) {
         throw nar::Exception::Packet::PacketLenMatchError("Packet length does not match", start, len);
     }
-    this->payload = std::string(pl, start, len);
+    this->payload = std::string(pl + start, len);
 }
 
 void nar::Packet::hdr_set_syn(char n_syn) {
@@ -322,7 +323,7 @@ void nar::Packet::make_ran_request(unsigned int str_id) {
   this->ran = 1;
   this->seqnum = 0;
   this->acknum = 0;
-  this->payload_len = 0;
+  this->payload_len = 4;
   this->stream_id = 0;
   this->payload = nar::Packet::htonl_u(str_id);
 }
@@ -341,20 +342,27 @@ void nar::Packet::make_ran_response(unsigned int str_id, udp::endpoint& ep) {
     this->ran = 1;
     this->seqnum = 0;
     this->acknum = 0;
-    this->payload_len = 0;
+    this->payload_len = 6;
     this->stream_id = str_id;
-    unsigned int addr = ep.address().to_v4().t_ulong();
+    unsigned int addr = ep.address().to_v4().to_ulong();
     unsigned short prt = ep.port();
     this->payload = nar::Packet::htonl_u(addr) + nar::Packet::htons_u(prt);
 }
 
-udp::endpoint nar::Packet::get_endpoint() {
+udp::endpoint nar::Packet::get_endpoint() const {
     if(this->payload.size() != 6) {
         throw nar::Exception::Packet::NotEndpoint("Packet does not contain an endpoint in its payload field.");
     }
     boost::asio::ip::address addr(boost::asio::ip::address_v4(nar::Packet::ntoh(this->payload, 0, 4)));
-    unsigned short port = nar::packet::ntoh(this->payload, 4, 2);
+    unsigned short port = nar::Packet::ntoh(this->payload, 4, 2);
     return udp::endpoint(addr, port);
+}
+
+unsigned int nar::Packet::get_ran_streamid() const {
+    if(this->payload_len != 4) {
+        throw nar::Exception::Packet::NoStreamId("Packet does not contain a stream id", this->payload_len);
+    }
+    return nar::Packet::ntoh(this->payload, 0, 4);
 }
 
 void nar::Packet::print() {
