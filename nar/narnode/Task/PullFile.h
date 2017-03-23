@@ -20,7 +20,6 @@ namespace nar {
                 unsigned long file_size;
                 std::string cur_dir;
 
-            public:
                 void initialize();
                 void constructRequestJson(nlohmann::json &j, std::string dirname);
                 nar::Socket* connectToServer(nar::Global* globals);
@@ -36,7 +35,7 @@ namespace nar {
                                       
                 void getResultJsonFake(nlohmann::json &j_resp, nar::Socket *serverSck);
                 std::string getAes(nar::Socket *serverSck);
-
+            public:
                 PullFile(std::string fn, std::string curdir): file_name(fn), cur_dir(curdir) { }
                 void run(int unx_sockfd, nar::Global* globals);
         };

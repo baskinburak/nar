@@ -1,19 +1,18 @@
-#ifndef NAR_IPCRESPONSE_H
-#define NAR_IPCRESPONSE_H
+#ifndef NAR_IPCBASERESPONSE_H
+#define NAR_IPCBASERESPONSE_H
 
 #include <string>
 
 namespace nar {
     namespace Messagetypes {
-        class IPCResponse {
+        class IPCBaseResponse {
             /*
-             * IPC Response information
+             * IPCBaseResponse information
              *
              * @author: Dogu
              * @privar: long int progress, holds the information in integer like 40,65,
                         std::string process_name, states the information like pull,push,
                         long int status_code, states how the process is going,like error
-                        std::string file_name, holds the file name
              * @tested: No
              * @todo: exceptions
             */
@@ -21,7 +20,6 @@ namespace nar {
                 long int progress;
                 std::string process_name;
                 long int status_code;
-                std::string file_name;
             public:
                 /*
                  * Getter of progress
@@ -45,14 +43,6 @@ namespace nar {
                 */
                 long int get_status_code();
                 /*
-                 * Getter of file name
-                 *
-                 * @author: Dogu
-                 * @tested: No
-                */
-                std::string get_file_name();
-
-                /*
                  * Setter of progress
                  *
                  * @author: Dogu
@@ -74,14 +64,6 @@ namespace nar {
                 */
                 void set_status_code(long int sc);
                 /*
-                 * Setter of file name
-                 *
-                 * @author: Dogu
-                 * @tested: No
-                */
-                void set_file_name(std::string fn);
-
-                /*
                  * Constructor
                  *
                  * @author: Dogu
@@ -92,24 +74,57 @@ namespace nar {
                                     300->fail
                                     400->error
                                     these can be changed
-                            std::string fn, holds the file name
                  * @tested: No
                 */
-                IPCResponse(long int prog, std::string pn, long int sc, std::string fn)
+                IPCBaseResponse(long int prog, std::string pn, long int sc)
                             : progress(prog)
                             , process_name(pn)
                             , status_code(sc)
-                            , file_name(fn)
                             { }
                 /*
-                 * get my json
+                 * Constructor
+                 *
+                 * @author: Dogu
+                 * @param:  long int prog, holds the information in integer like 40,65,
+                            long int sc, states how the process is going,like error
+                                    200->success
+                                    300->fail
+                                    400->error
+                                    these can be changed
+                 * @tested: No
+                */
+                IPCBaseResponse(long int prog,long int sc)
+                            : progress(prog)
+                            , status_code(sc)
+                            { }
+                /*
+                * fill the head with action name
+                *
+                * @author: Dogu
+                * @param: None
+                * @tested: No
+                *
+                */
+                nlohmann::json fillTheHead();
+                /*
+                * returns the half-filled
+                *
+                * @author: Dogu
+                * @param: nlohmann::json
+                * @tested: No
+                *
+                */
+                void recvTheAction(nlohmann::json &recv);
+
+                /*
+                 * return json,it is actually for testing purpose.
                  *
                  * @author: Dogu
                  * @param: None
                  * @tested: No
                  *
                 */
-                nlohmann::json get_myresponsejson();
+                nlohmann::json give_myresponsejson();
                 /*
                  * sends the related info to other side
                  *
@@ -119,6 +134,14 @@ namespace nar {
                  * @tested: No
                 */
                 void send_message_progress(nar::Socket* skt, int progress);
+                /*
+                 * sends "END" message
+                 *
+                 * @author: Dogu
+                 * @param:  nar::Socket* skt, it is socket pointer basically
+                 * @tested: No
+                */
+                void send_message_end(nar::Socket* skt);
         };
     }
 }
