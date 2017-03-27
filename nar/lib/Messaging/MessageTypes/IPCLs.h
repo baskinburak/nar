@@ -4,8 +4,8 @@
 #include <string>
 #include "IPCBaseRequest.h"
 #include "IPCBaseResponse.h"
-#include <nar/lib/nlohJson/json.hpp>
-#include <nar/narnode/utility.h>
+//#include "../../nlohJson/json.hpp"
+//#include "../../../narnode/utility.h"
 #include <vector>
 
 namespace nar {
@@ -15,9 +15,12 @@ namespace nar {
                 private:
                     std::string dir_name;
                 public:
-                    Request(std::string dn) : IPCBaseRequest(std::string("ls")), dir_name(dir) {}
+                    std::string get_dir_name();
+                    void set_dir_name(std::string dn);
+
+                    Request(std::string dn) : IPCBaseRequest(std::string("ls")), dir_name(dn) {}
                     nlohmann::json get_myrequestjson();
-                    void send_action(nar::Socket* skt);
+                    //simdilik void send_action(nar::Socket* skt);
                     //void print_loop(nar::Socket* skt);
             };
 

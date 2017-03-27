@@ -2,9 +2,11 @@
 #define NAR_IPCBASERESPONSE_H
 
 #include <string>
+#include <nar/lib/nlohJson/json.hpp>
+
 
 namespace nar {
-    namespace Messagetypes {
+    namespace MessageTypes {
         class IPCBaseResponse {
             /*
              * IPCBaseResponse information
@@ -133,7 +135,7 @@ namespace nar {
                             progress, update the progress by giving integer value
                  * @tested: No
                 */
-                void send_message_progress(nar::Socket* skt, int progress);
+                //simdilik void send_message_progress(nar::Socket* skt, int progress);
                 /*
                  * sends "END" message
                  *
@@ -141,7 +143,7 @@ namespace nar {
                  * @param:  nar::Socket* skt, it is socket pointer basically
                  * @tested: No
                 */
-                void send_message_end(nar::Socket* skt);
+                //simdilik void send_message_end(nar::Socket* skt);
         };
     }
 }

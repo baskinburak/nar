@@ -2,9 +2,10 @@
 #define NAR_IPCBASEREQUEST_H
 
 #include <string>
+#include <nar/lib/nlohJson/json.hpp>
 
 namespace nar {
-    namespace Messagetypes {
+    namespace MessageTypes {
         class IPCBaseRequest {
             /*
              * IPCBaseRequest information
@@ -17,6 +18,14 @@ namespace nar {
             private:
                 std::string action_name;
             public:
+                /*
+                 * Constructor
+                 *
+                 * @author: Dogu
+                 * @param:  std::string an, holds the name of the action,
+                 * @tested: No
+                */
+                IPCBaseRequest(std::string an) : action_name(an) {}
                 /*
                  * Getter of action name
                  *
@@ -31,14 +40,7 @@ namespace nar {
                  * @tested: No
                 */
                 void set_action_name(std::string an);
-                /*
-                 * Constructor
-                 *
-                 * @author: Dogu
-                 * @param:  std::string an, holds the name of the action,
-                 * @tested: No
-                */
-                IPCBaseRequest(std::string an) : action_name(an) {}
+
                 /*
                  * base class fills the header and returns the half-filled json
                  *
@@ -70,7 +72,7 @@ namespace nar {
                  * @param:  nar::Socket* skt
                  * @tested: No
                 */
-                void send_action(nar::Socket* skt);
+                //simdilik void send_action(nar::Socket* skt);
                 /*
                  * get a message
                  *
@@ -78,7 +80,7 @@ namespace nar {
                  * @param:  None
                  * @tested: No
                 */
-                void print_loop(nar::Socket* skt);
+                //simdilik void print_loop(nar::Socket* skt);
         };
     }
 }

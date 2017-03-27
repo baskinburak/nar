@@ -291,55 +291,5 @@ int main() {
         std::cout << "DIRINFO TEST END" << std::endl << std::endl;
     /* DIRINFO TEST END */
 
-    /* IPCRequest Test Starts... */
-
-        std::cout << "IPCRequest test start" << std::endl<<std::endl;
-        IPCRequest myrequest("push","server_receive.h","dogu");
-        std::cout<<"action name: "<<myrequest.get_action_name()<<
-                    ", file name: "<<myrequest.get_file_name()<<
-                    ", user name: "<<myrequest.get_user_name()<<
-                    ", isEnd: "<<myrequest.get_isEnd()<<std::endl;
-        std::cout<<"IPCRequest setter-getter test..."<<std::endl;
-        myrequest.set_action_name("pull");
-        std::cout<<"New action name: "<<myrequest.get_action_name()<<std::endl;
-        myrequest.set_file_name("test.cpp");
-        std::cout<<"New file name: "<<myrequest.get_file_name()<<std::endl;
-        myrequest.set_user_name("fatih");
-        std::cout<<"New user name: "<<myrequest.get_user_name()<<std::endl;
-        myrequest.set_isEnd("true");
-        std::cout<<"New isEnd: "<<myrequest.get_isEnd()<<std::endl;
-        std::cout<<"--------------------"<<std::endl;
-
-        std::cout<<"IPCRequest send test..."<<std::endl;
-        //myrequest.send_action();
-
-        std::cout<<"IPCRequest receive test..."<<std::endl;
-        //myrequest.print_loop();
-
-    /* IPCRequest Test Ends... */
-
-    /* IPCResponse Test starts... */
-
-        IPCResponse myresponse(40,"push",200,"server_receive.h");
-        std::cout<<"progress: "<<myresponse.get_progress()<<
-                    ", process name: "<<myresponse.get_process_name()<<
-                    ", status code: "<<myresponse.get_status_code()<<
-                    ", file name: "<<myresponse.get_file_name()<<std::endl;
-        myresponse.set_progress(55);
-        std::cout<<"New progress: "<<myresponse.get_progress()<<std::endl;
-        myresponse.set_process_name("pull");
-        std::cout<<"New process name: "<<myresponse.get_process_name()<<std::endl;
-        myresponse.set_status_code(300);
-        std::cout<<"New status code: "<<myresponse.get_status_code()<<std::end;
-        myresponse.set_file_name("test.cpp");
-        std::cout<<"New file name: "<<myresponse.get_file_name()<<std::endl;
-        std::cout<<"--------------------"<<std::endl;
-
-        std::cout<<"IPCResponse send test..."<<std::endl;
-        //send_message_progress(50);
-
-    /* IPCResponse Test Ends... */
-
-
     return 0;
 }

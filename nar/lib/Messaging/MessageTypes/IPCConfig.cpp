@@ -1,5 +1,23 @@
 #include "IPCConfig.h"
 
+std::string nar::MessageTypes::IPCConfig::Request::get_var(){
+    return _var;
+}
+
+std::string nar::MessageTypes::IPCConfig::Request::get_value(){
+    return _value;
+}
+
+void nar::MessageTypes::IPCConfig::Request::set_var(std::string var){
+    this -> _var = var;
+    return;
+}
+
+void nar::MessageTypes::IPCConfig::Request::set_value(std::string value){
+    this -> _value = value;
+    return;
+}
+
 nlohmann::json nar::MessageTypes::IPCConfig::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["action_name"] = "config";
@@ -7,7 +25,7 @@ nlohmann::json nar::MessageTypes::IPCConfig::Request::get_myrequestjson() {
     json_to_sent["payload"]["value"] = _value;
     return json_to_sent;
 }
-
+/*
 void nar::MessageTypes::IPCConfig::Request::send_action(nar::Socket* skt) {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["action_name"] = "config";
@@ -16,7 +34,7 @@ void nar::MessageTypes::IPCConfig::Request::send_action(nar::Socket* skt) {
     send_message(skt, json_to_sent.dump());
     return;
 }
-
+*/
 nlohmann::json nar::MessageTypes::IPCConfig::Response::give_myresponsejson() {
     nlohmann::json resp_json;
     resp_json["header"]["process_name"] = get_process_name();

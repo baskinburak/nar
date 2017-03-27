@@ -1,12 +1,21 @@
 #include "IPCRegister.h"
 
+std::string nar::MessageTypes::IPCRegister::Request::get_user_name(){
+    return user_name;
+}
+
+void nar::MessageTypes::IPCRegister::Request::set_user_name(std::string un){
+    this -> user_name = un;
+    return;
+}
+
 nlohmann::json nar::MessageTypes::IPCRegister::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["action_name"] = "register";
     json_to_sent["payload"]["user_name"] = user_name;
     return json_to_sent;
 }
-
+/*
 void nar::MessageTypes::IPCRegister::Request::send_action(nar::Socket* skt) {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["action_name"] = "register";
@@ -14,7 +23,7 @@ void nar::MessageTypes::IPCRegister::Request::send_action(nar::Socket* skt) {
     send_message(skt, json_to_sent.dump());
     return;
 }
-
+*/
 nlohmann::json nar::MessageTypes::IPCRegister::Response::give_myresponsejson() {
     nlohmann::json resp_json;
     resp_json["header"]["process_name"] = get_process_name();
