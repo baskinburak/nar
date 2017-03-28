@@ -147,7 +147,6 @@ int nar::readdata(nar::USocket &sock, char *buf, int buflen)
 
 int nar::senddata(nar::Socket &sock, char *buf, int buflen)
 {
-  std::cout << "siktirtmeyin" << std::endl; // bunu sil
   exit(0);
 }
 

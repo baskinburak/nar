@@ -425,7 +425,6 @@ int nar::USocket::send(char* buf, int len) {
   
   nar::Packet pqpacket;
 
- // std::cout << "yarak" << std::endl;
   unsigned int first_seqnum = seqnum; // that is not acked
   int first_idx = 0;
   for(int cur=0, i=0; cur<len; cur += MAX_PAYLOAD_LEN, i++) {
