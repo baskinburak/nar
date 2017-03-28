@@ -1,5 +1,5 @@
-#ifndef NAR_ACTION_HANDSHAKE_H
-#define NAR_ACTION_HANDSHAKE_H
+#ifndef NAR_SERVER_ACTIONS_HANDSHAKE_H
+#define NAR_SERVER_ACTIONS_HANDSHAKE_H
 #include <iostream>
 #include <string>
 #include <nar/lib/Messaging/MessageTypes/Handshake.h>

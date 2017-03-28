@@ -11,7 +11,7 @@ void nar::MessageTypes::IPCRegister::Request::set_user_name(std::string un){
 
 nlohmann::json nar::MessageTypes::IPCRegister::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "register";
+    json_to_sent["header"]["action"] = "register";
     json_to_sent["payload"]["user_name"] = user_name;
     return json_to_sent;
 }

@@ -1,5 +1,5 @@
-#ifndef NAR_ACTION_DIR_INFO_H
-#define NAR_ACTION_DIR_INFO_H
+#ifndef NAR_SERVER_ACTIONS_DIR_INFO_H
+#define NAR_SERVER_ACTIONS_DIR_INFO_H
 
 
 #include <nar/lib/Messaging/MessageTypes/DirInfo.h>

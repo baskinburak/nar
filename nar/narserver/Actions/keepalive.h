@@ -1,5 +1,5 @@
-#ifndef NAR_ACTION_KEEPALIVE_H
-#define NAR_ACTION_KEEPALIVE_H
+#ifndef NAR_SERVER_ACTIONS_KEEPALIVE_H
+#define NAR_SERVER_ACTIONS_KEEPALIVE_H
 
 #include <iostream>
 #include <nar/lib/Messaging/MessageTypes/KeepAlive.h>

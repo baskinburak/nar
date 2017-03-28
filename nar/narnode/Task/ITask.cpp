@@ -5,17 +5,10 @@ using namespace nlohmann;
 
 bool nar::task::ITask::handshake(nar::Socket& skt, nar::Global* globals) {
     std::string username = globals->get_username();
-    json jsn;
-    jsn["header"]["action"] = "handshake";
-    jsn["header"]["channel"] = "ps";
-	jsn["payload"]["machine_id"] = globals->get_macId();
-    jsn["payload"]["username"] = username;
-    std::string stringify = jsn.dump();
-    std::string len = std::to_string((int)stringify.size());
-    nar::send_message(skt, stringify);
-    std::string resp = nar::get_message(skt);
-    jsn = json::parse(resp);
-    int stat = jsn["header"]["status-code"];
-    std::string repl = jsn["header"]["reply-to"];
-    return repl == "handshake" && stat == 200;
+    nar::MessageTypes::Handshake::Request hand_req(username,globals->get_macId())
+    nar::MessageTypes::Handshake::Response hand_resp(999);
+    hand_req.send_mess(skt,hand_resp);
+    std::string action = hand_resp.get_action();
+    int stat = hand_resp.get_status_code();
+    return action == "handshake" && stat == 200;
 }

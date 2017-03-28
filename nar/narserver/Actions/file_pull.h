@@ -1,5 +1,5 @@
-#ifndef NAR_ACTION_FILE_PULL_H
-#define NAR_ACTION_FILE_PULL_H
+#ifndef NAR_SERVER_ACTIONS_FILE_PULL_H
+#define NAR_SERVER_ACTIONS_FILE_PULL_H
 
 #include <nar/lib/Messaging/MessageTypes/FilePull.h>
 #include <nar/lib/Messaging/MessageTypes/WaitChunkPull.h>

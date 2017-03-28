@@ -1,5 +1,5 @@
-#ifndef NAR_ACTION_FILE_PUSH_H
-#define NAR_ACTION_FILE_PUSH_H
+#ifndef NAR_SERVER_ACTIONS_FILE_PUSH_H
+#define NAR_SERVER_ACTIONS_FILE_PUSH_H
 
 #include <nar/lib/Messaging/MessageTypes/FilePush.h>
 #include <nar/lib/Messaging/MessageTypes/WaitChunkPush.h>

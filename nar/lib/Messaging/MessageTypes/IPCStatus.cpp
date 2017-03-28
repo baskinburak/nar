@@ -2,7 +2,7 @@
 
 nlohmann::json nar::MessageTypes::IPCStatus::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "status";
+    json_to_sent["header"]["action"] = "status";
     return json_to_sent;
 }
 /*

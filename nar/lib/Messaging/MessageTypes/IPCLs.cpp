@@ -11,7 +11,7 @@ void nar::MessageTypes::IPCLs::Request::set_dir_name(std::string dn){
 
 nlohmann::json nar::MessageTypes::IPCLs::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "ls";
+    json_to_sent["header"]["action"] = "ls";
     json_to_sent["payload"]["dir_name"] = dir_name;
     return json_to_sent;
 }
