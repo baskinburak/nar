@@ -177,7 +177,7 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
         }
 
 
-        // rcvpck->print(); // debug
+         //rcvpck->print(); // debug
 
 
         if (rcvpck->is_syn() && rcvpck->is_ack()) {
@@ -216,9 +216,13 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
             nar::Packet rplpck;
             rplpck.make_nat(sock->_stream_id);
             std::string pckstr = rplpck.make_packet();
-            sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
-            sock->_nat_flag = true;
-            sock->_event_cv.notify_all();
+            try {
+                sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
+                sock->_nat_flag = true;
+                sock->_event_cv.notify_all();
+            } catch(boost::system::system_error& Exp) {
+
+            }
             delete rcvpck;
         } else if(rcvpck->is_data()) {
             nar::Packet rplpck;
@@ -484,7 +488,7 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
             this->_socket.send_to(boost::asio::buffer(pckstr), this->_peer_endpoint);
             this->_timer_flag = false;
             stp_tmr = start_timer(rtt + 4*devrtt);
-            window_size /= 2;
+            //window_size /= 2;
             window_size = std::max(window_size, 1.1);
             //cout << window_size << endl;
         }
