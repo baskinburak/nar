@@ -47,7 +47,7 @@ namespace nar {
         nar::SockInfo* inf = new nar::SockInfo(skt);
         nar::Database* db = s_global->get_db();
         while(true) {
-            std::string msg = nar::trim(nar::get_message(*skt));
+            string msg = nar::trim(nar::get_message(*skt));
             auto jsn = json::parse(msg.c_str());
             if(jsn["header"]["action"] == "handshake") {
 

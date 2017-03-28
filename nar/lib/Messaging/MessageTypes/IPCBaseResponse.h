@@ -13,15 +13,15 @@ namespace nar {
              *
              * @author: Dogu
              * @privar: long int progress, holds the information in integer like 40,65,
-                        std::string process_name, states the information like pull,push,
+                        std::string reply_to, states the information like pull,push,
                         long int status_code, states how the process is going,like error
              * @tested: No
              * @todo: exceptions
             */
             private:
-                long int progress;
-                std::string process_name;
-                long int status_code;
+                long int _progress;
+                std::string _reply_to;
+                long int _status_code;
             public:
                 /*
                  * Getter of progress
@@ -36,7 +36,7 @@ namespace nar {
                  * @author: Dogu
                  * @tested: No
                 */
-                std::string get_process_name();
+                std::string get_reply_to();
                 /*
                  * Getter of status code
                  *
@@ -57,7 +57,7 @@ namespace nar {
                  * @author: Dogu
                  * @tested: No
                 */
-                void set_process_name(std::string pn);
+                void set_reply_to(std::string pn);
                 /*
                  * Setter of status code
                  *
@@ -79,9 +79,9 @@ namespace nar {
                  * @tested: No
                 */
                 IPCBaseResponse(long int prog, std::string pn, long int sc)
-                            : progress(prog)
-                            , process_name(pn)
-                            , status_code(sc)
+                            : _progress(prog)
+                            , _reply_to(pn)
+                            , _status_code(sc)
                             { }
                 /*
                  * Constructor
@@ -96,11 +96,11 @@ namespace nar {
                  * @tested: No
                 */
                 IPCBaseResponse(long int prog,long int sc)
-                            : progress(prog)
-                            , status_code(sc)
+                            : _progress(prog)
+                            , _status_code(sc)
                             { }
                 /*
-                * fill the head with action name
+                * fill the head with _action name
                 *
                 * @author: Dogu
                 * @param: None
@@ -116,7 +116,7 @@ namespace nar {
                 * @tested: No
                 *
                 */
-                void recvTheAction(nlohmann::json &recv);
+                void recvThe_action(nlohmann::json &recv);
 
                 /*
                  * return json,it is actually for testing purpose.

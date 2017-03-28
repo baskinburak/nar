@@ -11,14 +11,14 @@ void nar::MessageTypes::IPCLs::Request::set_dir_name(std::string dn){
 
 nlohmann::json nar::MessageTypes::IPCLs::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["action_name"] = "ls";
+    json_to_sent["header"]["_action"] = "ls";
     json_to_sent["payload"]["dir_name"] = dir_name;
     return json_to_sent;
 }
 /*
-void nar::MessageTypes::IPCLs::Request::send_action(nar::Socket* skt) {
+void nar::MessageTypes::IPCLs::Request::send__action(nar::Socket* skt) {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["action_name"] = "config";
+    json_to_sent["header"]["_action"] = "config";
     json_to_sent["payload"]["dir_name"] = dir_name;
     send_message(skt, json_to_sent.dump());
     return;
@@ -26,7 +26,7 @@ void nar::MessageTypes::IPCLs::Request::send_action(nar::Socket* skt) {
 */
 nlohmann::json nar::MessageTypes::IPCLs::Response::give_myresponsejson() {
     nlohmann::json resp_json;
-    resp_json["header"]["process_name"] = get_process_name();
+    resp_json["header"]["reply_to"] = get_reply_to();
     resp_json["payload"]["progress"] = get_progress();
     resp_json["payload"]["status_code"] = get_status_code();
     return resp_json;

@@ -1,17 +1,17 @@
 #include "RequestHeader.h"
 
 std::string& nar::MessageTypes::RequestHeader::get_action() {
-    return action;
+    return _action;
 }
 
 nlohmann::json  nar::MessageTypes::RequestHeader::send_head(){
     nlohmann::json header;
-    header["action"] = action;
+    header["_action"] = _action;
     return header;
 }
 
 void nar::MessageTypes::RequestHeader::recv_fill( nlohmann::json & received) {
-	action = received["action"];
+	_action = received["_action"];
 	return;
 
 }

@@ -56,6 +56,15 @@ void nar::MessageTypes::FilePush::Request::receive_message(nlohmann::json push_r
     this->filename = push_req_recv["payload"]["file_name"];
     return;
 }
+
+void nar::MessageTypes::FilePush::Request::receive_message(nlohmann::json push_req_recv){
+    nlohmann::json head = push_req_recv["header"];
+    recv_fill(head);
+    this->filesize = push_req_recv["payload"]["file_size"];
+    this->dir = push_req_recv["payload"]["dir"];
+    this->filename = push_req_recv["payload"]["file_name"];
+    return;
+}
 nlohmann::json nar::MessageTypes::FilePush::Request::test_json() {
     nlohmann::json push_req_test;
     push_req_test["header"] = send_head();

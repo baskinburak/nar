@@ -7,9 +7,9 @@ namespace nar {
     namespace MessageTypes{
         class RequestHeader {
             private:
-                std::string action;
+                std::string _action;
             public:
-                RequestHeader(std::string a): action(a) {
+                RequestHeader(std::string a): _action(a) {
 
                 }
                 std::string& get_action();
