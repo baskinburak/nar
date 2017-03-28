@@ -24,6 +24,7 @@ namespace nar {
      * @privar: _db, nar::Database, database connection
      * @privar: read_count, int, for mutex
      * @pubvar: keepalives, map<std::string, nar::SockInfo*>, alive kept sockets
+     * @pubvar: io_service, boost::asio::io_service, io_service structure of boost
      * @tested: no
      * @todo: everything
     */
@@ -45,6 +46,7 @@ namespace nar {
             map<string, nar::SockInfo*> keepalives;
             std::atomic<unsigned short> randevous_port;
             std::atomic<unsigned short> stream_id;
+            boost::asio::io_service io_service;
             ServerGlobal();
             ServerGlobal(string db_user, string db_pass, string db_name);
             string get_db_name();

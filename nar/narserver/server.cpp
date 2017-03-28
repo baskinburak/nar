@@ -41,13 +41,12 @@ int main(int argc, char *argv[])
 
     std::thread rand(&randevous_thread,&s_global);
     rand.detach();
-
-    nar::Socket entry_skt;
-    entry_skt.create();
+    
+    nar::Socket entry_skt(s_global.io_service, 's');
     entry_skt.bind(12345);
-    entry_skt.listen();
+
     while(true) {
-        nar::Socket* new_skt = new nar::Socket();
+        nar::Socket* new_skt = new nar::Socket(s_global.io_service, 'c');
         entry_skt.accept(*new_skt, NULL);
 
         std::thread thr(&nar::server_receive, new_skt,&s_global);
