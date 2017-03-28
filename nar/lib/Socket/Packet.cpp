@@ -251,8 +251,8 @@ void nar::Packet::make_synack(unsigned int str_id, unsigned int seqnum, unsigned
   this->nat = 0;
   this->data = 0;
   this->ran = 0;
-  this->seqnum = 0;
-  this->acknum = 0;
+  this->seqnum = seqnum;
+  this->acknum = acknum;
   this->payload_len = 0;
   this->stream_id = str_id;
   this->payload = std::string("");
@@ -309,7 +309,9 @@ void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, const char* 
   this->acknum = 0;
   this->payload_len = pl_len;
   this->stream_id = str_id;
-  this->payload.replace(0, pl_len, pl);
+  this->payload.resize(pl_len);
+  for(int i=0; i<pl_len; i++)
+    this->payload[i] = pl[i];
 }
 void nar::Packet::make_fin(unsigned int str_id) {
   this->syn = 0;
@@ -380,6 +382,7 @@ unsigned int nar::Packet::get_ran_streamid() const {
 }
 
 void nar::Packet::print() {
+    if(this->is_nat()) return;
   std::cout << "------------- printing packet" << std::endl;
   std::cout << "syn: " <<this->syn << std::endl;
   std::cout << "ack: " <<this->ack << std::endl;

@@ -72,7 +72,7 @@ namespace nar {
                     nar::Packet* operator[](unsigned int sqnm);
                     void remove(unsigned int sqnm);
 
-            }
+            };
 
             static void receive_thread(nar::USocket* sock);
             void timer_thread(unsigned long usec, bool* stop_timer);

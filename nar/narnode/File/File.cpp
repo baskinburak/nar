@@ -59,7 +59,6 @@ int nar::File::read(char* buffer, int offset, int len) {
     }
     if(_file_handle.is_open()) {
         int file_len = size();
-        std::cout<<"file "<< file_len<<" offset "<<offset<<std::endl;
         if(offset >= file_len)
             throw nar::Exception::File::OffsetOutOfBounds("Offset is greater than file length in read()", offset);
         if(len < 0)
