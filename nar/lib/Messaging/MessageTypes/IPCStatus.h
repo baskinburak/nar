@@ -15,7 +15,7 @@ namespace nar {
                 public:
                     Request() : IPCBaseRequest(std::string("status")) {}
                     nlohmann::json get_myrequestjson();
-                    //simdilik void send_action(nar::Socket* skt);
+                    //simdilik void send__action(nar::Socket* skt);
                     //void print_loop(nar::Socket* skt);
             };
 

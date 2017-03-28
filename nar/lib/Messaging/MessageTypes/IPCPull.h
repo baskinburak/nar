@@ -23,7 +23,7 @@ namespace nar {
 
                     Request(std::string fn, std::string cd) : IPCBaseRequest(std::string("pull")), file_name(fn), cur_dir(cd) {}
                     nlohmann::json get_myrequestjson();
-                    //simdilik void send_action(nar::Socket* skt);
+                    //simdilik void send__action(nar::Socket* skt);
                     //void print_loop(nar::Socket* skt);
             };
 

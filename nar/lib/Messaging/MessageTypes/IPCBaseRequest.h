@@ -11,35 +11,35 @@ namespace nar {
              * IPCBaseRequest information
              *
              * @author: Dogu
-             * @privar: std::string action_name, holds the action name
+             * @privar: std::string _action, holds the _action name
              * @tested: No
              * @todo: exceptions
             */
             private:
-                std::string action_name;
+                std::string _action;
             public:
                 /*
                  * Constructor
                  *
                  * @author: Dogu
-                 * @param:  std::string an, holds the name of the action,
+                 * @param:  std::string an, holds the name of the _action,
                  * @tested: No
                 */
-                IPCBaseRequest(std::string an) : action_name(an) {}
+                IPCBaseRequest(std::string an) : _action(an) {}
                 /*
-                 * Getter of action name
+                 * Getter of _action name
                  *
                  * @author: Dogu
                  * @tested: No
                 */
-                std::string get_action_name();
+                std::string get_action();
                 /*
-                 * Setter of action name
+                 * Setter of _action name
                  *
                  * @author: Dogu
                  * @tested: No
                 */
-                void set_action_name(std::string an);
+                void set_action(std::string an);
 
                 /*
                  * base class fills the header and returns the half-filled json
@@ -50,13 +50,13 @@ namespace nar {
                 */
                 nlohmann::json fillTheHead();
                 /*
-                 * gets the action
+                 * gets the _action
                  *
                  * @author: Dogu
                  * @param: nlohmann::json
                  * @tested: No
                 */
-                void recvTheAction(nlohmann::json &recv);
+                void recvThe_action(nlohmann::json &recv);
                 /*
                  * return all things in a json
                  *
@@ -72,7 +72,7 @@ namespace nar {
                  * @param:  nar::Socket* skt
                  * @tested: No
                 */
-                //simdilik void send_action(nar::Socket* skt);
+                //simdilik void send__action(nar::Socket* skt);
                 /*
                  * get a message
                  *
