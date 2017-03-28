@@ -38,6 +38,7 @@ namespace nar {
      * @privar: _recv_flag, bool, is set whenever a new data arrives to _recv_buffer.
      * @privar: _ack_flag, bool, is set whenever a new ack arrives to _acks.
      * @privar: _ran_flag, bool, is set whenever a new ran arrives to _ran_packs
+     * @privar: _synack_flag, bool, is set whenever a new synack is received
      * @privar: _acks, std::set<unsigned int>, holds the set of acked seqnums.
      * @privar: _ran_packs, std::vector<pair<nar::Packet*, udp::endpoint*> >, stores the randezvous flagged packets with the endpoint. These packets are handled by other threads.(randezvous_server function or connect function
      * @tested: no
@@ -45,18 +46,32 @@ namespace nar {
     */
     class USocket {
         private:
+            /*
+             * A generator class that generates packets from a file on demand.
+             *
+             * @author: baskin
+             * @privar: _stream_id, unsigned int, holds the stream id of the socket
+             * @privar: _pack_data_size, unsigned short, holds the size of the data portion of nar::Packet
+             * @privar: _file, nar::File&, holds the file that the packets are generated from
+             * @privar: _next_seqnum, unsigned int, holds the next seqnum that no packet is generated yet
+             * @privar: _last_notaccessed_file_location, unsigned long, holds the last non-accessed offset of the file
+             * @privar: _packets, std::map<unsigned int, nar::Packet*>, holds the generated packets themselves
+             * @tested: no
+             *
+            */
             class PacketGenerator {
                 private:
-                    unsigned short _pack_data_size; // holds the data area of packets
+                    unsigned int _stream_id;
+                    unsigned short _pack_data_size; // holds the data area size of packets
                     nar::File& _file; //file from which packets will be generated
-                    unsigned int _start_seqnum;
                     unsigned int _next_seqnum;
                     unsigned long _last_notaccessed_file_location;
                     std::map<unsigned int, nar::Packet*> _packets;
                 public:
-                    PacketGenerator(nar::File& file, unsigned int start_seqnum);
+                    PacketGenerator(nar::File& file, unsigned int start_seqnum, unsigned int stream_id);
                     nar::Packet* operator[](unsigned int sqnm);
-                    
+                    void remove(unsigned int sqnm);
+
             }
 
             static void receive_thread(nar::USocket* sock);
@@ -88,10 +103,13 @@ namespace nar {
             bool _recv_flag;
             bool _ack_flag;
             bool _ran_flag;
+            bool _synack_flag;
 
             std::set<unsigned int> _acks;
 
             std::vector<pair<nar::Packet*, udp::endpoint*> > _ran_packs;
+
+            unsigned int rand_seqnum();
         public:
             /*
                 stream_id = 0 for server

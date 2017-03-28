@@ -103,6 +103,17 @@ namespace nar {
         };
 
         namespace USocket {
+
+            namespace PacketGenerator {
+                class NoMorePacket : public nar::Exception::ExcpBase {
+                    private:
+                        unsigned long _offset;
+                    public:
+                        NoMorePacket(const char* mess, unsigned long offset): ExcpBase(mess), _offset(offset) {}
+                        unsigned long get_offset() { return _offset; }
+                };
+            };
+
             class NoAvailablePort : public nar::Exception::ExcpBase {
                 private:
                 public:

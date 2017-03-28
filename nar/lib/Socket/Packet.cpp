@@ -230,14 +230,14 @@ void nar::Packet::make_ack(unsigned int str_id, unsigned int aknm) {
   this->stream_id = str_id;
   this->payload = std::string("");
 }
-void nar::Packet::make_syn(unsigned int str_id) {
+void nar::Packet::make_syn(unsigned int str_id, unsigned int seqnum) {
   this->syn = 1;
   this->ack = 0;
   this->fin = 0;
   this->nat = 0;
   this->data = 0;
   this->ran = 0;
-  this->seqnum = 0;
+  this->seqnum = seqnum;
   this->payload_len = 0;
   this->acknum = 0;
   this->stream_id = str_id;
@@ -284,7 +284,7 @@ void nar::Packet::make_ran(unsigned int str_id) {
   this->stream_id = str_id;
   this->payload = std::string("");
 }
-void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, std::string pl, unsigned int pl_len) {
+void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, const std::string& pl, unsigned int pl_len) {
   this->syn = 0;
   this->ack = 0;
   this->fin = 0;
@@ -296,6 +296,20 @@ void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, std::string 
   this->payload_len = pl.size();
   this->stream_id = str_id;
   this->payload = pl;
+}
+
+void nar::Packet::make_data(unsigned int sqnm, unsigned int str_id, const char* pl, unsigned int pl_len) {
+  this->syn = 0;
+  this->ack = 0;
+  this->fin = 0;
+  this->nat = 0;
+  this->data = 1;
+  this->ran = 0;
+  this->seqnum = sqnm;
+  this->acknum = 0;
+  this->payload_len = pl_len;
+  this->stream_id = str_id;
+  this->payload.replace(0, pl_len, pl);
 }
 void nar::Packet::make_fin(unsigned int str_id) {
   this->syn = 0;
