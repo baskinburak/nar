@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <set>
+#include <nar/narnode/File/File.h>
 
 using boost::asio::ip::udp;
 using std::pair;
@@ -44,6 +45,20 @@ namespace nar {
     */
     class USocket {
         private:
+            class PacketGenerator {
+                private:
+                    unsigned short _pack_data_size; // holds the data area of packets
+                    nar::File& _file; //file from which packets will be generated
+                    unsigned int _start_seqnum;
+                    unsigned int _next_seqnum;
+                    unsigned long _last_notaccessed_file_location;
+                    std::map<unsigned int, nar::Packet*> _packets;
+                public:
+                    PacketGenerator(nar::File& file, unsigned int start_seqnum);
+                    nar::Packet* operator[](unsigned int sqnm);
+                    
+            }
+
             static void receive_thread(nar::USocket* sock);
             void timer_thread(unsigned long usec, bool* stop_timer);
 
@@ -88,7 +103,7 @@ namespace nar {
             void randezvous_server();
             void connect();
             int recv(char* buf, int len);
-            bool send(nar::File& file);
+            bool send(nar::File& file, unsigned long start, unsigned long len);
     };
 }
 

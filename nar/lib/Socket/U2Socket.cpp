@@ -14,6 +14,20 @@ using std::endl;
 using boost::asio::ip::udp;
 using std::pair;
 
+nar::USocket::PacketGenerator::PacketGenerator(nar::File& file, unsigned int start_seqnum): _file(file), _start_seqnum(start_seqnum), this->_next_seqnum(start_seqnum), _last_notaccessed_file_location(0) {
+    this->_pack_data_size = nar::Packet::PACKET_LEN - nar::Packet::HEADER_LEN;
+}
+
+nar::Packet* nar::USocket::PacketGenerator::operator[](unsigned int sqnm) {
+    if(this->_packets.find(sqnm) != this->_packets.end())
+        return this->_packets[sqnm];
+
+    for(; this->_last_generated_seqnum < sqnm; this->_last_generated_seqnum++) {
+        _packets[this->
+    }
+    
+}
+
 nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id), _iserv(&io_serv) {
     this->_server_ip = server_ip;
     this->_server_port = std::to_string(server_port);
@@ -311,6 +325,6 @@ int nar::USocket::recv(char* buf, int len) {
     return read_len;
 }
 
-int nar::USocket::send(nar::File& file) {
+bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len) {
     
 }

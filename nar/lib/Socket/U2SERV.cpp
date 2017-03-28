@@ -1,5 +1,7 @@
 #include "U2Socket.h"
 #include <iostream>
+#include <nar/narnode/File/File.h>
+
 using std::cin;
 using std::cout;
 using std::endl;

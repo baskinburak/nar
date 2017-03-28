@@ -9,9 +9,20 @@ int main() {
     unsigned short srv_port;
     cin >> srv_port;
 
+    std::string type;
+    cin >> type;
+
+
     nar::USocket cli_sck(io_serv, "127.0.0.1", srv_port, 7);
 
     cli_sck.connect();
+
+    if(type=="cli") {
+        nar::File file("denemesend.txt", "r");
+        cli_sck.send(file);
+    } else if(type=="serv") {
+        nar::File file("deneme.txt", "w");
+    }
 
     return 0;
 }
