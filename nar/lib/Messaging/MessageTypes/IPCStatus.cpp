@@ -2,7 +2,7 @@
 
 nlohmann::json nar::MessageTypes::IPCStatus::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "status";
+    json_to_sent["header"]["action"] = "status";
     return json_to_sent;
 }
 /*
@@ -13,6 +13,11 @@ void nar::MessageTypes::IPCStatus::Request::send__action(nar::Socket* skt) {
     return;
 }
 */
+
+void nar::MessageTypes::IPCStatus::Request::receive_message(nlohmann::json &js){
+    this -> _action = js["header"]["action"];
+    return;
+}
 
 nlohmann::json nar::MessageTypes::IPCStatus::Response::give_myresponsejson() {
     nlohmann::json resp_json;

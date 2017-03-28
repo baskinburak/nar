@@ -20,6 +20,7 @@ namespace nar {
 
                     Request(std::string un) : IPCBaseRequest(std::string("register")), user_name(un) {}
                     nlohmann::json get_myrequestjson();
+                    void receive_message(nlohmann::json &js);
                     //simdilik void send__action(nar::Socket* skt);
                     //void print_loop(nar::Socket* skt);
             };

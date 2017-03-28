@@ -11,7 +11,7 @@ void nar::MessageTypes::IPCLs::Request::set_dir_name(std::string dn){
 
 nlohmann::json nar::MessageTypes::IPCLs::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "ls";
+    json_to_sent["header"]["action"] = "ls";
     json_to_sent["payload"]["dir_name"] = dir_name;
     return json_to_sent;
 }
@@ -24,6 +24,14 @@ void nar::MessageTypes::IPCLs::Request::send__action(nar::Socket* skt) {
     return;
 }
 */
+
+void nar::MessageTypes::IPCLs::Request::receive_message(nlohmann::json &js){
+    this -> _action = js["header"]["action"];
+    this -> _var = js["payload"]["var"];
+    this -> _value = js["payload"]["value"];
+    return;
+}
+
 nlohmann::json nar::MessageTypes::IPCLs::Response::give_myresponsejson() {
     nlohmann::json resp_json;
     resp_json["header"]["reply_to"] = get_reply_to();

@@ -11,7 +11,7 @@ void nar::MessageTypes::IPCPush::Request::set_file_name(std::string fn){
 
 nlohmann::json nar::MessageTypes::IPCPush::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "push";
+    json_to_sent["header"]["action"] = "push";
     json_to_sent["payload"]["file_name"] = file_name;
     return json_to_sent;
 }
@@ -24,6 +24,13 @@ void nar::MessageTypes::IPCPush::Request::send__action(nar::Socket* skt) {
     return;
 }
 */
+
+void nar::MessageTypes::IPCPush::Request::receive_message(nlohmann::json &js){
+    this -> _action = js["header"]["action"];
+    this -> file_name = js["payload"]["file_name"];
+    return;
+}
+
 nlohmann::json nar::MessageTypes::IPCPush::Response::give_myresponsejson() {
     nlohmann::json resp_json;
     resp_json["header"]["reply_to"] = get_reply_to();

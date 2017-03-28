@@ -26,7 +26,9 @@ namespace nar {
 
                     nlohmann::json get_myrequestjson();
 
-                    //simdilik void send__action(nar::Socket* skt);
+                    void receive_message(std::string &s);
+
+                    //simdilik void send_action(nar::Socket* skt);
 
                     //void print_loop(nar::Socket* skt);
             };
