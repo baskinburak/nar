@@ -17,7 +17,7 @@ using std::endl;
 using std::string;
 
 namespace nar {
-    namespace Actions {
+    namespace ServerActions {
 
         long long int findFileId(string& file_name,string& dir_name,string& uname, nar::Database* db){// returns -1 in any case of problem
             long long int file_id = -1;
@@ -118,7 +118,7 @@ namespace nar {
 
                 } else {
 
-                    status_code = 303; // no valid peer
+                    status_code = 302; // no valid peer
                     MessageTypes::FilePull::Response file_pull_resp(status_code,0);
                     file_pull_resp.send_mess(inf->getSck());
                 }

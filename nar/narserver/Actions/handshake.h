@@ -6,7 +6,7 @@
 #include <nar/narserver/sockinfo.h>
 
 namespace nar {
-    namespace Actions {
+    namespace ServerActions {
         /*
          * Handshake functionality for server
          *

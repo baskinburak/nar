@@ -1,6 +1,7 @@
 #ifndef NAR_FILE_H
 #define NAR_FILE_H
 #include <fstream>
+
 namespace nar {
     /*
      * Utility class to write/read to/from files.
@@ -8,12 +9,16 @@ namespace nar {
      * @author: baskin
      * @privar: _file_handle, std::fstream, stores the fstream handle to the file.
      * @privar: _mode, std::string, stores the open mode of the file (r or w)
+     * @privar: _file_path, std::string, path of the file
+     * @privar: _isTemp, book, is this file temporary or not
      * @tested: no
     */
     class File {
         private:
             std::fstream _file_handle;
             std::string _mode;
+            std::string _file_path;
+            bool _is_temp;
         public:
             /*
              * Constructor. Opens the file given as file_path with mode.
@@ -21,12 +26,13 @@ namespace nar {
              * @author: baskin
              * @param: file_path, const char*, relative or absolute path to file. It is better practice to use full paths.
              * @param: mode, const char*, file open mode. Must be "r" for read, "w" for write.
+             * @param: is_temp, bool, is this file temporary or not
              * @throws: nar::Exception::File::UnrecognizedFileMode, if file mode is different from "r" and "w".
              * @throws: nar::Exception::File::OpenFail, if file couldn't opened with given mode.
              * @tested: yes
              *
             */
-            File(const char* file_path, const char* mode);
+            File(const char* file_path, const char* mode, bool is_temp);
 
 
             /*
@@ -35,12 +41,13 @@ namespace nar {
              * @author: baskin
              * @param: file_path, std::string, relative or absolute path to file. It is better practice to use full paths.
              * @param: mode, const char*, file open mode. Must be "r" for read, "w" for write.
+             * @param: is_temp, bool, is this file temporary or not
              * @throws: nar::Exception::File::UnrecognizedFileMode, if file mode is different from "r" and "w".
              * @throws: nar::Exception::File::OpenFail, if file couldn't opened with given mode.
              * @tested: yes
              *
             */
-            File(std::string file_path, const char* mode);
+            File(std::string file_path, const char* mode, bool is_temp);
 
             /*
              * Destructor. Closes the file stream.
@@ -122,6 +129,28 @@ namespace nar {
              *
             */
             void close();
+
+            /*
+             * Compress the given file and returns the compressed file
+             *
+             * @author: Fatih
+             * @return: nar::File*, returns the temp file that contains compressed version
+             * @throws: nar::Exception::File::WrongMode, if file is opened with mode "w".
+             * @throws: nar::Exception::File::WrongMode, if tempfile is opened with mode "r".
+             * @tested: yes
+            */
+            nar::File* compress();
+
+            /*
+             * Decompress the given file and returns the decompressed file
+             *
+             * @author: Fatih
+             * @return: nar::File*, returns the temp file that contains decompressed version
+             * @throws: nar::Exception::File::WrongMode, if compressed file is opened with mode "w".
+             * @throws: nar::Exception::File::WrongMode, if the output file  is opened with mode "r".
+             * @tested: yes
+            */
+            nar::File* decompress();
     };
 }
 

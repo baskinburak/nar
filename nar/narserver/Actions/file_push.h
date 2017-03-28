@@ -18,7 +18,7 @@ using std::string;
 
 
 namespace nar {
-    namespace Actions {
+    namespace ServerActions {
 
         void sendMachineListPush(nar::SockInfo* inf, int status, unsigned long csize, std::vector<std::string> & machine_list, long long int cId,std::vector<unsigned int> & stream_ids,long long int fSize, nar::ServerGlobal* s_global){
 
@@ -165,7 +165,7 @@ namespace nar {
                 }
 
             } else {
-                status_code = 302;
+                status_code = 300;
                 nar::MessageTypes::FilePush::Response file_push_resp(status_code,0);
                 file_push_resp.send_mess(inf->getSck());
             }

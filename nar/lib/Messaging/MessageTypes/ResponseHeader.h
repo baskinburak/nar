@@ -9,19 +9,19 @@ namespace nar {
     namespace MessageTypes {
         class ResponseHeader {
             private:
-                int status_code;
-                std::string replyto;
+                int _status_code;
+                std::string _reply_to;
             public:
-                ResponseHeader(int statcode, std::string r): status_code(statcode), replyto(r){
+                ResponseHeader(int status_code, std::string reply_to): _status_code(status_code), _reply_to(reply_to){
 
                 }
                 int get_status_code();
                 std::string& get_replyto();
 
-                nlohmann::json sendHead();
+                nlohmann::json send_head();
 
 				//void send(Socket *sck, nlohmann::jsonn &json );
-				void recvFill(nlohmann::json & received);
+				void recv_fill(nlohmann::json & received);
 
         };
     }

@@ -24,7 +24,7 @@ std::string generate_machineId() {
 }
 
 namespace nar {
-    namespace Actions {
+    namespace ServerActions {
         /*
          * Machine register functionality for server
          *

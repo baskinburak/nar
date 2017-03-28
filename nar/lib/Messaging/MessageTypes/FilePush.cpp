@@ -38,7 +38,7 @@ unsigned short nar::MessageTypes::FilePush::Response::get_randevous_port() {
 
 void nar::MessageTypes::FilePush::Request::send_mess(nar::Socket* skt , nar::MessageTypes::FilePush::Response & resp){
     nlohmann::json push_req_send;
-    push_req_send["header"] = sendHead();
+    push_req_send["header"] = send_head();
     push_req_send["payload"]["file_size"] = this->filesize;
     push_req_send["payload"]["dir"] = this->dir;
     push_req_send["payload"]["file_name"] = this->filename;
@@ -50,7 +50,7 @@ void nar::MessageTypes::FilePush::Request::send_mess(nar::Socket* skt , nar::Mes
 }
 void nar::MessageTypes::FilePush::Request::receive_message(nlohmann::json push_req_recv){
     nlohmann::json head = push_req_recv["header"];
-    recvFill(head);
+    recv_fill(head);
     this->filesize = push_req_recv["payload"]["file_size"];
     this->dir = push_req_recv["payload"]["dir"];
     this->filename = push_req_recv["payload"]["file_name"];
@@ -58,7 +58,7 @@ void nar::MessageTypes::FilePush::Request::receive_message(nlohmann::json push_r
 }
 nlohmann::json nar::MessageTypes::FilePush::Request::test_json() {
     nlohmann::json push_req_test;
-    push_req_test["header"] = sendHead();
+    push_req_test["header"] = send_head();
     push_req_test["payload"]["file_size"] = this->filesize;
     push_req_test["payload"]["dir"] = this->dir;
     push_req_test["payload"]["file_name"] = this->filename;
@@ -68,7 +68,7 @@ void nar::MessageTypes::FilePush::Response::send_mess(nar::Socket* skt){
     int status = get_status_code();
     if(status == 200) {
         nlohmann::json push_resp_send;
-        push_resp_send["header"] = sendHead();
+        push_resp_send["header"] = send_head();
         push_resp_send["payload"]["rand_port"] = this->randevous_port;
         push_resp_send["payload"]["peer_list"] = nlohmann::json::array();
         push_resp_send["payload"]["size"] = elements.size();
@@ -82,7 +82,7 @@ void nar::MessageTypes::FilePush::Response::send_mess(nar::Socket* skt){
         return;
     } else {
         nlohmann::json push_resp_send;
-        push_resp_send["header"] = sendHead();
+        push_resp_send["header"] = send_head();
         send_message(skt,push_resp_send.dump());
         return;
     }
@@ -91,7 +91,12 @@ void nar::MessageTypes::FilePush::Response::send_mess(nar::Socket* skt){
 }
 void nar::MessageTypes::FilePush::Response::receive_message(nlohmann::json push_resp_recv){
     nlohmann::json head = push_resp_recv["header"];
-    recvFill(head);
+    recv_fill(head);
+    if(_status_code == 300) {
+        throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
+    } else if(_status_code == 301) {
+        throw nar::Exception::MessageTypes::NoValidPeerPush("Not enough valid peer for push operation", _status_code);
+    }
     this->randevous_port = push_resp_recv["payload"]["rand_port"];
     unsigned long int size = push_resp_recv["payload"]["size"];
     for(int i=0;i<size;i++) {
@@ -105,7 +110,7 @@ void nar::MessageTypes::FilePush::Response::receive_message(nlohmann::json push_
 }
 nlohmann::json nar::MessageTypes::FilePush::Response::test_json() {
     nlohmann::json push_resp_test;
-    push_resp_test["header"] = sendHead();
+    push_resp_test["header"] = send_head();
     push_resp_test["payload"]["rand_port"] = this->randevous_port;
     push_resp_test["payload"]["peer_list"] = nlohmann::json::array();
     push_resp_test["payload"]["size"] = elements.size();

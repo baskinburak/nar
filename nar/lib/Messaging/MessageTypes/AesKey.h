@@ -6,6 +6,7 @@
 #include "ResponseHeader.h"
 #include <nar/lib/nlohJson/json.hpp>
 #include <nar/narnode/utility.h>
+#include <nar/lib/Exception/Exception.h>
 namespace nar {
     namespace MessageTypes {
         namespace AesKey {

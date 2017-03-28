@@ -29,7 +29,7 @@ namespace nar {
                 public:
                     BindError(const char* mess, unsigned short port, char type): ExcpBase(mess), _port(port), _type(type) {}
                     unsigned short get_port() const { return _port; }
-                    char get_type() const { return _type; } 
+                    char get_type() const { return _type; }
             };
 
             class SystemError : public nar::Exception::ExcpBase {
@@ -44,7 +44,7 @@ namespace nar {
                     WrongSocketType(const char* mess, char type): ExcpBase(mess), _type(type) {}
                     char get_type() const { return _type; }
             };
-            
+
             class ConnectionError : public nar::Exception::ExcpBase {
                 private:
                     unsigned short _port;
@@ -54,7 +54,7 @@ namespace nar {
                     ConnectionError(const char* mess, const std::string& host, const unsigned short port, char type): ExcpBase(mess), _host(host), _port(port), _type(type) {}
                     unsigned short get_port() const { return _port; }
                     char get_type() const { return _type; }
-                    std::string get_host() const { return _host; } 
+                    std::string get_host() const { return _host; }
             };
         };
 
@@ -115,7 +115,54 @@ namespace nar {
                     int get_value() const { return _value; }
             };
         };
+        namespace MessageTypes {
+            class UserDoesNotExist : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    UserDoesNotExist(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
 
+            class ServerSocketAuthenticationError : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    ServerSocketAuthenticationError(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+
+            class PullFileDoesNotExist : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    PullFileDoesNotExist(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+
+            class NoValidPeerPull : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    NoValidPeerPull(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+
+            class NoValidPeerPush : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    NoValidPeerPush(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+            class UserNameAlreadyExist : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    UserNameAlreadyExist(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+        };
         namespace File {
             class WriteError : public nar::Exception::ExcpBase {
                 private:
