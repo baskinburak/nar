@@ -280,7 +280,7 @@ int main() {
         for(int i=0; i<eles.size(); i++) {
             std::cout << eles[i].change_time << " " << eles[i].entity_id << " " << eles[i].entity_name << " " << eles[i].entity_size << " " << eles[i].type << std::endl;
         }
-        
+
         std::cout<<"dir response send Test"<<std::endl;
         dir_resp.send_mess();
         std::cout<<"dir response receive Test"<<std::endl;
@@ -290,7 +290,6 @@ int main() {
 
         std::cout << "DIRINFO TEST END" << std::endl << std::endl;
     /* DIRINFO TEST END */
-
 
     return 0;
 }

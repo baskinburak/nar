@@ -10,11 +10,11 @@ namespace nar {
 
     /**
     * Class which provides the interface and services for tcp-ip socket operations
-    * 
+    *
     * @author: utku
     * @privar: _type, char, holds the type of the socket( server or client socket)
     * @privar: _sock, boost::asio::ip::tcp::socket, holds the boost tcp-ip socket in the case of initialization as 'c' (client) socket
-    * @pubvar: _acceptor, boost::asio::ip::tcp::acceptor, holds the tcp-ip listener-acceptor structure in the case of initialization as 's' (server) socket 
+    * @pubvar: _acceptor, boost::asio::ip::tcp::acceptor, holds the tcp-ip listener-acceptor structure in the case of initialization as 's' (server) socket
     * @tested: yes (except pre socket binding scenarios)
     * @todo: CORRECTING*** pre interface, port binding and connectiong and accepting afterwards
     **/
@@ -61,19 +61,19 @@ namespace nar {
             * Binds the socket to the specified port and interface.
             * @author: utku
             * @param: phort, const unsigned short, port
-            * @param: interface, const char*, interface as "127.0.0.1" 
+            * @param: interface, const char*, interface as "127.0.0.1"
             * @tested: yes
             * @todo: -
             **/
             void bind(const unsigned short port, const char* interface);
-    
-            
+
+
             /**
-            * Provides the service of accepting connections for server sockets. New connection is 
+            * Provides the service of accepting connections for server sockets. New connection is
             * directed to the socket specified in argument.
             *
             * @author: utku
-            * @param: acc, nar::Socket, Socket to which the new connection will be redirected. A socket that is initiliazed as 
+            * @param: acc, nar::Socket, Socket to which the new connection will be redirected. A socket that is initiliazed as
             * client is sufficient as an argument
             *
             * @tested: yes
@@ -81,7 +81,7 @@ namespace nar {
             **/
             void accept(Socket& acc) const;
 
-            
+
             /**
             * Provides the service to connect to a remote endpoint with client sockets.
             * @author: utku
@@ -102,13 +102,22 @@ namespace nar {
             * @todo: -
             **/
             void send(const char* offset, int length) const;
+            /**
+            * Send data from a client socket
+            * @author: dogu
+            * @param: offset, const char*, pointer which points to the data to be sent.
+            * @param: length, int, how many bytes to be sent.
+            * @tested: yes
+            * @todo: -
+            **/
+            void send(std::string s) const;
 
             /**
             * Receives data from a client socket.
             * @author: utku
             * @param: offset, char*, pointer to the buffer to which data will be written.
             * @param: length, int, this argument specifies how many bytes at max. is intended to received.
-            * return:  int, returns the number of bytes it managed to receive. This number may be smaller than the number specified by parameter2. 
+            * return:  int, returns the number of bytes it managed to receive. This number may be smaller than the number specified by parameter2.
             * @tested: yes
             * @todo: -
             **/
@@ -138,7 +147,7 @@ namespace nar {
             * @todo: -
             **/
             unsigned short get_local_port() const;
-  
+
         private:
             char _type;
             boost::asio::ip::tcp::acceptor* _acceptor;
