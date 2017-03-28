@@ -54,7 +54,7 @@ namespace nar {
                 cout<<"<handshake"<<endl;
                 MessageTypes::Handshake::Request hand_req;
                 hand_req.receive_message(jsn);
-                ServerActions::handshake(inf,hand_req);
+                Actions::handshake(inf,hand_req);
 
                 cout<<"handshake>"<<endl;
             } else if(jsn["header"]["action"] == "machine_register") {
@@ -62,7 +62,7 @@ namespace nar {
 
                 MessageTypes::MachineRegister::Request macreg_req;
                 macreg_req.receive_message(jsn);
-                ServerActions::machine_register(inf, macreg_req, db);
+                Actions::machine_register(inf, macreg_req, db);
 
                 cout<<"machine_register>"<<endl;
             } else if(jsn["header"]["action"] == "keepalive") {
@@ -70,7 +70,7 @@ namespace nar {
 
                 MessageTypes::KeepAlive::Request keep_req;
                 keep_req.receive_message(jsn);
-                ServerActions::keepalive(inf,keep_req ,s_global);
+                Actions::keepalive(inf,keep_req ,s_global);
 
                 cout<<"keepalive>"<<endl;
             } else if(jsn["header"]["action"] == "user_register") {
@@ -78,7 +78,7 @@ namespace nar {
 
                 MessageTypes::UserRegister::Request usreg_req(string(""),string(""));
                 usreg_req.receive_message(jsn);
-                ServerActions::user_register(inf, usreg_req, db);
+                Actions::user_register(inf, usreg_req, db);
 
                 cout<<"user_register>"<<endl;
 
@@ -87,7 +87,7 @@ namespace nar {
 
                 MessageTypes::DirInfo::Request dir_req(string(""));
                 dir_req.receive_message(jsn);
-                ServerActions::get_user_dir_info(inf, dir_req, db);
+                Actions::get_user_dir_info(inf, dir_req, db);
 
                 cout<<"dir_info>"<<endl;
 
@@ -96,25 +96,25 @@ namespace nar {
 
                 MessageTypes::AesKey::Request aes_req;
                 aes_req.receive_message(jsn);
-                ServerActions::get_aes_key(inf, aes_req, db);
+                Actions::get_aes_key(inf, aes_req, db);
 
                 cout<<"aes_key>"<<endl;
 
-            } else if(jsn["header"]["action"] == "file_push") {
+            } else if(jsn["header"]["action"] == "get_aes_key") {
                 cout<<"<file_push_key"<<endl;
 
                 MessageTypes::FilePush::Request fpush_req(string(""),string(""),-1);
                 fpush_req.receive_message(jsn);
-                ServerActions::file_push(inf, fpush_req, db, s_global);
+                Actions::file_push(inf, fpush_req, db, s_global);
 
                 cout<<"file_push_key>"<<endl;
 
-            } else if(jsn["header"]["action"] == "file_pull") {
+            } else if(jsn["header"]["action"] == "get_aes_key") {
                 cout<<"<file_pull_key"<<endl;
 
                 MessageTypes::FilePull::Request fpull_req(string(""),string(""));
                 fpull_req.receive_message(jsn);
-                ServerActions::file_pull(inf, fpull_req, db, s_global);
+                Actions::file_pull(inf, fpull_req, db, s_global);
 
                 cout<<"file_pull_key>"<<endl;
 
