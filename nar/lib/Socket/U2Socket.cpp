@@ -11,6 +11,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <map>
 #include <algorithm>
+#include <boost/lexical_cast.hpp>
 
 using std::cout;
 using std::endl;
@@ -320,6 +321,7 @@ void nar::USocket::connect() {
             } else {
                 try {
                     this->_peer_endpoint = this->_ran_packs[this->_ran_packs.size()-1].first->get_endpoint();
+                    cout << "lexical cast: " << boost::lexical_cast<std::string>(this->_peer_endpoint) << endl;
                 } catch(nar::Exception::Packet::NotEndpoint& exp) {
                     continue;
                 }
