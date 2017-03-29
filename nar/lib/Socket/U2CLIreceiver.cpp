@@ -30,7 +30,7 @@ int main() {
 
     int total_read = 0;
     char buf[1024];
-    while(total_read < 10891252) {
+    while(total_read < 10891250) {
          int len = cli_sck.recv(buf, 1024);
          recvfile.write(buf, len);
          total_read += len;

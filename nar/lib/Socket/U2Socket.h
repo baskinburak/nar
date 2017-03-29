@@ -66,9 +66,10 @@ namespace nar {
                     nar::File& _file; //file from which packets will be generated
                     unsigned int _next_seqnum;
                     unsigned long _last_notaccessed_file_location;
+                    unsigned long _end_file_location;
                     std::map<unsigned int, nar::Packet*> _packets;
                 public:
-                    PacketGenerator(nar::File& file, unsigned int start_seqnum, unsigned int stream_id);
+                    PacketGenerator(nar::File& file, unsigned int start_seqnum, unsigned int stream_id, unsigned long start, unsigned long len);
                     nar::Packet* operator[](unsigned int sqnm);
                     void remove(unsigned int sqnm);
 

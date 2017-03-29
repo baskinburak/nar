@@ -18,7 +18,8 @@ using std::endl;
 using boost::asio::ip::udp;
 using std::pair;
 
-nar::USocket::PacketGenerator::PacketGenerator(nar::File& file, unsigned int start_seqnum, unsigned int stream_id): _file(file), _next_seqnum(start_seqnum), _last_notaccessed_file_location(0), _stream_id(stream_id) {
+nar::USocket::PacketGenerator::PacketGenerator(nar::File& file, unsigned int start_seqnum, unsigned int stream_id, unsigned long start, unsigned long len): _file(file), _next_seqnum(start_seqnum), _last_notaccessed_file_location(start), _stream_id(stream_id), _end_file_location(start+len) {
+    this->_end_file_location = std::min(this->_end_file_location, file.size());
     this->_pack_data_size = nar::Packet::PACKET_LEN - nar::Packet::HEADER_LEN;
 }
 
@@ -27,14 +28,13 @@ nar::Packet* nar::USocket::PacketGenerator::operator[](unsigned int sqnm) {
         return this->_packets[sqnm];
 
     for(; this->_next_seqnum <= sqnm; this->_next_seqnum++) {
-        if(this->_last_notaccessed_file_location >= this->_file.size()) {
+        if(this->_last_notaccessed_file_location >= this->_end_file_location) {
             throw nar::Exception::USocket::PacketGenerator::NoMorePacket("No more packets to generate", this->_file.size());
         }
-        unsigned long start = this->_last_notaccessed_file_location;
-        unsigned long len = this->_pack_data_size;
+
+        unsigned long len = std::min((unsigned long) this->_pack_data_size, this->_end_file_location - this->_last_notaccessed_file_location);
         char buf[len];
-        //cout << start << " " << this->_file.size() << endl;
-        int rsize = this->_file.read(buf, start, len);
+        int rsize = this->_file.read(buf,  this->_last_notaccessed_file_location, len);
         this->_last_notaccessed_file_location += rsize;
 
 
@@ -398,7 +398,7 @@ int nar::USocket::recv(char* buf, int len) {
 }
 
 bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len) {
-    nar::USocket::PacketGenerator pckgen(file, this->_next_seqnum, this->_stream_id);
+    nar::USocket::PacketGenerator pckgen(file, this->_next_seqnum, this->_stream_id, start, len);
     std::unique_lock<std::mutex> lck(this->_work_mutex);
     double window_size = 64; // packets
     unsigned int used_window = 0; // packets

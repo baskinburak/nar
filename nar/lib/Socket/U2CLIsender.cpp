@@ -31,6 +31,8 @@ int main() {
 
     nar::File file(filename, "r", false);
     cout << "here" << endl;
-    cli_sck.send(file, 0, file.size());
+    unsigned long start, len;
+    cin >> start >> len;
+    cli_sck.send(file, start, len);
     return 0;
 }
