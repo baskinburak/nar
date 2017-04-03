@@ -5,8 +5,7 @@ std::string nar::MessageTypes::IPCLs::Request::get_dir_name(){
 }
 
 void nar::MessageTypes::IPCLs::Request::set_dir_name(std::string dn){
-    this -> _dir_name = dn;
-    return;
+    this->_dir_name = dn;
 }
 
 nlohmann::json nar::MessageTypes::IPCLs::Request::get_myrequestjson() {

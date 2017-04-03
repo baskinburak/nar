@@ -56,7 +56,7 @@ namespace nar {
         cli_sck.send(f,0,f.size());
     }
 
-    void daemon_dispatcher( Global *globals) {
+    void daemon_dispatcher(Global *globals) {
         nar::Socket* server_socket = globals->establishServerConnection();
         keep_alive(server_socket);
         std::string message = nar::get_message( *server_socket);
@@ -101,4 +101,4 @@ namespace nar {
         }
     }
 
-};
+}

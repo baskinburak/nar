@@ -19,6 +19,7 @@ namespace nar {
                     std::string get_dir_name();
                     void set_dir_name(std::string dn);
 
+                    Request() : IPCBaseRequest(std::string("ls") {}
                     Request(std::string dn) : IPCBaseRequest(std::string("ls")), _dir_name(dn) {}
                     nlohmann::json get_myrequestjson();
                     void receive_message(nlohmann::json &js);

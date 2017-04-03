@@ -17,6 +17,9 @@ namespace nar {
             */
             private:
                 std::string _action;
+                std::string _username;
+                std::string _current_directory;
+                std::string _password;
             public:
                 /*
                  * Constructor
@@ -48,6 +51,12 @@ namespace nar {
                  * @param: None
                  * @tested: No
                 */
+                std::string& get_username();
+                std::string& get_current_directory();
+                std::string& get_password();
+                void set_username(std::string& un);
+                void set_current_directory(std::string& cd);
+                void set_password(std::string& pw);
                 nlohmann::json fillTheHead();
                 /*
                  * gets the _action

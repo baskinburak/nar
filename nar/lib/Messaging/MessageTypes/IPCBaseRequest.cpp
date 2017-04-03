@@ -12,11 +12,17 @@ void nar::MessageTypes::IPCBaseRequest::set_action(std::string an) {
 nlohmann::json nar::MessageTypes::IPCBaseRequest::fillTheHead() {
     nlohmann::json header;
     header["action"] = _action;
+    header["username"] = this->_username;
+    header["password"] = this->_password;
+    header["current_directory"] = this->_current_directory;
     return header;
 }
 
 void nar::MessageTypes::IPCBaseRequest::recvThe_action(nlohmann::json &recv){
     this -> _action = recv["action"];
+    this->_username = recv["username"];
+    this->_password = recv["password"];
+    this->_current_directory = recv["current_directory"];
     return;
 }
 
