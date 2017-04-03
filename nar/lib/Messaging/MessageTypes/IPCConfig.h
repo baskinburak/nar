@@ -4,8 +4,9 @@
 #include <string>
 #include "IPCBaseRequest.h"
 #include "IPCBaseResponse.h"
-//#include "../../nlohJson/json.hpp"
-//#include "../../../narnode/utility.h"
+#include <nar/narnode/utility.h>
+#include <nar/lib/nlohJson/json.hpp>
+
 #include <vector>
 
 namespace nar {
@@ -26,17 +27,15 @@ namespace nar {
 
                     nlohmann::json get_myrequestjson();
 
-                    //simdilik void send__action(nar::Socket* skt);
+                    void receive_message(std::string &s);
 
-                    //void print_loop(nar::Socket* skt);
+                    void send_action(nar::Socket* skt);
             };
 
             class Response : public IPCBaseResponse {
                 public:
                     Response(long int prog, long int sc) : IPCBaseResponse(prog, std::string("config"), sc) {}
                     nlohmann::json give_myresponsejson();
-                    //void send_message_progress(nar::Socket* skt, int progress);
-                    //void send_message_end(nar::Socket* skt)
             };
         }
     }

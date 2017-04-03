@@ -25,8 +25,8 @@ nlohmann::json nar::MessageTypes::IPCBaseRequest::get_myrequestjson() {
     my_request_json["header"]["reply_to"] = _action;
     return my_request_json;
 }
-/*
-void nar::MessageTypes::IPCBaseRequest::send__action(nar::Socket* skt) {
+
+void nar::MessageTypes::IPCBaseRequest::send_action(nar::Socket* skt) {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["reply_to"] = _action;
     send_message(skt, json_to_sent.dump());
@@ -43,4 +43,3 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
     }
     return;
 }
-*/

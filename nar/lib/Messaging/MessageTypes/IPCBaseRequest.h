@@ -72,7 +72,7 @@ namespace nar {
                  * @param:  nar::Socket* skt
                  * @tested: No
                 */
-                //simdilik void send__action(nar::Socket* skt);
+                void send_action(nar::Socket* skt);
                 /*
                  * get a message
                  *
@@ -80,7 +80,7 @@ namespace nar {
                  * @param:  None
                  * @tested: No
                 */
-                //simdilik void print_loop(nar::Socket* skt);
+                void print_loop(nar::Socket* skt);
         };
     }
 }

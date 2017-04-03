@@ -34,11 +34,11 @@ nlohmann::json nar::MessageTypes::IPCBaseResponse::give_myresponsejson() {
     my_response_json["payload"]["status_code"] = this -> _status_code;
     return my_response_json;
 }
-/*
+
 void nar::MessageTypes::IPCBaseResponse::send_message_progress(nar::Socket* skt, int p) {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["reply_to"] = this -> reply_to;
-    json_to_sent["payload"]["status_code"] = this -> status_code;
+    json_to_sent["header"]["reply_to"] = this -> _reply_to;
+    json_to_sent["payload"]["status_code"] = this -> _status_code;
     json_to_sent["payload"]["progress"] = p;
     send_message(skt, json_to_sent.dump());
     return;
@@ -50,4 +50,3 @@ void nar::MessageTypes::IPCBaseResponse::send_message_end(nar::Socket* skt) {
     send_message(skt, json_to_sent.dump());
     return;
 }
-*/
