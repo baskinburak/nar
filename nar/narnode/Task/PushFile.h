@@ -16,7 +16,7 @@
 
 namespace nar {
     namespace DaemonTask {
-        class PushFile : public nar::task::ITask {
+        class PushFile : public nar::DaemonTask::ITask {
             private:
                 std::string file_path;
 				nar::Socket *establishServerConnection(nar::Global* globals);

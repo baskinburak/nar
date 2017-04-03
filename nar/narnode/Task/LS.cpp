@@ -18,16 +18,16 @@ char* nar::task::LS::masctime(const struct tm *timeptr)
   return result;
 }
 
-void nar::task::LS::run(nar::Socket* skt, nar::Global* globals) {
+void nar::task::LS::get_dir_info(nar::Socket* ipc_skt,nar::MessageTypes::IPCLs::Request ls_req, nar::Global* globals) {
 
     std::string user_name = globals->get_username();
-    nar::MessageType::DirInfo::Request dir_req(_dir);
+    nar::MessageTypes::DirInfo::Request dir_req(ls_req.get_dir_name());
     nar::MessageTypes::DirInfo::Response dir_resp(999);
-    //nar::Socket *con_socket = createServerConnection(globals);
-    if (!ITask::handshake(skt, globals)){
+    nar::Socket *con_socket = establishServerConnection();
+    if (!ITask::handshake(con_socket, globals)){
         std::cout<<"hand_shake_fail"<<std::endl;
     }
-    dir_req.send_mess(skt,dir_resp);
+    dir_req.send_mess(con_socket,dir_resp);
     std::vector<struct nar::MessageTypes::DirInfo::Response::DirListElement> items = dir_resp.get_elements();
 
     for(int i =0;i<items.size();i++) {
@@ -49,6 +49,6 @@ void nar::task::LS::run(nar::Socket* skt, nar::Global* globals) {
         entry += entity_name+entity_id + entity_size + change_time +type;
 
     }
-    send_ipc_message(unx_sockfd, std::string("END"));
+    send_ipc_message(ipc_skt, std::string("END"));
 
 }

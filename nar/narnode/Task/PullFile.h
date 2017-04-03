@@ -14,7 +14,7 @@
 
 namespace nar {
     namespace DaemonTask {
-        class PullFile : public nar::task::ITask {
+        class PullFile : public nar::DaemonTask::ITask {
             private:
                 std::string file_name;
                 unsigned long file_size;
