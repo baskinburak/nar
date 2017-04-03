@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     std::thread rand(&randezvous_thread, &s_global);
     rand.detach();
 
-    nar::Socket entry_skt(s_global.io_service, 's');
+    nar::Socket entry_skt(s_global.get_ioserv(), 's');
     entry_skt.bind(12345);
 
     while(true) {
