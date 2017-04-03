@@ -96,3 +96,10 @@ std::string nar::Global::get_narFolder() {
     read_end();
     return fold;
 }
+
+nar::Socket* nar::Global::establishServerConnection() {
+    nar::Socket *serverSck = new nar::Socket(this->io_serv,'c');
+	serverSck->connect(this->get_narServerIp(),this->get_narServerPort());
+	return serverSck;
+}
+

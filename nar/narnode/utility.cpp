@@ -10,6 +10,7 @@
 #include <string>
 #include <sstream>
 
+
 std::string nar::get_message(nar::Socket& skt) {
     char buf[1035];
     int received = skt.recv(buf, 1024);
@@ -181,7 +182,7 @@ int nar::readFileWriteSck( nar::FileCryptor &file, nar::USocket &skt, unsigned l
 
 
 		nar::senddata(skt,buffer,readd);
-		
+
 
 		fileSize -= readd;
 	} while (fileSize > 0);
@@ -237,6 +238,17 @@ void nar::send_string_sckt(int sockfd, std::string str, int len) {
     }
 }
 
+byte* nar::string_to_byte(std::string &key) {
+
+    int len = key.length();
+    byte *aes = new byte[len];
+    for(int i=0; i<len; i++) {
+        aes[i] = (unsigned char )key[i];
+    }
+    return aes;
+
+}
+
 std::string nar::byte_to_hex(byte* arr, int len) {
     std::string res;
     for(int i=0; i<len; i++) {
@@ -261,6 +273,7 @@ byte* nar::hex_to_byte(std::string hex) {
     }
     return res;
 }
+
 
 void nar::send_message(nar::Socket& skt, std::string message) {
     message = std::to_string((int)message.size()) + std::string(" ") + message;
@@ -287,6 +300,8 @@ std::string nar::trim(std::string inp) {
     size_t last = inp.find_last_not_of(' ');
     return inp.substr(first, (last-first+1));
 }
+
+
 
 std::string nar::receive_ipc_message(int sockfd) {
     int len = get_int_sckt(sockfd);

@@ -28,6 +28,7 @@ namespace nar {
     void send_ipc_message(int sockfd, std::string message);
     std::string receive_ipc_message(int sockfd);
     std::string trim(std::string);
+    byte* string_to_byte(std::string &aes);
 }
 
 #endif

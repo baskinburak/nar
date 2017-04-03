@@ -9,7 +9,14 @@
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/filesystem.hpp>
 #include "../../lib/Exception/Exception.h"
+#include <crypto++/gcm.h>
+#include <crypto++/aes.h>
+#include <crypto++/filters.h>
+#include <crypto++/osrng.h>
+#include <crypto++/files.h>
 #include <stdio.h>
+#include <nar/narnode/utility.h>
+//#include "../utility.h"
 
 nar::File::File(const char* file_path, const char* mode, bool is_temp): _mode(mode), _is_temp(is_temp), _file_path(file_path){
 
@@ -181,4 +188,62 @@ nar::File* nar::File::decompress() {
 
     nar::File* r_version = new nar::File(temp_file, "r", true);
     return  r_version;
+}
+
+nar::File* nar::File::encrypt(std::string& aes) {
+   
+    boost::filesystem::path temp;
+    try {
+        temp = boost::filesystem::unique_path();
+    } catch(std::ios_base::failure& Exp) {
+        throw nar::Exception::Unknown(Exp.what());
+    }
+    if(this->_mode != "r") {
+        throw nar::Exception::File::WrongMode("File is not opened with 'r'", _mode.c_str());
+    }
+
+    std::string temp_native = temp.native();
+    temp_native.append(".enc");
+    std::cout<<temp_native<<std::endl;
+    nar::File out(temp_native,"w",false);
+
+    byte iv[256];
+    CryptoPP::AutoSeededRandomPool pool;
+    pool.GenerateBlock(iv, 256);   
+    std::string ivStr = byte_to_hex(iv,256);
+    out._file_handle << ivStr;
+    
+
+    const int TAG_SIZE = 12;
+
+    byte* _aes = string_to_byte(aes);
+    CryptoPP::GCM<CryptoPP::AES>::Encryption enc;
+    enc.SetKeyWithIV(_aes, 16, iv, 256);
+    CryptoPP::FileSource ss1(this->_file_handle, true, new CryptoPP::AuthenticatedEncryptionFilter(enc, new CryptoPP::FileSink(out._file_handle/*binary*/),false,TAG_SIZE));
+    out.close();
+    nar::File* out2 = new nar::File(temp_native,"r",false);
+    return out2;
+}
+
+nar::File* nar::File::decrypt(std::string& aes, std::string& fname) {
+    using namespace CryptoPP;
+    if(this->_mode != "r") {
+        throw nar::Exception::File::WrongMode("File is not opened with 'r'", _mode.c_str());
+    }
+    nar::File out(fname.c_str(),"w",false);
+
+    std::string hexIv;        
+    for(int ind=0; ind<512;++ind) {
+        hexIv.append(1, this->_file_handle.get());
+    }
+    byte* iv = hex_to_byte(hexIv);
+    CryptoPP::GCM<CryptoPP::AES>::Decryption dec;
+    byte* _aes = string_to_byte(aes);
+    dec.SetKeyWithIV(_aes, 16, iv, 256);
+
+    const int TAG_SIZE = 12;
+    CryptoPP::FileSource ss(this->_file_handle, true, new CryptoPP::AuthenticatedDecryptionFilter(dec, new CryptoPP::FileSink(out._file_handle),CryptoPP::AuthenticatedDecryptionFilter::DEFAULT_FLAGS, TAG_SIZE));
+    nar::File* out2 = new nar::File(fname,"r",false);
+    return out2;
+
 }

@@ -25,7 +25,6 @@ std::atomic<unsigned short> randevous_port;
 std::atomic<unsigned int> stream_id;
 
 
-
 void randevous_thread(nar::ServerGlobal *s_global) {
     nar::USocket randevous_socket(0U);
     s_global->randevous_port = randevous_socket.get_port();
@@ -41,7 +40,7 @@ int main(int argc, char *argv[])
 
     std::thread rand(&randevous_thread,&s_global);
     rand.detach();
-    
+
     nar::Socket entry_skt(s_global.io_service, 's');
     entry_skt.bind(12345);
 

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <nar/lib/nlohJson/json.hpp>
 #include <nar/narnode/utility.h>
+#include <boost/asio.hpp>
 #include <cstdlib>
 namespace nar {
     class Global {
@@ -125,7 +126,8 @@ namespace nar {
 			std::string get_macId();
 			void set_macId(std::string id);
             std::string get_narFolder();
-
+            nar::Socket* establishServerConnection();
+            boost::asio::io_service io_serv;
     };
 }
 

@@ -26,6 +26,10 @@
 #include <pwd.h>
 #include <nar/lib/Socket/USocket.h>
 
+
+
+
+
 void handle_cli_ipc(int sockfd, nar::Global* globals) {
     char buf[129];
     std::string json = nar::receive_ipc_message(sockfd);
@@ -312,7 +316,7 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 	setServerConnection(*skt,globals);
 
 	nlohmann::json serverReq;
-	while(1){
+	while(1) {
 		try {
 			std::string message = nar::get_message( *skt);
 			std::cout << message << std::endl;
@@ -337,7 +341,7 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
           std::thread thr(&chunk_push_replier, stream_id, globals, chunk_size, rand_port, chunk_id);
           thr.detach();
 			}
-			else if(action == "peer_port_request"){
+			/*else if(action == "peer_port_request"){
 				std::string chunkId = peerList[serverReq["payload"]["token"]].first.first;
 				unsigned long chunkSize = peerList[serverReq["payload"]["token"]].first.second;
 				nar::Socket* tmpSkt = peerList[serverReq["payload"]["token"]].second.first; std::cout << "Casual" << std::endl;
@@ -353,8 +357,8 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 
 
 				nar::send_message(*skt, rspStr);
-			}
-            else if(action == "peer_port_request_pull"){
+			}*/
+            /*else if(action == "peer_port_request_pull"){
 				std::string chunkId = peerList[serverReq["payload"]["token"]].first.first;
 				unsigned long chunkSize = peerList[serverReq["payload"]["token"]].first.second;
 				nar::Socket* tmpSkt = peerList[serverReq["payload"]["token"]].second.first; std::cout << "Casual" << std::endl;
@@ -370,7 +374,7 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 
 				nar::send_message(*skt, rspStr);
 
-			}
+			}*/
             else if(action == "wait_chunk_pull_request"){
               unsigned int stream_id = serverReq["payload"]["token"];
               std::string chunk_id = serverReq["payload"]["chunk-id"];
@@ -416,7 +420,7 @@ int main() {
     globals->set_narFolder(std::string(homedir) + std::string("/.config/nar"));
 
 	nar::Socket serverSck;
-	std::thread keepalvThread(keepAlive,&serverSck,globals);
+	std::thread keepalvThread(keepAlive,globals);
 	keepalvThread.detach();
 
     while(true) {

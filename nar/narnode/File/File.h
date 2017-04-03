@@ -151,6 +151,10 @@ namespace nar {
              * @tested: yes
             */
             nar::File* decompress();
+
+            nar::File* encrypt(std::string& aes);
+
+            nar::File* decrypt(std::string& aes, std::string& fname);
     };
 }
 
