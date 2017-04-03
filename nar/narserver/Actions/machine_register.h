@@ -1,5 +1,5 @@
-#ifndef NAR_ACTION_REGISTER_MACHINE_H
-#define NAR_ACTION_REGISTER_MACHINE_H
+#ifndef NAR_SERVER_ACTIONS_REGISTER_MACHINE_H
+#define NAR_SERVER_ACTIONS_REGISTER_MACHINE_H
 #include <iostream>
 #include <nar/lib/Messaging/MessageTypes/MachineRegister.h>
 #include <nar/narserver/Database.h>

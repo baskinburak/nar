@@ -20,7 +20,7 @@ void nar::MessageTypes::IPCPull::Request::set_cur_dir(std::string cd){
 
 nlohmann::json nar::MessageTypes::IPCPull::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "pull";
+    json_to_sent["header"]["action"] = "pull";
     json_to_sent["payload"]["file_name"] = file_name;
     json_to_sent["payload"]["cur_dir"] = cur_dir;
     return json_to_sent;

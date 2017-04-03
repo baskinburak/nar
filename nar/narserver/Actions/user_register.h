@@ -1,5 +1,5 @@
-#ifndef NAR_ACTION_USER_REGISTER_H
-#define NAR_ACTION_USER_REGISTER_H
+#ifndef NAR_SERVER_ACTIONS_USER_REGISTER_H
+#define NAR_SERVER_ACTIONS_USER_REGISTER_H
 
 #include <iostream>
 #include <nar/lib/Messaging/MessageTypes/UserRegister.h>

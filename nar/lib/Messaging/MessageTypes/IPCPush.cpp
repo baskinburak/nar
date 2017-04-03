@@ -11,7 +11,7 @@ void nar::MessageTypes::IPCPush::Request::set_file_name(std::string fn){
 
 nlohmann::json nar::MessageTypes::IPCPush::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "push";
+    json_to_sent["header"]["action"] = "push";
     json_to_sent["payload"]["file_name"] = file_name;
     return json_to_sent;
 }

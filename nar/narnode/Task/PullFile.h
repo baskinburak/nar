@@ -1,5 +1,5 @@
-#ifndef NAR_PULLFILE_H
-#define NAR_PULLFILE_H
+#ifndef NAR_DAEMON_TASK_PULLFILE_H
+#define NAR_DAEMON_TASK_PULLFILE_H
 
 #include <nar/narnode/Task/ITask.h>
 #include <nar/narnode/global.h>
@@ -13,8 +13,8 @@
 #include <nar/lib/Socket/USocket.h>
 
 namespace nar {
-    namespace task {
-        class PullFile : public nar::task::ITask {
+    namespace DaemonTask {
+        class PullFile : public nar::DaemonTask::ITask {
             private:
                 std::string file_name;
                 unsigned long file_size;
@@ -32,7 +32,7 @@ namespace nar {
                 void getPeerInfo(std::string peerId, nar::Socket *serverSck,std::string _token);
                 nar::Socket* sendTokenToPeer(nlohmann::json::iterator &it, nar::Socket *serverSck,unsigned long chunkSize);
                 void pullFileFromPeer(nlohmann::json::iterator &it, nar::USocket& peerSck, unsigned long chunkSize, std::string aes, int file );
-                                      
+
                 void getResultJsonFake(nlohmann::json &j_resp, nar::Socket *serverSck);
                 std::string getAes(nar::Socket *serverSck);
             public:

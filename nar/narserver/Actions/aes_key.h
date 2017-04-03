@@ -1,5 +1,5 @@
-#ifndef NAR_ACTION_AES_KEY_H
-#define NAR_ACTION_AES_KEY_H
+#ifndef NAR_SERVER_ACTIONS_AES_KEY_H
+#define NAR_SERVER_ACTIONS_AES_KEY_H
 
 
 #include <nar/lib/Messaging/MessageTypes/AesKey.h>

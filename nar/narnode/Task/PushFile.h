@@ -1,5 +1,5 @@
-#ifndef NAR_PUSHFILE_H
-#define NAR_PUSHFILE_H
+#ifndef NAR_DAEMON_TASK_PUSHFILE_H
+#define NAR_DAEMON_TASK_PUSHFILE_H
 
 #include <nar/narnode/Task/ITask.h>
 #include <nar/lib/Socket/Socket.h>
@@ -12,11 +12,11 @@
 #include <nar/lib/rapidjson/allocators.h>
 #include <nar/lib/rapidjson/stringbuffer.h>
 #include <nar/lib/rapidjson/writer.h>
-#include <nar/lib/nlohJson/json.hpp> 
+#include <nar/lib/nlohJson/json.hpp>
 
 namespace nar {
-    namespace task {
-        class PushFile : public nar::task::ITask {
+    namespace DaemonTask {
+        class PushFile : public nar::DaemonTask::ITask {
             private:
                 std::string file_path;
 				nar::Socket *establishServerConnection(nar::Global* globals);

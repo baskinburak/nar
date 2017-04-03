@@ -20,7 +20,7 @@ void nar::MessageTypes::IPCConfig::Request::set_value(std::string value){
 
 nlohmann::json nar::MessageTypes::IPCConfig::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "config";
+    json_to_sent["header"]["action"] = "config";
     json_to_sent["payload"]["var"] = _var;
     json_to_sent["payload"]["value"] = _value;
     return json_to_sent;
