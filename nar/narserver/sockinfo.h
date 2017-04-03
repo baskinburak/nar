@@ -3,21 +3,27 @@
 #include <nar/lib/Socket/Socket.h>
 
 namespace nar {
-    class SockInfo {
+    class MachineSockInfo {
         private:
-            std::string username;
             std::string machineId;
             nar::Socket* skt;
-            bool keepalive;
         public:
-            SockInfo(nar::Socket* sk): skt(sk) {  }
+            MachineSockInfo(nar::Socket* sk): skt(sk) {  }
             void elevateKeepalive();
-            void authenticate(const std::string& uname, const std::string&macid);
+            void authenticate(const std::string& uname, const std::string& macid);
             nar::Socket* getSck();
             bool isAuthenticated();
             std::string getAuthenticationHash();
             std::string getUser();
             bool isKeepalive();
+    };
+
+    class UserSockInfo {
+        private:
+            std::string username;
+            nar::Socket* skt;
+        public:
+            ...
     };
 }
 

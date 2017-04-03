@@ -23,8 +23,8 @@ void nar::task::LS::get_dir_info(nar::Socket* ipc_skt,nar::MessageTypes::IPCLs::
     std::string user_name = globals->get_username();
     nar::MessageTypes::DirInfo::Request dir_req(ls_req.get_dir_name());
     nar::MessageTypes::DirInfo::Response dir_resp(999);
-    nar::Socket *con_socket = establishServerConnection();
-    if (!ITask::handshake(con_socket, globals)){
+    nar::Socket *con_socket = globals->establishServerConnection();
+    if (!nar::DaemonTask::handshake(con_socket, globals)){
         std::cout<<"hand_shake_fail"<<std::endl;
     }
     dir_req.send_mess(con_socket,dir_resp);

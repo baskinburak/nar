@@ -35,7 +35,10 @@ namespace nar {
             string _db_name;
             string _db_pass;
             string _db_user;
+            unsigned short _randezvous_port;
             nar::Database* _db;
+            boost::asio::io_service io_service;
+            unsigned int _next_stream_id;
             int read_count = 0;
             void read_start();
             void read_end();
@@ -44,18 +47,19 @@ namespace nar {
 
         public:
             map<string, nar::SockInfo*> keepalives;
-            std::atomic<unsigned short> randevous_port;
-            std::atomic<unsigned short> stream_id;
-            boost::asio::io_service io_service;
             ServerGlobal();
-            ServerGlobal(string db_user, string db_pass, string db_name);
             string get_db_name();
             string get_db_user();
             string get_db_pass();
+            unsigned short get_randezvous_port();
+            unsigned int get_next_stream_id();
             void set_db_name(string db_name);
             void set_db_user(string db_user);
             void set_db_pass(string db_pass);
+            void set_randezvous_port(unsigned short port);
+            void set_next_stream_id(unsigned int);
             void connect_db();
+            boost::asio::io_service& get_ioserv() const;
             nar::Database* get_db();
     };
 }

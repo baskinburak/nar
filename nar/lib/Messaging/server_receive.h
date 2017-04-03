@@ -44,17 +44,17 @@ namespace nar {
      * @param: skt, nar::Socket*,
     */
     void server_receive(nar::Socket* skt, nar::ServerGlobal* s_global){
-        nar::SockInfo* inf = new nar::SockInfo(skt);
         nar::Database* db = s_global->get_db();
+        bool handshaked = false;
         while(true) {
             string msg = nar::trim(nar::get_message(*skt));
             auto jsn = json::parse(msg.c_str());
             if(jsn["header"]["action"] == "handshake") {
-
+                // user info
                 cout<<"<handshake"<<endl;
                 MessageTypes::Handshake::Request hand_req;
                 hand_req.receive_message(jsn);
-                ServerActions::handshake(inf,hand_req);
+                handshaked = ServerActions::handshake(inf,hand_req);
 
                 cout<<"handshake>"<<endl;
             } else if(jsn["header"]["action"] == "machine_register") {
@@ -67,7 +67,6 @@ namespace nar {
                 cout<<"machine_register>"<<endl;
             } else if(jsn["header"]["action"] == "keepalive") {
                 cout<<"<keepalive"<<endl;
-
                 MessageTypes::KeepAlive::Request keep_req;
                 keep_req.receive_message(jsn);
                 ServerActions::keepalive(inf,keep_req ,s_global);

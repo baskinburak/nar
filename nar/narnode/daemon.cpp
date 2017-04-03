@@ -410,14 +410,11 @@ void keepAlive( nar::Socket *skt, nar::Global *globals){
 }
 
 int main() {
-
-    nar::IPCServer cli_server("/tmp/nar_ipc");
-    cli_server.initialize();
     nar::Global* globals = new nar::Global();
 	std::string uname;
     struct passwd *pw = getpwuid(getuid());
     const char *homedir = pw->pw_dir;
-    globals->set_narFolder(std::string(homedir) + std::string("/.config/nar"));
+    globals->set_narFolder(std::string(homedir) + std::string("/.nar"));
 
 	nar::Socket serverSck;
 	std::thread keepalvThread(keepAlive,globals);

@@ -1,93 +1,130 @@
 #ifndef NAR_USOCKET_H
 #define NAR_USOCKET_H
-#include <string>
+#include <boost/asio.hpp>
+#include <nar/lib/Socket/Packet.h>
 #include <vector>
-#include "Packet.h"
-#include <iostream>
-#include <atomic>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
+#include <mutex>
 #include <condition_variable>
 #include <mutex>
-#include <utility>
-#include <functional>
-#include <queue>
+#include <set>
+#include <nar/narnode/File/File.h>
+
+using boost::asio::ip::udp;
+using std::pair;
 
 namespace nar {
-  class USocket {
-    private:
-      class AckComparator {
+    /*
+     *
+     * Socket class that implements RDT over UDP with NAT.
+     *
+     * @author: baskin
+     * @privar: _iserv, boost::asio::io_service*, stores the io service for access to OS functionalities.
+     * @privar: _server_ip, std::string, stores the randezvous server ip
+     * @privar: _server_port, std::string, stores the randezvous server port
+     * @privar: _socket, boost::asio::ip::udp::socket, udp socket handle to do operations over boost
+     * @privar: _server_endpoint, boost::asio::ip::udp::endpoint, stores the randezvous server endpoint
+     * @privar: _peer_endpoint, boost::asio::ip::udp::endpoint, stores the peer endpoint, needed for send
+     * @privar: _port, unsigned int, stores the port number that _socket is bound
+     * @privar: _stream_id, unsigned int, stores the stream id of the connection
+     * @privar: _start_seqnum, unsigned int, stores the starting value of the seqnum.
+     * @privar: _next_seqnum, unsigned int, stores the next seqnum for the next send operation.
+     * @privar: _expected_seqnum, unsigned int, stores the expected seqnum from the peer.
+     * @privar: _syned, bool, stores whether the socket is syned with a peer.
+     * @privar: _work_mutex, std::recursive_mutex, any thread that does work on the socket must acquire this mutex. also used for mutex of cv that alerts that an event is occured.
+     * @privar: _event_cv, std::condition_variable, this cv is notified whenever a new flag is set.
+     * @privar: _recv_buffer, std::string, receive buffer in which the received data is stored as it comes.
+     * @privar: _nat_flag, bool, is set whenever a nat packet is received.
+     * @privar: _timer_flag, bool, is set whenever timer expires.
+     * @privar: _recv_flag, bool, is set whenever a new data arrives to _recv_buffer.
+     * @privar: _ack_flag, bool, is set whenever a new ack arrives to _acks.
+     * @privar: _ran_flag, bool, is set whenever a new ran arrives to _ran_packs
+     * @privar: _synack_flag, bool, is set whenever a new synack is received
+     * @privar: _acks, std::set<unsigned int>, holds the set of acked seqnums.
+     * @privar: _ran_packs, std::vector<pair<nar::Packet*, udp::endpoint*> >, stores the randezvous flagged packets with the endpoint. These packets are handled by other threads.(randezvous_server function or connect function
+     * @tested: no
+     *
+    */
+    class USocket {
+        private:
+            /*
+             * A generator class that generates packets from a file on demand.
+             *
+             * @author: baskin
+             * @privar: _stream_id, unsigned int, holds the stream id of the socket
+             * @privar: _pack_data_size, unsigned short, holds the size of the data portion of nar::Packet
+             * @privar: _file, nar::File&, holds the file that the packets are generated from
+             * @privar: _next_seqnum, unsigned int, holds the next seqnum that no packet is generated yet
+             * @privar: _last_notaccessed_file_location, unsigned long, holds the last non-accessed offset of the file
+             * @privar: _packets, std::map<unsigned int, nar::Packet*>, holds the generated packets themselves
+             * @tested: no
+             *
+            */
+            class PacketGenerator {
+                private:
+                    unsigned int _stream_id;
+                    unsigned short _pack_data_size; // holds the data area size of packets
+                    nar::File& _file; //file from which packets will be generated
+                    unsigned int _next_seqnum;
+                    unsigned long _last_notaccessed_file_location;
+                    unsigned long _end_file_location;
+                    std::map<unsigned int, nar::Packet*> _packets;
+                public:
+                    PacketGenerator(nar::File& file, unsigned int start_seqnum, unsigned int stream_id, unsigned long start, unsigned long len);
+                    nar::Packet* operator[](unsigned int sqnm);
+                    void remove(unsigned int sqnm);
+
+            };
+
+            static void receive_thread(nar::USocket* sock);
+            void timer_thread(unsigned long usec, bool* stop_timer);
+
+            bool* start_timer(unsigned long usec);
+            void stop_timer(bool* stp_tmr);
+
+            boost::asio::io_service* _iserv;
+
+            std::string _server_ip;
+            std::string _server_port;
+            udp::socket _socket;
+            udp::endpoint _server_endpoint;
+            udp::endpoint _peer_endpoint;
+            unsigned int _port;
+            unsigned int _stream_id;
+            unsigned int _start_seqnum;
+            unsigned int _next_seqnum;
+            unsigned int _expected_seqnum;
+            bool _syned;
+            std::mutex _work_mutex;
+            std::condition_variable _event_cv;
+
+            std::string _recv_buffer;
+
+            bool _timer_flag;
+            bool _nat_flag;
+            bool _recv_flag;
+            bool _ack_flag;
+            bool _ran_flag;
+            bool _synack_flag;
+
+            std::set<unsigned int> _acks;
+
+            std::vector<pair<nar::Packet*, udp::endpoint*> > _ran_packs;
+
+            unsigned int rand_seqnum();
         public:
-          bool operator()(const nar::Packet& pkt1, const nar::Packet& pkt2) {
-            return pkt1.get_acknum() > pkt2.get_acknum();
-          }
-      };
+            /*
+                stream_id = 0 for server
+            */
+            USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id);
+            USocket(boost::asio::io_service& io_serv, const char* server_ip, unsigned short server_port, unsigned int stream_id);
+            ~USocket();
 
-      class SeqComparator {
-        public:
-          bool operator()(const nar::Packet& pkt1, const nar::Packet& pkt2) {
-            return pkt1.get_seqnum() > pkt2.get_seqnum();
-          }
-      };
-      /* protected by timer_mtx */
-      int numberof_100us;
-      std::mutex timer_mtx;
-
-      int udp_sockfd;
-      std::mutex receive_buffer_mtx;
-      std::string receive_buffer;
-      unsigned int stream_id;
-
-
-      /* protected by flag_mtx */
-      bool syn_flag;
-      bool synack_flag;
-      bool ack_flag;
-      bool ran_flag;
-      bool recv_flag;
-      bool nat_flag;
-      bool timeout_flag;
-      std::mutex flag_mtx;
-
-      struct sockaddr peer_addr;
-
-      unsigned short bind_port;
-      
-      std::condition_variable event_cv;
-      std::mutex event_cv_mtx;
-
-      /* protected by randevous_mtx */
-      std::vector<std::pair<nar::Packet, struct sockaddr> > randevous_list;
-      std::mutex randevous_mtx;
-
-      /* protected by acks_list_mutex */
-      std::mutex acks_list_mutex;
-      std::priority_queue<nar::Packet, std::vector<nar::Packet>, AckComparator> acks;
-
-      void receive_thread();
-      void timer_thread();
-
-      time_t rtt;
-      time_t devrtt;
-
-      unsigned int seqnum;
-      double window_size = 1000.0;
-      int used_window_size = 0;
-
-    public:
-      std::atomic<bool> stop_thread;
-      USocket(unsigned int);
-      USocket(const USocket& rhs);
-      ~USocket();
-      void make_randevous(std::string server_ip, unsigned short server_port);
-      void randevous_server(); // makes this socket a randevous server, call this to make socket arrange randevouses
-      int recv(char* buf, int len);
-      int send(char * buf, int len);
-      unsigned short get_port();
-  };
+            void randezvous_server();
+            void connect();
+            int recv(char* buf, int len);
+            bool send(nar::File& file, unsigned long start, unsigned long len);
+            unsigned short get_port() const;
+    };
 }
 
 #endif

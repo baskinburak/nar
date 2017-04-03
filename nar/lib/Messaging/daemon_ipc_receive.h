@@ -31,7 +31,6 @@
 
 #include <nar/lib/Messaging/find_message_action.h>
 
-
 using std::cout;
 using std::endl;
 using std::string;
@@ -85,9 +84,6 @@ namespace nar {
         }
         return;
     }
-
-
-
 }
 
 

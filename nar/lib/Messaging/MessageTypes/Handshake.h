@@ -11,7 +11,7 @@ namespace nar {
         namespace Handshake {
             class Response : public ResponseHeader {
                 public:
-                    Response(int statcode ): ResponseHeader(statcode, std::string("handshake")) {}
+                    Response(int statcode): ResponseHeader(statcode, std::string("handshake")) {}
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json hand_resp_recv);
                     nlohmann::json test_json();

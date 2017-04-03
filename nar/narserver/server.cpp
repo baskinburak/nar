@@ -21,34 +21,31 @@
 using namespace nlohmann;
 
 std::map<std::string, bool> activetokens;
-std::atomic<unsigned short> randevous_port;
-std::atomic<unsigned int> stream_id;
 
 
-void randevous_thread(nar::ServerGlobal *s_global) {
-    nar::USocket randevous_socket(0U);
-    s_global->randevous_port = randevous_socket.get_port();
-    randevous_socket.randevous_server();
+void randezvous_thread(nar::ServerGlobal *s_global) {
+    nar::USocket randezvous_socket(s_global->get_ioserv(), "127.0.0.1", 10000, 0);
+    s_global->set_randezvous_port(randevous_socket.get_port());
+    s_global->set_next_stream_id(1);
+    randevous_socket.randezvous_server();
 }
 
-int main(int argc, char *argv[])
-{
-    stream_id = 1;
+int main(int argc, char *argv[]) {
     std::srand(std::time(NULL));
 
-    nar::ServerGlobal s_global;
+    nar::ServerGlobal s_global("nar", "root", "123");
 
-    std::thread rand(&randevous_thread,&s_global);
+    std::thread rand(&randezvous_thread, &s_global);
     rand.detach();
 
     nar::Socket entry_skt(s_global.io_service, 's');
     entry_skt.bind(12345);
 
     while(true) {
-        nar::Socket* new_skt = new nar::Socket(s_global.io_service, 'c');
+        nar::Socket* new_skt = new nar::Socket(s_global.get_ioserv(), 'c');
         entry_skt.accept(*new_skt, NULL);
 
-        std::thread thr(&nar::server_receive, new_skt,&s_global);
+        std::thread thr(&nar::server_receive, new_skt, &s_global);
         thr.detach();
     }
     return 0;
