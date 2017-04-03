@@ -25,7 +25,7 @@ nlohmann::json nar::MessageTypes::IPCConfig::Request::get_myrequestjson() {
     json_to_sent["payload"]["value"] = _value;
     return json_to_sent;
 }
-/*
+
 void nar::MessageTypes::IPCConfig::Request::send_action(nar::Socket* skt) {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["action_name"] = "config";
@@ -34,7 +34,6 @@ void nar::MessageTypes::IPCConfig::Request::send_action(nar::Socket* skt) {
     send_message(skt, json_to_sent.dump());
     return;
 }
-*/
 
 void nar::MessageTypes::IPCConfig::Request::receive_message(nlohmann::json &js){
     this -> _action = js["header"]["action"];

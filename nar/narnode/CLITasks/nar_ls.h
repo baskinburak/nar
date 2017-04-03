@@ -1,8 +1,8 @@
 #ifndef NAR_CLI_TASKS_LS_H
 #define NAR_CLI_TASKS_LS_H
 
-#include <nar/lib/Messaging/MessageTypes/IPCLs.h>
-#include <nar/lib/Socket/Socket.h>
+#include "../../lib/Messaging/MessageTypes/IPCLs.h"
+#include "../../lib/Socket/Socket.h"
 
 #include <iostream>
 #include <string>

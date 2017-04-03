@@ -1,8 +1,8 @@
 #ifndef NAR_CLI_TASKS_PUSH_H
 #define NAR_CLI_TASKS_PUSH_H
 
-#include <nar/lib/Messaging/MessageTypes/IPCPush.h>
-#include <nar/lib/Socket/Socket.h>
+#include "../../lib/Messaging/MessageTypes/IPCPush.h"
+#include "../../lib/Socket/Socket.h"
 
 #include <iostream>
 #include <string>

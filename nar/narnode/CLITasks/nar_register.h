@@ -1,8 +1,8 @@
 #ifndef NAR_CLI_TASKS_REGISTER_H
 #define NAR_CLI_TASKS_REGISTER_H
 
-#include <nar/lib/Messaging/MessageTypes/IPCRegister.h>
-#include <nar/lib/Socket/Socket.h>
+#include "../../lib/Messaging/MessageTypes/IPCRegister.h"
+#include "../../lib/Socket/Socket.h"
 
 #include <iostream>
 #include <string>

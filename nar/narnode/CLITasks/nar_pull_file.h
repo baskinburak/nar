@@ -1,8 +1,8 @@
 #ifndef NAR_CLI_TASKS_PULL_H
 #define NAR_CLI_TASKS_PULLS_H
 
-#include <nar/lib/Messaging/MessageTypes/IPCPull.h>
-#include <nar/lib/Socket/Socket.h>
+#include "../../lib/Messaging/MessageTypes/IPCPull.h"
+#include "../../lib/Socket/Socket.h"
 
 #include <iostream>
 #include <string>

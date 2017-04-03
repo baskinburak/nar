@@ -1,9 +1,9 @@
-#include <nar/narnode/CLITasks/nar_config.h>
-#include <nar/narnode/CLITasks/nar_ls.h>
-#include <nar/narnode/CLITasks/nar_pull_file.h>
-#include <nar/narnode/CLITasks/nar_push_file.h>
-#include <nar/narnode/CLITasks/nar_register.h>
-#include <nar/narnode/CLITasks/nar_status.h>
+#include "CLITasks/nar_config.h"
+#include "CLITasks/nar_ls.h"
+#include "CLITasks/nar_pull_file.h"
+#include "CLITasks/nar_push_file.h"
+#include "CLITasks/nar_register.h"
+#include "CLITasks/nar_status.h"
 
 #include <iostream>
 #include <cstdlib>

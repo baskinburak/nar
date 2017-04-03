@@ -5,14 +5,13 @@ nlohmann::json nar::MessageTypes::IPCStatus::Request::get_myrequestjson() {
     json_to_sent["header"]["action"] = "status";
     return json_to_sent;
 }
-/*
-void nar::MessageTypes::IPCStatus::Request::send__action(nar::Socket* skt) {
+
+void nar::MessageTypes::IPCStatus::Request::send_action(nar::Socket* skt) {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["_action"] = "status";
     send_message(skt, json_to_sent.dump());
     return;
 }
-*/
 
 void nar::MessageTypes::IPCStatus::Request::receive_message(nlohmann::json &js){
     this -> _action = js["header"]["action"];

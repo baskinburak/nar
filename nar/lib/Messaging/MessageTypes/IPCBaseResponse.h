@@ -135,7 +135,7 @@ namespace nar {
                             progress, update the progress by giving integer value
                  * @tested: No
                 */
-                //simdilik void send_message_progress(nar::Socket* skt, int progress);
+                void send_message_progress(nar::Socket* skt, int progress);
                 /*
                  * sends "END" message
                  *
@@ -143,7 +143,7 @@ namespace nar {
                  * @param:  nar::Socket* skt, it is socket pointer basically
                  * @tested: No
                 */
-                //simdilik void send_message_end(nar::Socket* skt);
+                void send_message_end(nar::Socket* skt);
         };
     }
 }
