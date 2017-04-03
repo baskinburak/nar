@@ -182,7 +182,7 @@ int nar::readFileWriteSck( nar::FileCryptor &file, nar::USocket &skt, unsigned l
 
 
 		nar::senddata(skt,buffer,readd);
-		
+
 
 		fileSize -= readd;
 	} while (fileSize > 0);
@@ -300,6 +300,8 @@ std::string nar::trim(std::string inp) {
     size_t last = inp.find_last_not_of(' ');
     return inp.substr(first, (last-first+1));
 }
+
+
 
 std::string nar::receive_ipc_message(int sockfd) {
     int len = get_int_sckt(sockfd);
