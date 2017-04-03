@@ -53,17 +53,17 @@ nar::File::~File() {
     }
 }
 
-int nar::File::read(char* buffer, int offset, int len) {
+unsigned long nar::File::read(char* buffer, unsigned long offset, unsigned long len) {
     if(_mode != "r") {
         throw nar::Exception::File::WrongMode("File is not opened with 'r'", _mode.c_str());
     }
     if(_file_handle.is_open()) {
-        int file_len = size();
+        unsigned long file_len = size();
         if(offset >= file_len)
             throw nar::Exception::File::OffsetOutOfBounds("Offset is greater than file length in read()", offset);
         if(len < 0)
             throw nar::Exception::DomainError::Negative("read() size given negative", len);
-        int read_len = std::min(file_len - offset, len);
+        unsigned long read_len = std::min(file_len - offset, len);
         try {
             _file_handle.seekg(offset, _file_handle.beg);
             _file_handle.read(buffer, read_len);
@@ -76,12 +76,12 @@ int nar::File::read(char* buffer, int offset, int len) {
     }
 }
 
-int nar::File::write(char* buffer, int offset, int len) {
+unsigned long nar::File::write(char* buffer, unsigned long offset, unsigned long len) {
     if(_mode != "w") {
         throw nar::Exception::File::WrongMode("File is not opened with 'w'", _mode.c_str());
     }
     if(_file_handle.is_open()) {
-        int file_len = size();
+        unsigned long file_len = size();
         if(offset >= file_len)
             throw nar::Exception::File::OffsetOutOfBounds("Offset is greater than file length in write()", offset);
         if(len < 0)
@@ -98,7 +98,7 @@ int nar::File::write(char* buffer, int offset, int len) {
     }
 }
 
-int nar::File::write(char* buffer, int len) {
+unsigned long nar::File::write(char* buffer, unsigned long len) {
     if(_mode != "w") {
         throw nar::Exception::File::WrongMode("File is not opened with 'w'", _mode.c_str());
     }

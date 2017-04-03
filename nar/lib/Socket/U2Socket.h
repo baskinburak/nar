@@ -123,6 +123,7 @@ namespace nar {
             void connect();
             int recv(char* buf, int len);
             bool send(nar::File& file, unsigned long start, unsigned long len);
+            unsigned short get_port() const;
     };
 }
 

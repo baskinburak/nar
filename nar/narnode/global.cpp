@@ -69,7 +69,6 @@ void nar::Global::set_narServerPort(int port){
     write_start();
     narServerPort = port;
     write_end();
-
 }
 
 std::string nar::Global::get_narServerIp(){

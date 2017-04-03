@@ -64,50 +64,50 @@ namespace nar {
              *
              * @author: baskin
              * @param: buffer, char*, A pointer that points to the memory location that read bytes will be written into.
-             * @param: offset, int, Offset from the start of the file.
-             * @param: len, int, The maximum amount of bytes that are requested to be read.
+             * @param: offset, unsigned long, Offset from the start of the file.
+             * @param: len, unsigned long, The maximum amount of bytes that are requested to be read.
              * @throws: nar::Exception::File::WrongMode, if file is opened with mode "w".
              * @throws: nar::Exception::File::NotOpen, if file is not opened prior to the call.
              * @throws: nar::Exception::File::OffsetOutOfBounds, if offset exceeds the file size.
              * @throws: nar::Exception::DomainError::Negative, if len is less than 0.
              * @throws: nar::Exception::File::ReadError, if an unknown error is occured during read operation.
-             * @return: int, Number of bytes that are read.
+             * @return: unsigned long, Number of bytes that are read.
              * @tested: no, check for boundary conditions!!!
              *
             */
-            int read(char* buffer, int offset, int len);
+            unsigned long read(char* buffer, unsigned long offset, unsigned long len);
 
             /*
              * Writes len number of bytes from buffer, to file, starting from given offset of file.
              *
              * @author: baskin
              * @param: buffer, char*, A pointer that points to the memory location that contains the bytes that will be written into file.
-             * @param: offset, int, The offset value in file starting from which the contents of buffer will be written into.
-             * @param: len, int, Number of bytes that will be written.
+             * @param: offset, unsigned long, The offset value in file starting from which the contents of buffer will be written into.
+             * @param: len, unsigned long, Number of bytes that will be written.
              * @throws: nar::Exception::File::WrongMode, if file is opened with mode "r".
              * @throws: nar::Exception::File::NotOpen, if file is not opened prior to the call.
              * @throws: nar::Exception::File::OffsetOutOfBounds, if offset exceeds the file size.
              * @throws: nar::Exception::DomainError::Negative, if len is less than 0.
              * @throws: nar::Exception::File::WriteError, if an unknown error is occured during write operation.
-             * @return: int, Number of bytes that are written.
+             * @return: unsigned long, Number of bytes that are written.
              * @tested: yes
             */
-            int write(char* buffer, int offset, int len);
+            unsigned long write(char* buffer, unsigned long offset, unsigned long len);
 
             /*
              * Writes len number of bytes from buffer, to file, starting from the end of the file.
              *
              * @author: baskin
              * @param: buffer, char*, A pointer that points to the memory location that contains the bytes that will be written into file.
-             * @param: len, int, Number of bytes that will be written.
+             * @param: len, unsigned long, Number of bytes that will be written.
              * @throws: nar::Exception::File::WrongMode, if file is opened with mode "r".
              * @throws: nar::Exception::File::NotOpen, if file is not opened prior to the call.
              * @throws: nar::Exception::DomainError::Negative, if len is less than 0.
              * @throws: nar::Exception::File::WriteError, if an unknown error is occured during write operation.
-             * @return: int, Number of bytes that are written.
+             * @return: unsigned long, Number of bytes that are written.
              * @tested: yes
             */
-            int write(char* buffer, int len);
+            unsigned long write(char* buffer, unsigned long len);
 
             /*
              * Returns the file size.
