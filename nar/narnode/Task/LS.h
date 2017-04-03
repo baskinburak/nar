@@ -15,10 +15,8 @@
 
 namespace nar {
     namespace DaemonTask {
-        namespace LS{
-            char* masctime(const struct tm *timeptr);
-            get_dir_info(nar::MessageTypes::IPCLs::Request ls_req,nar::Global* globals);
-        }
+        char* masctime(const struct tm *timeptr);
+        get_dir_info(nar::MessageTypes::IPCLs::Request ls_req,nar::Global* globals);
     }
 }
 

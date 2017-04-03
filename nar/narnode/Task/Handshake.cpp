@@ -1,9 +1,7 @@
-#include <nar/narnode/Task/ITask.h>
-#include <nar/lib/json.hpp>
+#include <nar/narnode/Task/Handshake.h>
 #include <nar/narnode/utility.h>
-using namespace nlohmann;
 
-bool nar::task::ITask::handshake(nar::Socket& skt, nar::Global* globals) {
+bool nar::DaemonTask::handshake(nar::Socket& skt, nar::Global* globals) {
     std::string username = globals->get_username();
     nar::MessageTypes::Handshake::Request hand_req(username,globals->get_macId())
     nar::MessageTypes::Handshake::Response hand_resp(999);

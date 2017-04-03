@@ -137,9 +137,9 @@ std::cout << "Not here eitherTTTT" << std::endl;
 		req["payload"]["chunk-id"] = (*it)["chunk-id"].get<std::string>(); std::cout << "Not here eitherzsdsfvsdf" << std::endl;
 		req["payload"]["chunk-size"] = chunkSize; std::cout << "Not here eitherzsdsfvsdf" << std::endl;
 		std::cout << "Not here eitherasdasda" << std::endl;
-		send_message(peerSck, req.dump()); 
+		send_message(peerSck, req.dump());
 
-		
+
 
 		//recvJson(resp,serverSck);							// WHAT TO GET HERE
 
@@ -168,22 +168,7 @@ void nar::task::PushFile::distributeFile(nlohmann::json &msg, nar::Socket *serve
 	unsigned short rand_port = msg["payload"]["rand-port"];
 	size_t fOffset = 0;
 	for(nlohmann::json::iterator it = msg["payload"]["peer-list"].begin(); it != msg["payload"]["peer-list"].end(); ++it){
-		/*std::cout << "HELP5" << std::endl;
-		std::string peerId= (*it)["peer_id"];
-		std::cout << "HELP6" << std::endl;
-		std::string token = (*it)["token"];
-				std::cout << "HELP7" << std::endl;
-		getPeerInfo(peerId, serverSck);
 
-		nlohmann::json resp;
-		recvJson(resp,serverSck);
-
-		int peerPort = resp["payload"]["peer-port"];
-		std::string peerIp = resp["payload"]["peer-ip"];
-
-		nar::Socket *peerSck = establishPeerConnection(peerIp,port);
-		resp.clear();
-		resp["payload"][]*/
         unsigned int stream_id = (*it)["stream-id"];
         unsigned long chunk_size = (*it)["chunk-size"];
         std::string machine_id = (*it)["peer-id"];
@@ -212,14 +197,14 @@ std::string nar::task::PushFile::getAesKey(nar::Socket *serverSck) {
 
 void nar::task::PushFile::run(int unx_sockfd, nar::Global* globals) {
 
-	nar::Socket *serverSck = establishServerConnection(globals); // Connect to Server	
+	nar::Socket *serverSck = establishServerConnection(globals); // Connect to Server
 
 
 	rapidjson::Document msg;
 	rapidjson::Document::AllocatorType& allocator = msg.GetAllocator();
 	msg.SetObject();
 
-	
+
 
 
     if(ITask::handshake(*serverSck, globals)) {

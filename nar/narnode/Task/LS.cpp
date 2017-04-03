@@ -47,6 +47,7 @@ void nar::task::LS::get_dir_info(nar::Socket* ipc_skt,nar::MessageTypes::IPCLs::
             type = std::string(" directory");
         }
         entry += entity_name+entity_id + entity_size + change_time +type;
+        
 
     }
     send_ipc_message(ipc_skt, std::string("END"));
