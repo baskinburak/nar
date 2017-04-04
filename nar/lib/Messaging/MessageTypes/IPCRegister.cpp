@@ -1,32 +1,29 @@
 #include "IPCRegister.h"
 
-std::string nar::MessageTypes::IPCRegister::Request::get_user_name(){
-    return _user_name;
-}
-
-void nar::MessageTypes::IPCRegister::Request::set_user_name(std::string un){
-    this -> _user_name = un;
-    return;
-}
-
 nlohmann::json nar::MessageTypes::IPCRegister::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["action"] = "register";
-    json_to_sent["payload"]["user_name"] = _user_name;
     return json_to_sent;
 }
 
+nlohmann::json nar::MessageTypes::IPCRegister::Request::generate_json() {
+	nlohmann::json jsn = IPCBaseRequest::generate_json();
+    return jsn;	
+}
+void nar::MessageTypes::IPCRegister::Request::populate_object(std::string& jsn_str) {
+	auto jsn = nlohmann::json::parse(jsn_str);
+    IPCBaseRequest::populate_object(jsn);
+}
+
 void nar::MessageTypes::IPCRegister::Request::send_action(nar::Socket* skt) {
-    nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "register";
-    json_to_sent["payload"]["user_name"] = _user_name;
+    nlohmann::json json_to_sent = this->generate_json();
     send_message(skt, json_to_sent.dump());
     return;
 }
 
 void nar::MessageTypes::IPCRegister::Request::receive_message(nlohmann::json &js){
-    this -> _action = js["header"]["action"];
-    this -> _user_name = js["payload"]["user_name"];
+	//bunu silcemm    
+	//this -> _action = js["header"]["action"];
     return;
 }
 
