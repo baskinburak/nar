@@ -2,6 +2,7 @@
 #define NAR_USERVARS_H
 
 #include <atomic>
+#include <string>
 
 namespace nar {
     class UserVariables {

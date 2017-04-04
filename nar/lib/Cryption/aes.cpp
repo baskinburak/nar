@@ -29,7 +29,7 @@ byte* string_to_byte(std::string& key) {
 
 AesCryptor::AesCryptor(std::string key): _keyString(key) {
     int keyLen = _keyString.length();
-    const char *str = _keyString.c_str();  
+    const char *str = _keyString.c_str();
     _aes = string_to_byte(_keyString);
 }
 
@@ -62,7 +62,7 @@ void AesCryptor::encrypt(std::string &text, std::string &crypted) {
         std::string test = crypted;
         crypted = bla + crypted;
     }
-    catch {
+    catch (...){
         throw nar::Exception::Cryption::AesError("Error in Aes encryption");
     }
     return;
@@ -82,7 +82,7 @@ void AesCryptor::decrypt(std::string& data, std::string& result) {
         CryptoPP::StringSource ss(data.substr(256), true, new CryptoPP::Redirector(df));
         free(iv);
     }
-    catch {
+    catch (...){
         throw nar::Exception::Cryption::AesError("Error in Aes decryption");
     }
     return;
@@ -102,10 +102,8 @@ void AesCryptor::generate_key(std::string &key, int length) {
             key.push_back(chars[index_dist(rng)]);
         }
     }
-    catch {
+    catch (...){
         throw nar::Exception::Cryption::AesError("Error in Aes key-generation");
     }
     return;
 }
-
-

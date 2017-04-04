@@ -37,7 +37,7 @@ namespace nar {
                      * @param: e, std::vector<struct DirListElement>&, giving all the elements in one go
                      * @tested: Yes
                     */
-                    Response(int statcode, std::vector<struct DirListElement>& e) : ResponseHeader(statcode, std::string("get_dir_info")), elements(e) {}
+                    Response(int statcode = -1, std::vector<struct DirListElement>& e) : ResponseHeader(statcode, std::string("get_dir_info")), elements(e) {}
                     /*
                      * Constructor
                      *
@@ -45,7 +45,7 @@ namespace nar {
                      * @param: statcode, int, status code of the response message
                      * @tested: Yes
                     */
-                    Response(int statcode) : ResponseHeader(statcode, std::string("get_dir_info")) {}
+                    Response(int statcode = -1) : ResponseHeader(statcode, std::string("get_dir_info")) {}
                     /*
                      * gets the all directory elemets as vector
                      *
@@ -125,7 +125,7 @@ namespace nar {
                      * @param: d, std::string, holds the desired dir informaiton
                      * @tested: Yes
                     */
-                    Request(std::string d) : RequestHeader(std::string("get_dir_info")), dir(d) {}
+                    Request(std::string d  = std::string("")) : RequestHeader(std::string("get_dir_info")), dir(d) {}
 
 
                     /*

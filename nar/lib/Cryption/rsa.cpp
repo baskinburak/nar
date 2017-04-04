@@ -27,7 +27,7 @@ void RsaCryptor::set_pri(std::string &pri) {
 }
 
 void RsaCryptor::set_pub(std::string& pub) {
-    if(pub.size()) { 
+    if(pub.size()) {
         CryptoPP::StringSource stringSource(pub, true);
         _pub.BERDecode(stringSource);
     }
@@ -48,7 +48,7 @@ void RsaCryptor::generate_key_pair(std::string& pub, std::string& pri) {
         CryptoPP::StringSink stringSink2(pri);
         privateKey.DEREncode(stringSink2);
     }
-    catch {
+    catch (...){
         throw nar::Exception::Cryption::RsaError("Error in Rsa key-generation");
     }
     return;
@@ -71,12 +71,12 @@ void RsaCryptor::decrypt_(std::string& crypted, std::string& data) {
 }
 
 
-void RsaCryptor::encrypt(std::string& data, std::string& crypted) { 
+void RsaCryptor::encrypt(std::string& data, std::string& crypted) {
     try {
         if(data.length() <= 342) {
             encrypt_(data,crypted);
             std::cout << "FAST CONVERSION" << crypted.length() << std::endl;
-            return;    
+            return;
         }
 
         std::string aesStr;
@@ -89,7 +89,7 @@ void RsaCryptor::encrypt(std::string& data, std::string& crypted) {
         encrypt_(aesStr,cryStr);
         crypted.insert(0,cryStr);
     }
-    catch {
+    catch (...){
         throw nar::Exception::Cryption::RsaError("Error in Rsa encryption");
     }
     return;
@@ -98,26 +98,18 @@ void RsaCryptor::decrypt(std::string& crypted, std::string& data) {
     try {
         if(crypted.length()<=384) {
             decrypt_(crypted,data);
-            return;    
-        }    
-        
+            return;
+        }
+
         std::string cryStr(crypted.substr(0,384)),aesStr;
         decrypt_(cryStr, aesStr);
-        
+
         AesCryptor aes(aesStr);
         std::string keyless_data(crypted.substr(384,crypted.length()-384));
         aes.decrypt(keyless_data,data);
     }
-    catch {
+    catch (...) {
         throw nar::Exception::Cryption::RsaError("Error in Rsa decryption");
     }
     return;
 }
-
-
-
-
-
-
-
-

@@ -3,11 +3,11 @@
 #include <crypto++/rsa.h>
 #include <string>
 
-#include <nar/lib/Exception/Exception.h>
+
 
 /**
 * Class which provides the interface and services for RSA encrpytion and decryption operations.
-* 
+*
 * @author: utku
 * @privar: _pri, CryptoPP::RSA::PrivateKey, stores the private key in cyrpto++ container
 * @privar: _pub, CryptoPP::RSA::PublicKey, stores the public key in cyrpto++ container
@@ -28,14 +28,14 @@ class RsaCryptor {
         **/
         RsaCryptor(std::string &pub, std::string &pri);                       // Parameters are optional
         RsaCryptor();
-    
+
         /**
         * Setters for private and public rsa keys.
         * @author: utku
         * @param: key, std::string&, rsa public key in std::string type
         * @tested: yes
         * @todo: -
-        **/    
+        **/
         void set_pri(std::string& key);
         void set_pub(std::string& key);
 
@@ -51,7 +51,7 @@ class RsaCryptor {
         static void generate_key_pair(std::string& pub, std::string& pri);
 
         /**
-        * Encrypts the data provided by 'data' argument into the 'crypted' argument. For success, public key must be either given in constructor or set later via setter. 
+        * Encrypts the data provided by 'data' argument into the 'crypted' argument. For success, public key must be either given in constructor or set later via setter.
         * @author: utku
         * @param: data, std::string&, Data to be crypted.
         * @param: crypted, std::string&, Crypted data is written here.
@@ -62,7 +62,7 @@ class RsaCryptor {
         void encrypt(std::string& data, std::string& crypted);
 
         /**
-        * Decrypts the data provided by 'crypted' argument into the 'data' argument. For success, private key must be either given in constructor or set later via setter. 
+        * Decrypts the data provided by 'crypted' argument into the 'data' argument. For success, private key must be either given in constructor or set later via setter.
         * @author: utku
         * @param: crypted, std::string&, Data to be decrypted.
         * @param: data, std::string&, Decrypted data is written here.
@@ -71,13 +71,13 @@ class RsaCryptor {
         * @todo: There are Magic numbers. It may be nice to get rid of them and provide a more subtle solution.
         **/
         void decrypt(std::string& crypted, std::string& data);
-    
+
 
     private:
 
        /**
         * Encrypts the data provided by 'data' argument into the 'crypted' argument. For success, public key must be either given in constructor or set later via setter.
-        * This function differs from its public version. There are limits to the size of the data that can be feed into this. Other version calls this version. 
+        * This function differs from its public version. There are limits to the size of the data that can be feed into this. Other version calls this version.
         * @author: utku
         * @param: data, std::string&, Data to be crypted.
         * @param: crypted, std::string&, Crypted data is written here.
@@ -87,8 +87,8 @@ class RsaCryptor {
         void encrypt_(std::string& data, std::string& crypted);
 
         /**
-        * Decrypts the data provided by 'crypted' argument into the 'data' argument. For success, private key must be either given in constructor or set later via setter. 
-        * This function differs from its public version. There are limits to the size of the data that can be feed into this. Other version calls this version. 
+        * Decrypts the data provided by 'crypted' argument into the 'data' argument. For success, private key must be either given in constructor or set later via setter.
+        * This function differs from its public version. There are limits to the size of the data that can be feed into this. Other version calls this version.
         * @author: utku
         * @param: crypted, std::string&, Data to be decrypted.
         * @param: data, std::string&, Decrypted data is written here.

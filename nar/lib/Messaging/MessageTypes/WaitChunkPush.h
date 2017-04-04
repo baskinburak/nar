@@ -11,7 +11,7 @@ namespace nar {
         namespace WaitChunkPush {
             class Response : public ResponseHeader {
                 public:
-                    Response(int statcode) : ResponseHeader(statcode, std::string("wait_chunk_push_request")) {}
+                    Response(int statcode = -1) : ResponseHeader(statcode, std::string("wait_chunk_push_request")) {}
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json wpush_resp_recv);
                     nlohmann::json test_json();
@@ -23,7 +23,7 @@ namespace nar {
                     long long int chunk_id;
                     long long int chunk_size;
                 public:
-                    Request(unsigned short rport,long long int sid, long long int cid, long long int csize): RequestHeader(std::string("wait_chunk_push_request")), rand_port(rport), stream_id(sid), chunk_id(cid), chunk_size(csize){}
+                    Request(unsigned short rport = 0,long long int sid = -1, long long int cid = -1, long long int csize = -1): RequestHeader(std::string("wait_chunk_push_request")), rand_port(rport), stream_id(sid), chunk_id(cid), chunk_size(csize){}
                     long long int get_stream_id();
                     unsigned short get_randevous_port();
                     long long int  get_chunk_id();
