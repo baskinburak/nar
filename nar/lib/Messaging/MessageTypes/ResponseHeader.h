@@ -9,8 +9,9 @@ namespace nar {
     namespace MessageTypes {
         class ResponseHeader {
             private:
-                int _status_code;
                 std::string _reply_to;
+            protected:
+                int _status_code;
             public:
                 ResponseHeader(int status_code, std::string reply_to): _status_code(status_code), _reply_to(reply_to){
 

@@ -1,7 +1,7 @@
 #include <nar/narnode/global.h>
 #include <iostream>
 
-nar::Global::Global(std::string& config_path): _config_path(config_path) {
+nar::Global::Global(std::string& config_path): _server_ip(std::string()), _server_port(0), _nar_folder(std::string()), _file_folder(std::string()), _machine_id(std::string()) {
     _config_file.open(config_path.c_str(), std::fstream::in | std::fstream::out);
     std::string line;
     char mask = 0;
@@ -47,22 +47,22 @@ nar::Global::~Global() {
     this->_config_file.close();
 }
 
-std::atomic<std::string>& nar::Global::get_server_ip() {
-    return this->_server_ip;
+std::string nar::Global::get_server_ip() {
+    return this->_server_ip.load();
 }
-std::atomic<unsigned short>& nar::Global::get_server_port() {
-    return this->_server_port;
+unsigned short nar::Global::get_server_port() {
+    return this->_server_port.load();
 }
-std::atomic<std::string>& nar::Global::get_machine_id() {
-    return this->_machine_id;
+std::string nar::Global::get_machine_id() {
+    return this->_machine_id.load();
 }
-std::atomic<std::string>& nar::Global::get_nar_folder() {
-    return this->_nar_folder;
+std::string nar::Global::get_nar_folder() {
+    return this->_nar_folder.load();
 }
-std::atomic<std::string>& nar::Global::get_file_folder() {
-    return this->_file_folder;
+std::string nar::Global::get_file_folder() {
+    return this->_file_folder.load();
 }
-std::atomic<boost::asio::io_service>& nar::Global::get_ioserv() {
+boost::asio::io_service& nar::Global::get_ioserv() {
     return this->_ioserv;
 }
 void nar::Global::set_server_ip(const std::string& ip) {
@@ -85,24 +85,23 @@ void nar::Global::set_machine_id(std::string& id) {
 void nar::Global::write_config() {
     this->_file_mtx.lock();
     this->_config_file.close();
-    this->_config_file.open(this->config_path.c_str(), std::ios::out | std::ios::trunc);
+    this->_config_file.open(this->_config_path.c_str(), std::ios::out | std::ios::trunc);
     this->_config_file.write("NAR_FOLDER=", 11);
-    this->_config_file.write(this->_nar_folder.c_str(), this->_nar_folder.size());
+    this->_config_file.write(this->_nar_folder.load().c_str(), this->_nar_folder.load().size());
     this->_config_file.write("\nFILE_FOLDER=", 13);
-    this->_config_file.write(this->_file_folder.c_str(), this->_file_folder.size());
+    this->_config_file.write(this->_file_folder.load().c_str(), this->_file_folder.load().size());
     this->_config_file.write("\nMACHINE_ID=", 12);
-    this->_config_file.write(this->_machine_id.c_str(), this->_machine_id.size());
+    this->_config_file.write(this->_machine_id.load().c_str(), this->_machine_id.load().size());
     this->_config_file.write("\nSERVER_IP=", 11);
-    this->_config_file.write(this->_server_ip.c_str(), this->_server_ip.size());
+    this->_config_file.write(this->_server_ip.load().c_str(), this->_server_ip.load().size());
     this->_config_file.write("\nSERVER_PORT=\n", 14);
-    std::string port_str = std::to_string(this->_server_port);
-    this->_config_file.write(this->port_str.c_str(), this->port_str.size());
+    std::string port_str = std::to_string(this->_server_port.load());
+    this->_config_file.write(std::to_string(this->_server_port.load()).c_str(), std::to_string(this->_server_port.load()).size());
     this->_file_mtx.unlock();
 }
 
 nar::Socket* nar::Global::establish_server_connection() {
-    nar::Socket *serverSck = new nar::Socket(this->io_serv,'c');
-	serverSck->connect(this->get_narServerIp(),this->get_narServerPort());
+    nar::Socket *serverSck = new nar::Socket(this->_ioserv,'c');
+	serverSck->connect(this->get_server_ip(),this->get_server_port());
 	return serverSck;
 }
-
