@@ -23,6 +23,7 @@ namespace nar {
                     long long int chunk_id;
                     long long int chunk_size;
                 public:
+                    Request(): RequestHeader(std::string("wait_chunk_push_request")) {}
                     Request(unsigned short rport,long long int sid, long long int cid, long long int csize): RequestHeader(std::string("wait_chunk_push_request")), rand_port(rport), stream_id(sid), chunk_id(cid), chunk_size(csize){}
                     long long int get_stream_id();
                     unsigned short get_randevous_port();

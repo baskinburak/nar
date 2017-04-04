@@ -1,6 +1,5 @@
 #include <nar/narnode/global.h>
 #include <iostream>
-
 void nar::Global::read_start() {
     read_mtx.lock();
     read_count++;

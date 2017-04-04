@@ -10,6 +10,10 @@
 #include <sstream>
 #include <iostream>
 
+std::string nar::get_message(nar::Socket* skt) {
+    return get_message(*skt);
+}
+
 std::string nar::get_message(nar::Socket& skt) {
     char buf[1035];
     int received = skt.recv(buf, 1024);
@@ -95,7 +99,6 @@ int nar::get_int_sckt(int sockfd) {
             ret += buf[i] - '0';
         }
     } else {
-        
         std::cout << "recv error"<< std::endl; exit(0);
     }
     return ret;
@@ -219,4 +222,3 @@ std::string nar::trim(std::string inp) {
     size_t last = inp.find_last_not_of(' ');
     return inp.substr(first, (last-first+1));
 }
-

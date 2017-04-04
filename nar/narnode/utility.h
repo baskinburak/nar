@@ -13,6 +13,7 @@ namespace nar {
     void send_int_sckt(int sockfd, int val);
     void send_string_sckt(int sockfd, std::string str, int len);
 	std::string get_message(Socket& skt);
+	std::string get_message(Socket* skt);
 	int readdata(Socket &sock, char *buf, int buflen);
 	int readdata(USocket &sock, char *buf, int buflen);
     std::string byte_to_hex(byte* arr, int size);

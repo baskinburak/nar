@@ -1,5 +1,6 @@
 #include <nar/lib/Exception/Exception.h>
 #include <nar/lib/Messaging/MessageTypes/KeepAlive.h>
+#include <nar/narnode/global.h>
 #include <time.h>
 namespace nar {
     void machine_authenticate(nar::Socket* sck, nar::Global* globals);
