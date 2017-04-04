@@ -57,7 +57,7 @@ namespace nar {
                     std::string get_host() const { return _host; }
             };
         };
-        
+
         namespace Cryption {
             class AesError : public nar::Exception::ExcpBase {
                 public:
@@ -68,7 +68,7 @@ namespace nar {
                     RsaError(const char* mess): ExcpBase(mess) {}
             };
 
-            
+
         };
 
         class Unknown : public nar::Exception::ExcpBase {
@@ -184,6 +184,13 @@ namespace nar {
                     int _status_code;
                 public:
                     UserNameAlreadyExist(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+            class ResultStringIsWrong : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    ResultStringIsWrong(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
                     int get_status_code() const { return _status_code; }
             };
         };

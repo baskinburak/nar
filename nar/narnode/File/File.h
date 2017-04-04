@@ -155,6 +155,8 @@ namespace nar {
             nar::File* encrypt(std::string& aes);
 
             nar::File* decrypt(std::string& aes, std::string& fname);
+
+            unsigned long long get_size();
     };
 }
 

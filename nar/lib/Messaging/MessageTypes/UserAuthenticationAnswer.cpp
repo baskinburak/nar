@@ -26,7 +26,7 @@ nlohmann::json nar::MessageTypes::UserAuthenticationAnswer::Request::test_json()
 void nar::MessageTypes::UserAuthenticationAnswer::Response::send_mess(nar::Socket* skt) {
     nlohmann::json uans_resp_send;
     uans_resp_send["header"] = send_head();
-    send_message(skt,keep_resp_send.dump());
+    send_message(skt,uans_resp_send.dump());
     return;
 }
 void nar::MessageTypes::UserAuthenticationAnswer::Response::receive_message(nlohmann::json uans_resp_recv){
@@ -34,7 +34,7 @@ void nar::MessageTypes::UserAuthenticationAnswer::Response::receive_message(nloh
     recv_fill(head);
     if(_status_code == 300) {
         throw nar::Exception::MessageTypes::ResultStringIsWrong("Result string is wrong", _status_code);
-    } 
+    }
     return;
 }
 
@@ -44,5 +44,5 @@ nlohmann::json nar::MessageTypes::UserAuthenticationAnswer::Response::test_json(
 }
 
 std::string& nar::MessageTypes::UserAuthenticationAnswer::Request::get_result_string() {
-    return _username;
+    return _result_string;
 }

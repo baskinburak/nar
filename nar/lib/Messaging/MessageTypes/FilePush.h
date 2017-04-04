@@ -47,7 +47,8 @@ namespace nar {
                     std::string dir;
                     std::string filename;
                 public:
-                    Request(std::string fn  = std::string(""), std::string d  = std::string(""), unsigned long long int fs = 0): RequestHeader(std::string("file_push_request")), filesize(fs), dir(d), filename(fn) {}
+                    Request() : RequestHeader(std::string("file_push_request")) {}
+                    Request(std::string fn , std::string d , unsigned long long int fs ): RequestHeader(std::string("file_push_request")), filesize(fs), dir(d), filename(fn) {}
                     std::string& get_filename();
                     std::string& get_dir();
                     unsigned long long int get_filesize();

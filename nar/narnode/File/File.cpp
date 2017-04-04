@@ -191,7 +191,7 @@ nar::File* nar::File::decompress() {
 }
 
 nar::File* nar::File::encrypt(std::string& aes) {
-   
+
     boost::filesystem::path temp;
     try {
         temp = boost::filesystem::unique_path();
@@ -209,10 +209,10 @@ nar::File* nar::File::encrypt(std::string& aes) {
 
     byte iv[256];
     CryptoPP::AutoSeededRandomPool pool;
-    pool.GenerateBlock(iv, 256);   
+    pool.GenerateBlock(iv, 256);
     std::string ivStr = byte_to_hex(iv,256);
     out._file_handle << ivStr;
-    
+
 
     const int TAG_SIZE = 12;
 
@@ -221,7 +221,7 @@ nar::File* nar::File::encrypt(std::string& aes) {
     enc.SetKeyWithIV(_aes, 16, iv, 256);
     CryptoPP::FileSource ss1(this->_file_handle, true, new CryptoPP::AuthenticatedEncryptionFilter(enc, new CryptoPP::FileSink(out._file_handle/*binary*/),false,TAG_SIZE));
     out.close();
-    nar::File* out2 = new nar::File(temp_native,"r",false);
+    nar::File* out2 = new nar::File(temp_native,"r",true);
     return out2;
 }
 
@@ -232,7 +232,7 @@ nar::File* nar::File::decrypt(std::string& aes, std::string& fname) {
     }
     nar::File out(fname.c_str(),"w",false);
 
-    std::string hexIv;        
+    std::string hexIv;
     for(int ind=0; ind<512;++ind) {
         hexIv.append(1, this->_file_handle.get());
     }
@@ -246,4 +246,8 @@ nar::File* nar::File::decrypt(std::string& aes, std::string& fname) {
     nar::File* out2 = new nar::File(fname,"r",false);
     return out2;
 
+}
+unsigned long long nar::File::get_size() {
+    boost::filesystem::path temp(this->_file_path);
+    return boost::filesystem::file_size(temp);
 }

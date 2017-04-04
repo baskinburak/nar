@@ -10,7 +10,7 @@ find_library(CryptoPP REQUIRED)
 find_library(Z REQUIRED)
 find_library(MYSQLCPPCONN REQUIRED)
 
-find_package(Boost COMPONENTS system filesystem iostreams REQUIRED)
+find_package(Boost COMPONENTS system filesystem iostreams random REQUIRED)
 
 file(GLOB SOCKET_SOURCES nar/lib/Socket/Packet.cpp nar/lib/Socket/Socket.cpp nar/lib/Socket/USocket.cpp)
 add_library(narsocket SHARED ${SOCKET_SOURCES})
@@ -51,9 +51,14 @@ set(DAEMON_SOURCES
     nar/narnode/uservars.cpp
     nar/narnode/global.cpp
     nar/narnode/File/File.cpp
+    nar/lib/Cryption/aes.cpp
+    nar/lib/Cryption/rsa.cpp
     nar/lib/Messaging/MessageTypes/IPCLs.cpp
     nar/lib/Messaging/MessageTypes/IPCBaseRequest.cpp
     nar/lib/Messaging/MessageTypes/IPCBaseResponse.cpp
+    nar/lib/Messaging/MessageTypes/IPCLs.cpp
+    nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.cpp
+    nar/lib/Messaging/MessageTypes/UserAuthenticationInit.cpp
     nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
     nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
     nar/lib/Messaging/MessageTypes/KeepAlive.cpp
@@ -61,6 +66,7 @@ set(DAEMON_SOURCES
     nar/lib/Messaging/MessageTypes/RequestHeader.cpp
     nar/lib/Messaging/messaging_utility.cpp
     nar/narnode/reactive.cpp
+    nar/narnode/ActiveTask/ActiveFunctions.cpp
 )
 
 #add_executable(narcli ${CLI_SOURCES})
@@ -68,5 +74,5 @@ set(DAEMON_SOURCES
 #add_dependencies(narcli narsocket)
 
 add_executable(nardaemon ${DAEMON_SOURCES})
-target_link_libraries(nardaemon ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
+target_link_libraries(nardaemon ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_RANDOM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
 add_dependencies(nardaemon narsocket)
