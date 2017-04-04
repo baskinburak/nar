@@ -27,6 +27,11 @@ int main(void)
     db.connect();
 
     nar::User user;  //insert user success
+    user.user_name = std::string("fatih");
+    user.aes_crypted = std::string("aaaaaaaaa");
+    user.rsa_pri_crypted = std::string("bbbbbbbbbb");
+    user.rsa_pub = std::string("ccccccc");
+    db.insertUser(user)
     nar::Directory dir;
     nar::DirectoryTo dirTo;
     nar::Chunk ch;

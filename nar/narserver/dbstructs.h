@@ -19,12 +19,12 @@ namespace nar {
         bool ForD;                  // 1--> Dir  0-> File
     };
     struct User{
-        User():user_id(-1),quota(0),disk_space(0){}
+        User():user_id(-1){}
         long long int  user_id;
         std::string user_name;
-        long long int  quota;
-        long long int disk_space;
-        std::string cryptedKey;
+        std::string aes_crypted;
+        std::string rsa_pri_crypted;
+        std::string rsa_pub;
         long long int dir_id;
         long long int change_time;
     };
@@ -35,6 +35,7 @@ namespace nar {
         long long int  machine_quota;
         long long int machine_diskSpace;
         long long int change_time;
+        long long int user_id;
     };
 
     struct UserToFile{
@@ -43,11 +44,10 @@ namespace nar {
     };
 
     struct File{
-        File():file_id(-1),file_size(0),file_type(std::string("file")){}
+        File():file_id(-1),file_size(0){}
         long long int file_id;
         std::string file_name;
         long long int file_size;
-        std::string file_type;
         long long int change_time;
     };
 

@@ -70,9 +70,9 @@ namespace nar {
             void insertChunkToMachine(struct ChunkToMachine & chunkToMachine);
 
             void updateUserName(struct User & user);
-            void updateUserQuota(struct User & user);
-            void updateUserDiskSpace(struct User & user);
-            void updateUserCryptedKey(struct User & user);
+            void updateUserAESCrypted(struct User & user);
+            void updateUserRSAPriCrypted(struct User & user);
+            void updateUserRSAPub(struct User & user);
             void updateUser(struct User & user);
             void updateDirectory(struct Directory & directory);
             void updateDirectoryName(struct Directory & directory);
@@ -83,10 +83,10 @@ namespace nar {
             void updateFile(struct File & file);
             void updateFileName(struct File & file);
             void updateFileSize(struct File & file);
-            void updateFileType(struct File & file);
             void updateMachine(struct Machine & machine);
             void updateMachineQuota(struct Machine & machine);
             void updateMachineDiskSpace(struct Machine & machine);
+            void updateMachineUserId(struct Machine & machine);
 
             void deleteUser(struct User & user);
             void deleteChunk(struct Chunk & chunk);
@@ -107,7 +107,7 @@ namespace nar {
             std::vector<struct File> getUserFiles(long long int user_id);
             struct File getFile(long long int file_id);
             std::vector<struct Chunk> getChunks(long long int file_id);
-            struct Chunk getChunk(long long int  chunk_id); 
+            struct Chunk getChunk(long long int  chunk_id);
             std::vector<struct Machine> getMachines(long long int chunk_id);
 
 

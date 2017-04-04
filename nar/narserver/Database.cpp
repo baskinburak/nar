@@ -21,9 +21,9 @@ nar::db::User nar::Database::turnUser(nar::User & user){
     nar::db::User uk;
     uk.user_id = std::to_string(user.user_id);
     uk.user_name = user.user_name;
-    uk.quota = std::to_string(user.quota);
-    uk.disk_space = std::to_string(user.disk_space);
-    uk.cryptedKey = user.cryptedKey;
+    uk.aes_crypted = user.aes_crypted;
+    uk.rsa_pri_crypted = user.rsa_pri_crypted;
+    uk.rsa_pub = user.rsa_pub;
     uk.dir_id = std::to_string(user.dir_id);
     return uk;
 }
@@ -32,7 +32,6 @@ nar::db::File nar::Database::turnFile(nar::File & file){
     fk.file_id = std::to_string(file.file_id);
     fk.file_name = file.file_name;
     fk.file_size = std::to_string(file.file_size);
-    fk.file_type = file.file_type;
     return fk;
 }
 nar::db::Chunk nar::Database::turnChunk(nar::Chunk & chunk){
@@ -56,6 +55,7 @@ nar::db::ChunkToMachine nar::Database::turnChunkToMachine(nar::ChunkToMachine & 
 }
 nar::db::Machine nar::Database::turnMachine(nar::Machine & machine){
     nar::db::Machine mk;
+    mk.user_id = std::to_string(machine.user_id);
     mk.machine_id = machine.machine_id;
     mk.machine_quota = std::to_string(machine.machine_quota);
     mk.machine_diskSpace = std::to_string(machine.machine_diskSpace);
@@ -119,12 +119,12 @@ void nar::Database::insertUser(struct User &us)
     nar::db::User user = turnUser(us);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO Users(User_name, "
-                                         "Quota, Disk_space, CryptedKey,Dir_id ) "
+                                         "AESCrypted, RSAPriCrypted, RSAPub, Dir_id ) "
                                             "VALUES(?, ?, ?, ?, ?);");
     prep_stmt -> setString(1, user.user_name);
-    prep_stmt -> setBigInt(2, user.quota);
-    prep_stmt -> setBigInt(3, user.disk_space);
-    prep_stmt -> setString(4, user.cryptedKey);
+    prep_stmt -> setString(2, user.aes_crypted);
+    prep_stmt -> setString(3, user.rsa_pri_crypted);
+    prep_stmt -> setString(4, user.rsa_pub);
     prep_stmt -> setBigInt(5, dir_id);
 
     prep_stmt -> execute();
@@ -183,11 +183,10 @@ void nar::Database::insertFile(struct File &fi)
 {
     nar::db::File file = turnFile(fi);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Files( File_name, File_size, File_type) "
-                                            "VALUES( ?, ?, ?);");
+    prep_stmt = _con -> prepareStatement("INSERT INTO Files( File_name, File_size) "
+                                            "VALUES( ?, ?);");
     prep_stmt -> setString(1, file.file_name);
     prep_stmt -> setString(2, file.file_size);
-    prep_stmt -> setString(3, file.file_type);
 
     prep_stmt -> execute();
 
@@ -198,11 +197,12 @@ void nar::Database::insertMachine(struct Machine &ma)
 {
     nar::db::Machine machine = turnMachine(ma);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Machines(Machine_id,  Machine_quota, Machine_diskSpace) "
-                                            "VALUES(?,  ?, ?);");
+    prep_stmt = _con -> prepareStatement("INSERT INTO Machines(Machine_id,  Machine_quota, Machine_diskSpace, User_id) "
+                                            "VALUES(?,  ?, ?, ?);");
     prep_stmt -> setString(1, machine.machine_id);
     prep_stmt -> setBigInt(2, machine.machine_quota);
     prep_stmt -> setBigInt(3, machine.machine_diskSpace);
+    prep_stmt -> setBigInt(4, machine.user_id);
 
     prep_stmt -> execute();
 
@@ -241,7 +241,7 @@ nar::User nar::Database::getUser(std::string name)
 {
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT User_id,User_name,Quota,Disk_space,CryptedKey, "
+    prep_stmt = _con -> prepareStatement("SELECT User_id, User_name, AESCrypted, RSAPriCrypted, RSAPub, "
                                             "Dir_id, UNIX_TIMESTAMP(Change_time) As Time "
                                             "FROM Users "
                                             "WHERE Users.User_name = ?;");
@@ -256,9 +256,9 @@ nar::User nar::Database::getUser(std::string name)
     while(res->next()){
         a.user_id = std::stoll(res->getString("User_id").asStdString());
         a.user_name = res->getString("User_name").asStdString();
-        a.quota = std::stoll(res->getString("Quota").asStdString());
-        a.disk_space = std::stoll(res->getString("Disk_space").asStdString());
-        a.cryptedKey = res->getString("CryptedKey").asStdString();
+        a.aes_crypted = res->getString("Quota").asStdString();
+        a.rsa_pri_crypted = res->getString("Disk_space").asStdString();
+        a.rsa_pub = res->getString("CryptedKey").asStdString();
         a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
 
         a.change_time = res->getUInt64("Time");
@@ -272,7 +272,7 @@ nar::User nar::Database::getUser(long long int userId)
     sql::SQLString user_id = std::to_string(userId);
     sql::PreparedStatement *prep_stmt;
         sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT User_id,User_name,Quota,Disk_space,CryptedKey, "
+    prep_stmt = _con -> prepareStatement("SELECT User_id, User_name, AESCrypted, RSAPriCrypted, RSAPub, "
                                         "Dir_id, UNIX_TIMESTAMP(Change_time) As Time "
                                         "FROM Users "
                                         "WHERE Users.User_id = ?;");
@@ -287,9 +287,9 @@ nar::User nar::Database::getUser(long long int userId)
     while(res->next()){
         a.user_id = std::stoll(res->getString("User_id").asStdString());
         a.user_name = res->getString("User_name").asStdString();
-        a.quota = std::stoll(res->getString("Quota").asStdString());
-        a.disk_space = std::stoll(res->getString("Disk_space").asStdString());
-        a.cryptedKey = res->getString("CryptedKey").asStdString();
+        a.aes_crypted = res->getString("Quota").asStdString();
+        a.rsa_pri_crypted = res->getString("Disk_space").asStdString();
+        a.rsa_pub = res->getString("CryptedKey").asStdString();
         a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
 
         a.change_time = res->getUInt64("Time");
@@ -303,7 +303,7 @@ nar::Machine nar::Database::getMachine(std::string machine_id)
 {
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT Machine_id, Machine_quota, Machine_diskSpace, "
+    prep_stmt = _con -> prepareStatement("SELECT Machine_id, Machine_quota, Machine_diskSpace, User_id "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "FROM Machines "
                                         "WHERE Machines.Machine_id = ?;");
@@ -321,8 +321,8 @@ nar::Machine nar::Database::getMachine(std::string machine_id)
         a.machine_id = res->getString("Machine_id").asStdString();
         a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
         a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
-
         a.change_time = res->getUInt64("Time");
+        a.user_id = std::stoll(res->getString("User_id").asStdString());
 
     }
     delete res;
@@ -334,7 +334,7 @@ nar::File nar::Database::getFile(long long int fileId)
     sql::SQLString file_id = std::to_string(fileId);
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT File_id,File_name,File_size,File_type, "
+    prep_stmt = _con -> prepareStatement("SELECT File_id,File_name,File_size, "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "FROM Files "
                                         "WHERE Files.File_id = ?;");
@@ -351,7 +351,6 @@ nar::File nar::Database::getFile(long long int fileId)
         a.file_id = std::stoll(res->getString("File_id").asStdString());
         a.file_name = res->getString("File_name").asStdString();
         a.file_size = std::stoll(res->getString("File_size").asStdString());
-        a.file_type = res->getString("File_type").asStdString();
 
         a.change_time = res->getUInt64("Time");
 
@@ -403,37 +402,37 @@ void nar::Database::updateUserName(struct User & us) {
     prep_stmt->execute();
     delete prep_stmt;
 }
-void nar::Database::updateUserQuota(struct User & us) {
+void nar::Database::updateUserAESCrypted(struct User & us) {
     nar::db::User user = turnUser(us);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Users "
-                                        "SET Users.Quota = ? "
+                                        "SET Users.AESCrypted = ? "
                                         "WHERE Users.User_id = ?;");
-    prep_stmt->setBigInt(1,user.quota);
+    prep_stmt->setString(1,user.aes_crypted);
     prep_stmt->setBigInt(2,user.user_id);
     prep_stmt->execute();
     delete prep_stmt;
 }
 
-void nar::Database::updateUserDiskSpace(struct User & us) {
+void nar::Database::updateUserRSAPriCrypted(struct User & us) {
     nar::db::User user = turnUser(us);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Users "
-                                        "SET Users.Disk_space = ? "
+                                        "SET Users.RSAPriCrypted = ? "
                                         "WHERE Users.User_id = ?;");
-    prep_stmt->setBigInt(1,user.disk_space);
+    prep_stmt->setString(1,user.rsa_pri_crypted);
     prep_stmt->setBigInt(2,user.user_id);
     prep_stmt->execute();
     delete prep_stmt;
 }
 
-void nar::Database::updateUserCryptedKey(struct User & us) {
+void nar::Database::updateUserRSAPub(struct User & us) {
     nar::db::User user = turnUser(us);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Users "
-                                        "SET Users.CryptedKey = ? "
+                                        "SET Users.RSAPub = ? "
                                         "WHERE Users.User_id = ?;");
-    prep_stmt->setString(1,user.cryptedKey);
+    prep_stmt->setString(1,user.rsa_pub);
     prep_stmt->setBigInt(2,user.user_id);
     prep_stmt->execute();
     delete prep_stmt;
@@ -443,12 +442,13 @@ void nar::Database::updateUser(struct User & us) {
     nar::db::User user = turnUser(us);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Users "
-                                        "SET Users.User_name= ?,Users.Quota = ? ,Users.Disk_space = ? "
+                                        "SET Users.User_name= ?,Users.AESCrypted = ? ,Users.RSAPriCrypted = ? ,Users.RSAPub = ? "
                                         "WHERE Users.User_id = ?;");
     prep_stmt->setString(1,user.user_name);
-    prep_stmt->setBigInt(2,user.quota);
-    prep_stmt->setBigInt(3,user.disk_space);
-    prep_stmt->setBigInt(4,user.user_id);
+    prep_stmt->setString(2,user.aes_crypted);
+    prep_stmt->setString(3,user.rsa_pri_crypted);
+    prep_stmt->setString(4,user.rsa_pub);
+    prep_stmt->setBigInt(5,user.user_id);
     prep_stmt->execute();
     delete prep_stmt;
 }
@@ -495,12 +495,10 @@ void nar::Database::updateFile(struct File & fi){
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Files "
                                         "SET Files.File_name = ?, "
-                                            "Files.File_size = ?, "
-                                            "Files.File_type = ? "
+                                            "Files.File_size = ? "
                                         "WHERE Files.File_id= ?;");
     prep_stmt->setString(1,file.file_name);
     prep_stmt->setBigInt(2,file.file_size);
-    prep_stmt->setString(3,file.file_type);
     prep_stmt->setBigInt(4,file.file_id);
     prep_stmt->execute();
     delete prep_stmt;
@@ -528,27 +526,17 @@ void nar::Database::updateFileSize(struct File & fi){
     delete prep_stmt;
 }
 
-void nar::Database::updateFileType(struct File & fi){
-    nar::db::File file = turnFile(fi);
-    sql::PreparedStatement  *prep_stmt;
-    prep_stmt = _con->prepareStatement("UPDATE Files "
-                                        "SET Files.File_type = ? "
-                                        "WHERE Files.File_id= ?;");
 
-    prep_stmt->setString(1,file.file_type);
-    prep_stmt->setBigInt(2,file.file_id);
-    prep_stmt->execute();
-    delete prep_stmt;
-}
 void nar::Database::updateMachine(struct Machine & ma){
     nar::db::Machine machine = turnMachine(ma);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Machines "
-                                        "SET Machines.Machine_quota = ? , Machines.Machine_diskSpace ? "
+                                        "SET Machines.Machine_quota = ? , Machines.Machine_diskSpace = ? , Machines.User_id = ? "
                                         "WHERE Machines.Machine_id= ?;");
     prep_stmt->setBigInt(1,machine.machine_quota);
     prep_stmt->setBigInt(2,machine.machine_diskSpace);
     prep_stmt->setString(3,machine.machine_id);
+    prep_stmt->setBigInt(4,machine.user_id);
     prep_stmt->execute();
     delete prep_stmt;
 }
@@ -570,6 +558,17 @@ void nar::Database::updateMachineDiskSpace(struct Machine & ma){
                                         "SET Machines.Machine_diskSpace = ? "
                                         "WHERE Machines.Machine_id= ?;");
     prep_stmt->setBigInt(1,machine.machine_diskSpace);
+    prep_stmt->setString(2,machine.machine_id);
+    prep_stmt->execute();
+    delete prep_stmt;
+}
+void nar::Database::updateMachineUserId(struct Machine & ma){
+    nar::db::Machine machine = turnMachine(ma);
+    sql::PreparedStatement  *prep_stmt;
+    prep_stmt = _con->prepareStatement("UPDATE Machines "
+                                        "SET Machines.User_id = ? "
+                                        "WHERE Machines.Machine_id= ?;");
+    prep_stmt->setBigInt(1,machine.user_id);
     prep_stmt->setString(2,machine.machine_id);
     prep_stmt->execute();
     delete prep_stmt;
@@ -714,7 +713,7 @@ std::vector<nar::File> nar::Database::getDirectoryFile(long long int dirId){
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet *res;
     std::vector<nar::File> output;
-    prep_stmt = _con->prepareStatement("SELECT File_id, File_name,File_size,File_type, "
+    prep_stmt = _con->prepareStatement("SELECT File_id, File_name,File_size, "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         " FROM Files "
                                         "Where Files.File_id IN (Select Item_id AS File_id "
@@ -727,7 +726,6 @@ std::vector<nar::File> nar::Database::getDirectoryFile(long long int dirId){
         a.file_id = std::stoll(res->getString("File_id").asStdString());
         a.file_name = res->getString("File_name").asStdString();
         a.file_size = std::stoll(res->getString("File_size").asStdString());
-        a.file_type = res->getString("File_type").asStdString();
         a.change_time = res->getUInt64("Time");
 
         output.push_back(a);
@@ -817,7 +815,7 @@ std::vector<nar::File>  nar::Database::getUserFiles(long long int userId){
     std::vector<nar::File> output;
     sql::PreparedStatement  *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con->prepareStatement("SELECT File_id, File_name, File_size, File_type, "
+    prep_stmt = _con->prepareStatement("SELECT File_id, File_name, File_size,  "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "From Files "
                                         "Where Files.File_id IN (Select File_id "
@@ -830,7 +828,6 @@ std::vector<nar::File>  nar::Database::getUserFiles(long long int userId){
         a.file_id = std::stoll(res->getString("File_id").asStdString());
         a.file_name = res->getString("File_name").asStdString();
         a.file_size = std::stoll(res->getString("File_size").asStdString());
-        a.file_type = res->getString("File_type").asStdString();
 
         a.change_time = res->getUInt64("Time");
         output.push_back(a);
@@ -871,7 +868,7 @@ std::vector<nar::Machine>  nar::Database::getMachines(long long int chunkId){
     std::vector<nar::Machine> output;
     sql::PreparedStatement  *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con->prepareStatement("SELECT Machine_id,  Machine_quota, Machine_diskSpace, "
+    prep_stmt = _con->prepareStatement("SELECT Machine_id,  Machine_quota, Machine_diskSpace, User_id "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "From Machines "
                                         "Where Machines.Machine_id IN (Select Machine_id "
@@ -886,6 +883,7 @@ std::vector<nar::Machine>  nar::Database::getMachines(long long int chunkId){
         a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
 
         a.change_time = res->getUInt64("Time");
+        a.user_id = std::stoll(res->getString("User_id").asStdString());
         output.push_back(a);
 
     }

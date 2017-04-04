@@ -19,9 +19,9 @@ namespace nar {
         struct User{
             sql::SQLString  user_id;
             std::string user_name;
-            sql::SQLString  quota;
-            sql::SQLString  disk_space;
-            std::string cryptedKey;
+            std::string aes_crypted;
+            std::string rsa_pri_crypted;
+            std::string rsa_pub;
             sql::SQLString dir_id;
             sql::SQLString change_time;
         };
@@ -44,7 +44,6 @@ namespace nar {
             sql::SQLString file_id;
             std::string file_name;
             sql::SQLString file_size;
-            std::string file_type;
             sql::SQLString change_time;
         };
 
