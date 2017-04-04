@@ -19,7 +19,7 @@ void nar::CLITasks::nar_ls(std::string dir_name, std::string username, std::stri
 
 }
 void nar::CLITasks::nar_pull(std::string file_name, std::string username, std::string password, std::string curdir) {
-    /*std::cout << file_name << std::endl;
+    std::cout << file_name << std::endl;
 
     char cwd[1024];
     if(getcwd(cwd, sizeof(cwd)) == NULL){
@@ -36,8 +36,7 @@ void nar::CLITasks::nar_pull(std::string file_name, std::string username, std::s
 
     req.send_action(&cli_skt);
     req.print_loop(&cli_skt);
-    return;*/
-
+    return;
 }
 
 void nar::CLITasks::nar_push(std::string file_name, std::string username, std::string password, std::string curdir) {
