@@ -17,7 +17,7 @@ nlohmann::json nar::MessageTypes::IPCLs::Request::get_myrequestjson() {
 
 void nar::MessageTypes::IPCLs::Request::send_action(nar::Socket* skt) {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "config";
+    json_to_sent["header"]["_action"] = "ls";
     json_to_sent["payload"]["dir_name"] = _dir_name;
     send_message(skt, json_to_sent.dump());
     return;

@@ -9,6 +9,7 @@
 #include <utility>
 #include <algorithm>
 #include <nar/narnode/uservars.h>
+#include <nar/narnode/reactive.h>
 
 void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     std::string msg = nar::trim(nar::get_message(*skt));
@@ -56,8 +57,6 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         ipc_stat.receive_message(jsn);
         cout<<"daemon status>"<<endl;
     }
-    return;
-}
 }
 
 
@@ -65,6 +64,9 @@ int main() {
     nar::Global* globals = new nar::Global("/root/.nar/config");
     nar::Socket ipc_entry(globals->get_ioserv(), 's');
     ipc_entry.bind(17700, "lo");
+
+    std::thread reactive_thr(nar::reactive_dispatcher, globals);
+    reactive_thr.detach();
 
 
     while(true) {
