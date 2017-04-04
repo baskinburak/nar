@@ -11,7 +11,7 @@ namespace nar {
         namespace WaitChunkPull {
             class Response : public ResponseHeader {
                 public:
-                    Response(int statcode) : ResponseHeader(statcode, std::string("wait_chunk_pull_request")) {}
+                    Response(int statcode = -1) : ResponseHeader(statcode, std::string("wait_chunk_pull_request")) {}
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json wpull_resp_recv);
                     nlohmann::json test_json();

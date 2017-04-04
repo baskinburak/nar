@@ -17,8 +17,8 @@ namespace nar {
                         std::string stream_id;
                         unsigned long long int chunk_size;
                     };
-                    Response(int statcode, unsigned short  rport): ResponseHeader(statcode, std::string("file_push_request")), randevous_port(rport) {}
-                    Response(int statcode, unsigned short  rport,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_push_request")), randevous_port(rport),  elements(eles) {}
+                    Response(int statcode = -1, unsigned short  rport = 0): ResponseHeader(statcode, std::string("file_push_request")), randevous_port(rport) {}
+                    Response(int statcode = -1, unsigned short  rport,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_push_request")), randevous_port(rport),  elements(eles) {}
                     void add_element(struct PeerListElement& ele);
                     void add_element(std::string mid, unsigned long long int cid, std::string sid, unsigned long long int csize);
                     std::vector<struct PeerListElement>& get_elements();
@@ -40,14 +40,14 @@ namespace nar {
                     std::vector<struct PeerListElement> elements;
 
             };
-            
+
             class Request : public RequestHeader {
                 private:
                     unsigned long long int filesize;
                     std::string dir;
                     std::string filename;
                 public:
-                    Request(std::string fn, std::string d, unsigned long long int fs): RequestHeader(std::string("file_push_request")), filesize(fs), dir(d), filename(fn) {}
+                    Request(std::string fn  = std::string(""), std::string d  = std::string(""), unsigned long long int fs = 0): RequestHeader(std::string("file_push_request")), filesize(fs), dir(d), filename(fn) {}
                     std::string& get_filename();
                     std::string& get_dir();
                     unsigned long long int get_filesize();

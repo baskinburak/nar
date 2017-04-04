@@ -34,8 +34,6 @@ void nar::MessageTypes::UserAuthenticationInit::Response::receive_message(nlohma
     nlohmann::json head = keep_resp_recv["header"];
     recv_fill(head);
     if(_status_code == 300) {
-        throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
-    } else if(_status_code == 301) {
         throw nar::Exception::MessageTypes::UserDoesNotExist("This user does not exist for nar system so you can not get aes key for it", _status_code);
     }
     _private_key = keep_resp_recv["payload"]["private_key"];

@@ -15,6 +15,7 @@ namespace nar {
                     std::string _private_key;
                     std::string _task_string;
                 public:
+                    Response() : {}
                     Response(int statcode, std::string private_key, std::string task_string) : ResponseHeader(statcode, std::string("user_authentication_init")), _private_key(private_key), _task_string(task_string) {}
                     std::string& get_private_key();
                     std::string& get_task_string();
@@ -24,7 +25,7 @@ namespace nar {
             };
 
 
- 
+
             class Request : public RequestHeader {
                 private:
                     std::string _username;

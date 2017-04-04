@@ -35,7 +35,7 @@ namespace nar {
                      * @param: rport, unsigned short, aes key information
                      * @tested: Yes
                     */
-                    Response(int statcode, unsigned short  rport): ResponseHeader(statcode, std::string("file_pull_request")), _randevous_port(rport) {}
+                    Response(int statcode = -1, unsigned short  rport = 0): ResponseHeader(statcode, std::string("file_pull_request")), _randevous_port(rport) {}
                     /*
                      * Constructor
                      *
@@ -44,7 +44,7 @@ namespace nar {
                      * @param: rport, unsigned short, aes key information
                      * @tested: Yes
                     */
-                    Response(int statcode, unsigned short  rport,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_pull_request")), _randevous_port(rport),  elements(eles) {}
+                    Response(int statcode = -1, unsigned short  rport = 0,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_pull_request")), _randevous_port(rport),  elements(eles) {}
                     /*
                      * adds new elements to pull file message
                      *
@@ -98,7 +98,7 @@ namespace nar {
                     std::string file_name;
 
                 public:
-                    Request(std::string fn, std::string d): RequestHeader(std::string("file_pull_request")),  dir(d), file_name(fn) {}
+                    Request(std::string fn = std::string(""), std::string d = std::string("")): RequestHeader(std::string("file_pull_request")),  dir(d), file_name(fn) {}
                     std::string& get_filename();
                     std::string& get_dir();
                     void send_mess(nar::Socket* skt, nar::MessageTypes::FilePull::Response & resp);

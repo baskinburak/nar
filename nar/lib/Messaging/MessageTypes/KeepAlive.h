@@ -11,7 +11,7 @@ namespace nar {
         namespace KeepAlive {
             class Response : public ResponseHeader {
                 public:
-                    Response(int statcode) : ResponseHeader(statcode, std::string("keepalive")) {}
+                    Response(int statcode = -1) : ResponseHeader(statcode, std::string("keepalive")) {}
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json keep_resp_recv);
                     nlohmann::json test_json();

@@ -1,13 +1,9 @@
 #ifndef NAR_DAEMONTASKS_H
 #define NAR_DAEMONTASKS_H
 
-#include <nar/narnode/uservars.h>
-#include <nar/narnode/global.h>
-#include <nar/lib/Socket/Socket.h>
-
 namespace nar {
     namespace ActiveTask {
-        bool user_authenticate(nar::Socket* skt, nar::UserVariables* uservars);
+        bool user_authenticate(nar::Socket* skt, nar::UserVariables& uservars);
 
         class IActiveTask {
             private:
@@ -21,7 +17,7 @@ namespace nar {
         class LS : public IActiveTask {
             private:
             public:
-                LS(nar::Global* globals, nar::UserVariables* variables);
+                LS(nar::Global* globals, nar::UserVariables* variables) _globals(globals) , _vars(variables);
                 void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCLs::Request* req);
         };
 
