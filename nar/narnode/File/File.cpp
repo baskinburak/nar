@@ -247,7 +247,3 @@ nar::File* nar::File::decrypt(std::string& aes, std::string& fname) {
     return out2;
 
 }
-unsigned long long nar::File::get_size() {
-    boost::filesystem::path temp(this->_file_path);
-    return boost::filesystem::file_size(temp);
-}
