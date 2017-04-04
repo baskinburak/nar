@@ -26,7 +26,7 @@ add_library(narsocket SHARED ${SOCKET_SOURCES})
 #    nar/narnode/utility.cpp
 #  )
 
-set(NAR_LIBRARIES libnarsocket.so pthread cryptopp z)
+set(NAR_LIBRARIES libnarsocket.so pthread cryptopp z mysqlcppconn)
 
 #add_executable(narserver ${SERVER_SOURCES})
 
@@ -68,6 +68,7 @@ set(DAEMON_SOURCES
     nar/lib/Messaging/messaging_utility.cpp
     nar/narnode/reactive.cpp
     nar/narnode/ActiveTask/ActiveFunctions.cpp
+    nar/narserver/Database.cpp
 )
 
 #add_executable(narcli ${CLI_SOURCES})
