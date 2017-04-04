@@ -3,6 +3,8 @@
 
 #include <string>
 #include <nar/lib/nlohJson/json.hpp>
+#include <nar/lib/Socket/Socket.h>
+#include <nar/narnode/utility.h>
 
 namespace nar {
     namespace MessageTypes {
@@ -18,8 +20,8 @@ namespace nar {
             private:
                 std::string _action;
                 std::string _username;
-                std::string _current_directory;
                 std::string _password;
+                std::string _current_directory;
             public:
                 /*
                  * Constructor
@@ -28,7 +30,8 @@ namespace nar {
                  * @param:  std::string an, holds the name of the _action,
                  * @tested: No
                 */
-                IPCBaseRequest(std::string an) : _action(an) {}
+                IPCBaseRequest(std::string an, std::string un, std::string pw, std::string cd) : _action(an), _username(un), _password(pw), _current_directory(cd) { }
+                IPCBaseRequest(std::string an) : _action(an) { }
                 /*
                  * Getter of _action name
                  *
@@ -74,6 +77,16 @@ namespace nar {
                  * @tested: No
                 */
                 nlohmann::json get_myrequestjson();
+                /*
+                 * returns the json form of base request
+                */
+                nlohmann::json generate_json();
+
+                /*
+                 * populates object from given json
+                */
+                void populate_object(nlohmann::json& jsn);
+
                 /*
                  * sends the related info to other side
                  *

@@ -19,19 +19,15 @@ namespace nar {
                     std::string get_dir_name();
                     void set_dir_name(std::string dn);
 
-                    Request() : IPCBaseRequest(std::string("ls") {}
-                    Request(std::string dn) : IPCBaseRequest(std::string("ls")), _dir_name(dn) {}
+                    Request() : IPCBaseRequest(std::string("ls")) {}
+                    Request(std::string dirname, std::string username, std::string password, std::string curdir) : IPCBaseRequest(std::string("ls"), username, password, curdir), _dir_name(dirname) {}
                     nlohmann::json get_myrequestjson();
-                    void receive_message(nlohmann::json &js);
                     void send_action(nar::Socket* skt);
                     /*
-                     * get a message
-                     *
-                     * @author: Dogu
-                     * @param:  None
-                     * @tested: No
+                     * returns the json form of base request
                     */
-                    void print_loop(nar::Socket* skt);
+                    nlohmann::json generate_json();
+                    void populate_object(std::string& jsn);
             };
 
             class Response : public IPCBaseResponse {

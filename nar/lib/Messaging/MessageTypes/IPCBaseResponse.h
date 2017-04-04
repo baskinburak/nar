@@ -4,6 +4,8 @@
 #include <string>
 #include <nar/lib/nlohJson/json.hpp>
 
+#include <nar/lib/Socket/Socket.h>
+#include <nar/narnode/utility.h>
 
 namespace nar {
     namespace MessageTypes {

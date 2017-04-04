@@ -1,0 +1,1 @@
+g++ -std=c++11 cli.cpp  clitasks.cpp ../lib/Socket/Socket.cpp ../lib/Messaging/MessageTypes/IPCLs.cpp ../lib/Messaging/MessageTypes/IPCBaseRequest.cpp ../lib/Messaging/MessageTypes/IPCBaseResponse.cpp utility.cpp ../lib/Socket/USocket.cpp File/File.cpp ../lib/Socket/Packet.cpp -I../../ -o cli -lboost_system -pthread -lcrypto++ -lboost_iostreams -lboost_filesystem;

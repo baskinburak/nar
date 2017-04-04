@@ -1,11 +1,54 @@
 #include "IPCBaseRequest.h"
 
+nlohmann::json nar::MessageTypes::IPCBaseRequest::generate_json() {
+    nlohmann::json jsn;
+    jsn["header"]["action"] = this->_action;
+    jsn["header"]["username"] = this->_username;
+    jsn["header"]["password"] = this->_password;
+    jsn["header"]["current_directory"] = this->_current_directory;
+    return jsn;
+}
+
+void nar::MessageTypes::IPCBaseRequest::populate_object(nlohmann::json& jsn) {
+    this->_action = jsn["header"]["action"];
+    this->_username = jsn["header"]["username"];
+    this->_password = jsn["header"]["password"];
+    this->_current_directory = jsn["header"]["current_directory"];
+}
+
 std::string nar::MessageTypes::IPCBaseRequest::get_action() {
     return _action;
 }
 
 void nar::MessageTypes::IPCBaseRequest::set_action(std::string an) {
     _action = an;
+    return;
+}
+
+std::string& nar::MessageTypes::IPCBaseRequest::get_username() {
+    return _username;
+}
+
+std::string& nar::MessageTypes::IPCBaseRequest::get_current_directory() {
+    return _current_directory;
+}
+
+std::string& nar::MessageTypes::IPCBaseRequest::get_password() {
+    return _password;
+}
+
+void nar::MessageTypes::IPCBaseRequest::set_username(std::string& un) {
+    _username = un;
+    return;
+}
+
+void nar::MessageTypes::IPCBaseRequest::set_current_directory(std::string& cd) {
+    _current_directory = cd;
+    return;
+}
+
+void nar::MessageTypes::IPCBaseRequest::set_password(std::string& pw) {
+    _password = pw;
     return;
 }
 
@@ -20,9 +63,9 @@ nlohmann::json nar::MessageTypes::IPCBaseRequest::fillTheHead() {
 
 void nar::MessageTypes::IPCBaseRequest::recvThe_action(nlohmann::json &recv){
     this -> _action = recv["action"];
-    this->_username = recv["username"];
-    this->_password = recv["password"];
-    this->_current_directory = recv["current_directory"];
+    this-> _username = recv["username"];
+    this-> _password = recv["password"];
+    this-> _current_directory = recv["current_directory"];
     return;
 }
 
@@ -42,7 +85,7 @@ void nar::MessageTypes::IPCBaseRequest::send_action(nar::Socket* skt) {
 void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
     while(true){
         std::string tmp = get_message(*skt);
-        nlohmann::json received = nlohmann::json::parse(temp);
+        nlohmann::json received = nlohmann::json::parse(tmp);
         if(received["header"]["reply_to"] == std::string("END")){
             break;
         }

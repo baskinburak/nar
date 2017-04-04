@@ -1,15 +1,19 @@
-#include "CLITasks/nar_config.h"
-#include "CLITasks/nar_ls.h"
-#include "CLITasks/nar_pull_file.h"
-#include "CLITasks/nar_push_file.h"
-#include "CLITasks/nar_register.h"
-#include "CLITasks/nar_status.h"
+#include "clitasks.h"
 
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
 #include <unistd.h>
 #include <string>
+
+std::pair<std::string, std::string> get_uname_pw() {
+    std::string username, password;
+    std::cout << "Username: ";
+    std::cin >> username;
+    std::cout << "Password: ";
+    std::cin >> password;
+    return std::make_pair(username, password);
+}
 
 int main(int argc, char* argv[]){
     if(argc < 2) {
@@ -22,41 +26,30 @@ int main(int argc, char* argv[]){
             return 0;
         }
         std::string file_name(argv[2]);
-        nar::CLITasks::nar_push_file(file_name);
+        auto unamepwd = get_uname_pw();
+        nar::CLITasks::nar_push(file_name, unamepwd.first, unamepwd.second, std::string("/"));
 
     } else if(first_arg == std::string("ls")) {
+        auto unamepwd = get_uname_pw();
         if(argc < 3) {
-            nar::CLITasks::nar_ls(std::string(""));
+            nar::CLITasks::nar_ls(std::string(""), unamepwd.first, unamepwd.second, std::string("/"));
         }
-        else if(argc < 4){
+        else if(argc < 4) {
             std::string dir_name(argv[2]);
-            nar::CLITasks::nar_ls(dir_name);
+            nar::CLITasks::nar_ls(dir_name, unamepwd.first, unamepwd.second, std::string("/"));
         }
 
     } else if(first_arg == std::string("pull")) {
         if(argc < 3) {
             return 0;
         }
+        auto unamepwd = get_uname_pw();
         std::string file_name(argv[2]);
-        nar::CLITasks::nar_pull_file(file_name);
+        nar::CLITasks::nar_pull(file_name, unamepwd.first, unamepwd.second, std::string("/"));
 
     } else if(first_arg == std::string("register")) {
-        std::string uname;
-        std::cout << "Enter a username: ";
-        std::cin >> uname;
-        nar::CLITasks::nar_register(uname);
-
-    } else if(first_arg == std::string("config")) {
-        if(argc < 3) {
-            return 0;
-        }
-        for(int i=2; i<argc; i++) {
-            std::string conf(argv[i]);
-            int eq = conf.find('=');
-            std::string left = conf.substr(0, eq);
-            std::string right = conf.substr(eq+1);
-            nar::CLITasks::nar_config(left, right);
-        }
+        auto unamepwd = get_uname_pw();
+        nar::CLITasks::nar_register(unamepwd.first, unamepwd.second);
 
     } else if(first_arg == std::string("status")) {
         nar::CLITasks::nar_status();

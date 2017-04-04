@@ -15,30 +15,27 @@ nlohmann::json nar::MessageTypes::IPCLs::Request::get_myrequestjson() {
     return json_to_sent;
 }
 
+nlohmann::json nar::MessageTypes::IPCLs::Request::generate_json() {
+    nlohmann::json jsn = IPCBaseRequest::generate_json();
+    jsn["payload"]["dir_name"] = this->_dir_name;
+    return jsn;
+}
+
+void nar::MessageTypes::IPCLs::Request::populate_object(std::string& jsn_str) {
+    auto jsn = nlohmann::json::parse(jsn_str);
+    IPCBaseRequest::populate_object(jsn);
+    this->_dir_name = jsn["payload"]["dir_name"];
+}
+
 void nar::MessageTypes::IPCLs::Request::send_action(nar::Socket* skt) {
-    nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "ls";
-    json_to_sent["payload"]["dir_name"] = _dir_name;
+    nlohmann::json json_to_sent = this->generate_json();
     send_message(skt, json_to_sent.dump());
     return;
 }
 
-void nar::MessageTypes::IPCLs::Request::receive_message(nlohmann::json &js){
-    this -> _action = js["header"]["action"];
-    this -> _var = js["payload"]["var"];
-    this -> _value = js["payload"]["value"];
-    return;
-}
 
-void nar::MessageTypes::IPCLs::Request::print_loop(nar::Socket* skt){
-    while(true){
-        std::string tmp = get_message(*skt);
-        if(tmp != std::string("END")){
-            break;
-        }
-    }
-    return;
-}
+
+
 
 nlohmann::json nar::MessageTypes::IPCLs::Response::give_myresponsejson() {
     nlohmann::json resp_json;

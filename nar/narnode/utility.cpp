@@ -1,20 +1,21 @@
 #include <nar/narnode/utility.h>
-#include <nar/lib/Exception/exception.h>
+#include <nar/lib/Exception/Exception.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <string>
 #include <algorithm>
-#include <nar/narnode/FileKeeper/FileKeeper.h>
 #include <string>
 #include <sstream>
-
+#include <iostream>
 
 std::string nar::get_message(nar::Socket& skt) {
     char buf[1035];
     int received = skt.recv(buf, 1024);
-    if(received <= 0) throw nar::Exception("Connection Lost");
+    if(received <= 0) {
+        std::cout << "connection lost"<< std::endl; exit(0);
+    }
     int len = 0;
     int prev_len = 0;
     int idx = 0;
@@ -26,7 +27,7 @@ std::string nar::get_message(nar::Socket& skt) {
         if(buf[idx] > '9' || buf[idx] < '0') {
             skt.send((char*) "bad request", 11);
             skt.close();
-            throw nar::Exception("such exception");
+        std::cout << "such exception"<< std::endl; exit(0);
         }
         prev_len = len;
         len*=10;
@@ -34,7 +35,7 @@ std::string nar::get_message(nar::Socket& skt) {
         if(prev_len > len) {
             skt.send((char*) "integer overflow", 16);
             skt.close();
-            throw nar::Exception("wowowo");
+        std::cout << "wowowo    "<< std::endl; exit(0);
         }
     }
 
@@ -50,7 +51,7 @@ std::string nar::get_message(nar::Socket& skt) {
             data.append(buf, rec);
             len-=rec;
         } else {
-            throw nar::Exception("wtf");
+        std::cout << "wtf"<< std::endl; exit(0);
         }
     }
     std::cout << "data: " << data << std::endl;
@@ -87,13 +88,15 @@ int nar::get_int_sckt(int sockfd) {
     char buf[129];
     if((l = recv(sockfd, buf, 128, 0)) > 0) {
         for(int i=0; i<l; i++) {
-            if(buf[i] < '0' || buf[i] > '9')
-                throw nar::Exception("nar::get_int_sckt - Not int");
+            if(buf[i] < '0' || buf[i] > '9') {
+                std::cout << "not int"<< std::endl; exit(0);
+            }
             ret*=10;
             ret += buf[i] - '0';
         }
     } else {
-        throw nar::Exception("nar::get_int_sckt - Recv error.");
+        
+        std::cout << "recv error"<< std::endl; exit(0);
     }
     return ret;
 }
@@ -102,7 +105,7 @@ void nar::send_int_sckt(int sockfd, int val) {
     std::string val_str = std::to_string(val);
 
     if(send(sockfd, val_str.c_str(), (int)val_str.size(), 0) == -1) {
-        throw nar::Exception("nar::sent_int_sckt - Send error");
+        std::cout << "send error"<< std::endl; exit(0);
     }
 }
 
@@ -146,85 +149,9 @@ int nar::readdata(nar::USocket &sock, char *buf, int buflen)
     return 1;
 }
 
-int nar::senddata(nar::Socket &sock, char *buf, int buflen)
-{
-  exit(0);
-}
-
-int nar::senddata(nar::USocket &sock, char *buf, int buflen) {
-  char *pbuf = (char *) buf;
-  while (buflen > 0){
-    int num = sock.send(pbuf, buflen);
-    if (num < 0) {
-        return 0;
-    }
-    pbuf += num;
-    buflen -= num;
-  }
-  return 1;
-}
-
-
-int nar::readFileWriteSck( nar::FileCryptor &file, nar::Socket &skt, unsigned long fileSize, unsigned long _offset) {
-    std::cout << "guzel migrate edin" << std::endl; // bunu sil
-	exit(0);
-}
-
-int nar::readFileWriteSck( nar::FileCryptor &file, nar::USocket &skt, unsigned long fileSize, unsigned long _offset) {
-	char *buffer = new char[1000200];
-	//std::cout << "fileSizeinit " << fileSize << std::endl;
-	int offset = _offset;
-	do
-	{
-		int num = std::min(fileSize, (unsigned long int )1000000);
-		size_t readd = file.getBytes(offset, num, buffer);
-		offset += readd;
-
-
-		nar::senddata(skt,buffer,readd);
-
-
-		fileSize -= readd;
-	} while (fileSize > 0);
-  delete[] buffer;
-	return 1;
-}
 
 
 
-int nar::readSckWriteFile(int filefd, nar::Socket &skt, unsigned long fileSize ){
-
-	char *buffer = new char[1024];
-
-	std::cout << "FILE SIZE HERE !é!!! : " << fileSize << std::endl;
-
-    unsigned long total = 0;
-    do
-    {
-        int num = std::min(fileSize, (unsigned long int)1024);
-		//std::cout << "Num: "<< num << std::endl;
-        if (! nar::readdata(skt,buffer, num) ) {
-		   std::cout << "Read Data Failed from peer Skt" << std::endl;
-		   return 0;
-		}
-        total+=num;
-
-		////std::cout <<  "buffer: "<<std::string(buffer) << std::endl << std::endl << std::endl ;
-
-
-        nar::FileKeeper::writeToFile( filefd,  num, buffer);
-
-
-
-        fileSize -= num;
-
-	}
-    while (fileSize > 0);
-    std::cout<<"total ->>>> "<<total<<std::endl;
-	delete buffer;
-
-	return 1;
-}
 
 void nar::send_string_sckt(int sockfd, std::string str, int len) {
     int idx = 0;
@@ -232,7 +159,7 @@ void nar::send_string_sckt(int sockfd, std::string str, int len) {
     while(idx < len) {
         int ret = send(sockfd, str.c_str() + idx, len - idx, 0);
         if(ret == -1) {
-            throw nar::Exception("narIPCClient::sendRequest - Send string error.");
+            std::cout << "send string error"<< std::endl; exit(0);
         }
         idx += ret;
     }
@@ -285,14 +212,6 @@ void nar::send_message(nar::Socket* skt, std::string message) {
     skt->send((char*)message.c_str(), (int)message.size());
 }
 
-void nar::send_ipc_message(int sockfd, std::string message) {
-    int len = message.size();
-    send_int_sckt(sockfd, len);
-    std::string ok = get_string_sckt(sockfd, 2);
-    send_string_sckt(sockfd, message, len);
-    ok = get_string_sckt(sockfd, 2);
-}
-
 std::string nar::trim(std::string inp) {
     size_t first = inp.find_first_not_of(' ');
     if(std::string::npos == first)
@@ -301,12 +220,3 @@ std::string nar::trim(std::string inp) {
     return inp.substr(first, (last-first+1));
 }
 
-
-
-std::string nar::receive_ipc_message(int sockfd) {
-    int len = get_int_sckt(sockfd);
-    send_string_sckt(sockfd, std::string("OK"), 2);
-    std::string message = get_string_sckt(sockfd, len);
-    send_string_sckt(sockfd, std::string("OK"), 2);
-    return message;
-}
