@@ -14,15 +14,19 @@ namespace nar {
         namespace IPCPush {
             class Request : public IPCBaseRequest {
                 private:
-                    std::string _file_name;
+                    std::string _file_path;
                 public:
-                    std::string get_file_name();
-                    void set_file_name(std::string fn);
+                    std::string get_file_path();
+                    void set_file_path(std::string fp);
 
-                    Request(std::string fn) : IPCBaseRequest(std::string("push")), _file_name(fn) {}
+					Request() : IPCBaseRequest(std::string("push")) {}
+                    Request(std::string fp, std::string username, std::string password, std::string curdir) : IPCBaseRequest(std::string("push"), username, password, curdir), _file_path(fp) {}
                     nlohmann::json get_myrequestjson();
                     void receive_message(nlohmann::json &js);
                     void send_action(nar::Socket* skt);
+
+					nlohmann::json generate_json();
+					void populate_object(std::string& jsn_str);
             };
 
             class Response : public IPCBaseResponse {

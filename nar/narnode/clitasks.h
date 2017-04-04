@@ -3,6 +3,7 @@
 #include <string>
 
 #include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
 
 namespace nar {
     namespace CLITasks {

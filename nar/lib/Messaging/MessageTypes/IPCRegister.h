@@ -13,16 +13,17 @@ namespace nar {
     namespace MessageTypes {
         namespace IPCRegister {
             class Request : public IPCBaseRequest {
-                private:
-                    std::string _user_name;
                 public:
-                    std::string get_user_name();
-                    void set_user_name(std::string un);
 
-                    Request(std::string un) : IPCBaseRequest(std::string("register")), _user_name(un) {}
+					Request() : IPCBaseRequest(std::string("register")) {}
+                    Request(std::string username, std::string password, std::string curdir) : IPCBaseRequest(std::string("register"), username, password, curdir) {}
+					
                     nlohmann::json get_myrequestjson();
                     void receive_message(nlohmann::json &js);
                     void send_action(nar::Socket* skt);
+
+					nlohmann::json generate_json();
+					void populate_object(std::string& jsn_str);
             };
 
             class Response : public IPCBaseResponse {

@@ -15,17 +15,18 @@ namespace nar {
             class Request : public IPCBaseRequest {
                 private:
                     std::string _file_name;
-                    std::string _cur_dir;
                 public:
                     std::string get_file_name();
-                    std::string get_cur_dir();
                     void set_file_name(std::string fn);
-                    void set_cur_dir(std::string cd);
 
-                    Request(std::string fn, std::string cd) : IPCBaseRequest(std::string("pull")), _file_name(fn), _cur_dir(cd) {}
+					Request() : IPCBaseRequest(std::string("pull")) {}
+                    Request(std::string fn, std::string username, std::string password, std::string curdir) : IPCBaseRequest(std::string("pull"), username, password, curdir), _file_name(fn) {}
                     nlohmann::json get_myrequestjson();
                     void receive_message(nlohmann::json &js);
                     void send_action(nar::Socket* skt);
+
+					nlohmann::json generate_json();
+					void populate_object(std::string& jsn_str);
             };
 
             class Response : public IPCBaseResponse {

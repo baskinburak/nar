@@ -15,6 +15,7 @@ namespace nar {
             class Request : public IPCBaseRequest {
                 public:
                     Request() : IPCBaseRequest(std::string("status")) {}
+					Request(std::string username, std::string password)
                     nlohmann::json get_myrequestjson();
                     void send_action(nar::Socket* skt);
             };
