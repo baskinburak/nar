@@ -1,32 +1,41 @@
 #include "IPCPush.h"
 
-std::string nar::MessageTypes::IPCPush::Request::get_file_name(){
-    return _file_name;
+std::string nar::MessageTypes::IPCPush::Request::get_file_path(){
+    return _file_path;
 }
 
-void nar::MessageTypes::IPCPush::Request::set_file_name(std::string fn){
-    this -> _file_name = fn;
-    return;
+void nar::MessageTypes::IPCPush::Request::set_file_path(std::string fp){
+    this -> _file_path = fp;
 }
 
 nlohmann::json nar::MessageTypes::IPCPush::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["action"] = "push";
-    json_to_sent["payload"]["file_name"] = _file_name;
+    json_to_sent["payload"]["file_path"] = _file_path;
     return json_to_sent;
 }
 
+nlohmann::json nar::MessageTypes::IPCPush::Request::generate_json() {
+	nlohmann::json jsn = IPCBaseRequest::generate_json();
+	jsn["payload"]["file_path"] = this->_file_path;
+    return jsn;	
+}
+void nar::MessageTypes::IPCPush::Request::populate_object(std::string& jsn_str) {
+	auto jsn = nlohmann::json::parse(jsn_str);
+    IPCBaseRequest::populate_object(jsn);
+    this->_file_path = jsn["payload"]["file_path"];
+}
+
 void nar::MessageTypes::IPCPush::Request::send_action(nar::Socket* skt) {
-    nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "push";
-    json_to_sent["payload"]["file_name"] = _file_name;
+    nlohmann::json json_to_sent = this->generate_json();
     send_message(skt, json_to_sent.dump());
     return;
 }
 
 void nar::MessageTypes::IPCPush::Request::receive_message(nlohmann::json &js){
-    this -> _action = js["header"]["action"];
-    this -> _file_name = js["payload"]["file_name"];
+	//bunu sil    
+	//this -> _action = js["header"]["action"];
+    this -> _file_path = js["payload"]["file_path"];
     return;
 }
 

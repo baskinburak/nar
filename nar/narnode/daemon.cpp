@@ -10,6 +10,7 @@
 #include <nar/lib/Messaging/MessageTypes/IPCLs.h>
 #include <nar/lib/Messaging/messaging_utility.h>
 #include <nar/narnode/reactive.h>
+#include <nar/narnode/ActiveTask/ActiveTask.h>
 
 using std::string;
 using std::cout;
@@ -27,6 +28,10 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         cout<<"daemon ls>"<<endl;
 
     } else if(action == string("push")) {
+        nar::MessageTypes::IPCPush::Request ipc_push;
+        ipc_push.populate_object(msg);
+        nar::ActiveTask::Push push_task(globals, &uservars);
+        push_task.run(sck, &ipc_push);
 /*
         cout<<"<daemon push"<<endl;
         nar::MessageTypes::IPCPush::Request ipc_push(string(""));

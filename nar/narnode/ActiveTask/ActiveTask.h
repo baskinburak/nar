@@ -9,6 +9,7 @@
 
 #include <nar/lib/Messaging/MessageTypes/IPCBaseRequest.h>
 #include <nar/lib/Messaging/MessageTypes/IPCLs.h>
+#include <nar/lib/Messaging/MessageTypes/IPCPush.h>
 
 
 namespace nar {
@@ -16,7 +17,7 @@ namespace nar {
         bool user_authenticate(nar::Socket* skt, nar::UserVariables* uservars);
 
         class IActiveTask {
-            private:
+            protected:
                 nar::Global* _globals;
                 nar::UserVariables* _vars;
             public:
@@ -35,7 +36,7 @@ namespace nar {
             private:
             public:
                 Push(nar::Global* globals, nar::UserVariables* variables): IActiveTask(globals,variables) {}
-                void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCLs::Request* req);
+                void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPush::Request* req);
         };
 
         class Pull : public IActiveTask{

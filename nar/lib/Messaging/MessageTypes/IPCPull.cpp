@@ -4,41 +4,39 @@ std::string nar::MessageTypes::IPCPull::Request::get_file_name(){
     return _file_name;
 }
 
-std::string nar::MessageTypes::IPCPull::Request::get_cur_dir(){
-    return _cur_dir;
-}
-
 void nar::MessageTypes::IPCPull::Request::set_file_name(std::string fn){
     this -> _file_name = fn;
-    return;
-}
-
-void nar::MessageTypes::IPCPull::Request::set_cur_dir(std::string cd){
-    this -> _cur_dir = cd;
-    return;
 }
 
 nlohmann::json nar::MessageTypes::IPCPull::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
     json_to_sent["header"]["action"] = "pull";
     json_to_sent["payload"]["file_name"] = _file_name;
-    json_to_sent["payload"]["cur_dir"] = _cur_dir;
     return json_to_sent;
 }
 
+nlohmann::json nar::MessageTypes::IPCPull::Request::generate_json() {
+    nlohmann::json jsn = IPCBaseRequest::generate_json();
+	jsn["payload"]["file_name"] = this->_file_name;
+    return jsn;
+}
+
+void nar::MessageTypes::IPCPull::Request::populate_object(std::string& jsn_str) {
+    auto jsn = nlohmann::json::parse(jsn_str);
+    IPCBaseRequest::populate_object(jsn);
+    this->_file_name = jsn["payload"]["file_name"];
+}
+
 void nar::MessageTypes::IPCPull::Request::send_action(nar::Socket* skt) {
-    nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "pull";
-    json_to_sent["payload"]["file_name"] = _file_name;
-    json_to_sent["payload"]["cur_dir"] = _cur_dir;
+	nlohmann::json json_to_sent = this->generate_json();
     send_message(skt, json_to_sent.dump());
     return;
 }
 
 void nar::MessageTypes::IPCPull::Request::receive_message(nlohmann::json &js){
-    this -> _action = js["header"]["action"];
+	//sil bu func i    
+	//this -> _action = js["header"]["action"];
     this -> _file_name = js["payload"]["file_name"];
-    this -> _cur_dir = js["payload"]["cur_dir"];
     return;
 }
 
