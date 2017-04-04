@@ -17,10 +17,25 @@
 
 #include <nar/lib/Messaging/server_receive.h>
 #include <nar/narserver/ServerGlobal.h>
+#include <nar/narserver/Actions/ServerActions.h>
 
 using namespace nlohmann;
 
 std::map<std::string, bool> activetokens;
+
+
+void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
+    string msg = nar::trim(nar::get_message(*skt));
+    string action = nar::Messaging::get_action(msg);
+    if(action == "user_authentication_init") {
+        nar::MessageTypes::UserAuthenticationInit::Request req;
+        req.receive_message(msg);
+        nar::ServerAction::authenticated_action(s_global, req);
+    } else if(action == "machine_authentication_init") {
+    } else if(action == "user_register") {
+    } else if(action == "machine_register") {
+    }
+}
 
 
 void randezvous_thread(nar::ServerGlobal *s_global) {

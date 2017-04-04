@@ -33,7 +33,7 @@ namespace nar {
                     Request() : RequestHeader(std::string("user_authentication_init")) {}
                     Request(std::string username ): RequestHeader(std::string("user_authentication_init")), _username(username) {}
                     void send_mess(nar::Socket* skt, nar::MessageTypes::UserAuthenticationInit::Response & resp);
-                    void receive_message(nlohmann::json keep_req_recv);
+                    void receive_message(std::string& recv_msg);
                     nlohmann::json test_json();
                     std::string& get_username();
             };

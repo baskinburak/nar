@@ -38,11 +38,6 @@ namespace nar {
             std::string _pass;
             sql::Connection * _con;
             sql::Driver * _driver;
-        public:
-            Database()=default;
-            ~Database();
-
-
 
             nar::db::User turnUser(nar::User & user);
             nar::db::File turnFile(nar::File & file);
@@ -52,6 +47,10 @@ namespace nar {
             nar::db::Machine turnMachine(nar::Machine & machine);
             nar::db::Directory turnDirectory(nar::Directory & directory);
             nar::db::DirectoryTo turnDirectoryTo(nar::DirectoryTo & directoryTo);
+
+        public:
+            Database()=default;
+            ~Database();
 
 
             void setUser(std::string user);
@@ -108,7 +107,7 @@ namespace nar {
             std::vector<struct File> getUserFiles(long long int user_id);
             struct File getFile(long long int file_id);
             std::vector<struct Chunk> getChunks(long long int file_id);
-            struct Chunk getChunk(long long int  chunk_id);
+            struct Chunk getChunk(long long int  chunk_id); 
             std::vector<struct Machine> getMachines(long long int chunk_id);
 
 
