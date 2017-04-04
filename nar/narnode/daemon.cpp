@@ -78,7 +78,6 @@ int main() {
     std::thread reactive_thr(nar::reactive_dispatcher, globals);
     reactive_thr.detach();
 
-
     while(true) {
         nar::Socket* sck = new nar::Socket(globals->get_ioserv(), 'c');
         ipc_entry.accept(*sck);

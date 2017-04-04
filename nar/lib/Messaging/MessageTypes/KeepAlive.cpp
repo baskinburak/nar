@@ -12,6 +12,7 @@ void nar::MessageTypes::KeepAlive::Request::send_mess(nar::Socket* skt, nar::Mes
 void nar::MessageTypes::KeepAlive::Request::receive_message(nlohmann::json keep_req_recv){
     nlohmann::json head = keep_req_recv["header"];
     recv_fill(head);
+
     return;
 }
 nlohmann::json nar::MessageTypes::KeepAlive::Request::test_json() {
@@ -24,14 +25,15 @@ void nar::MessageTypes::KeepAlive::Response::send_mess(nar::Socket* skt) {
     nlohmann::json keep_resp_send;
     keep_resp_send["header"] = send_head();
     send_message(skt,keep_resp_send.dump());
-    std::string temp = get_message(skt);
-    nlohmann::json keep_resp_recv = nlohmann::json::parse(temp);
-    receive_message(keep_resp_recv);
+    //std::string temp = get_message(skt);
+    //nlohmann::json keep_resp_recv = nlohmann::json::parse(temp);
+    //receive_message(keep_resp_recv);
     return;
 }
-void nar::MessageTypes::KeepAlive::Response::receive_message(nlohmann::json keep_resp_recv){
+void nar::MessageTypes::KeepAlive::Response::receive_message(nlohmann::json& keep_resp_recv){
     nlohmann::json head = keep_resp_recv["header"];
     recv_fill(head);
+
     if(_status_code == 300) {
         throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
     }
