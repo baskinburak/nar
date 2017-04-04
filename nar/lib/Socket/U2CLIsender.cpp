@@ -1,5 +1,5 @@
 #include <iostream>
-#include <nar/lib/Socket/U2Socket.h>
+#include <nar/lib/Socket/USocket.h>
 #include <nar/narnode/File/File.h>
 #include <nar/lib/Exception/Exception.h>
 

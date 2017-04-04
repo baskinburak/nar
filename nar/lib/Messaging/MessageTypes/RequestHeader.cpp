@@ -6,12 +6,12 @@ std::string& nar::MessageTypes::RequestHeader::get_action() {
 
 nlohmann::json  nar::MessageTypes::RequestHeader::send_head(){
     nlohmann::json header;
-    header["_action"] = _action;
+    header["action"] = _action;
     return header;
 }
 
 void nar::MessageTypes::RequestHeader::recv_fill( nlohmann::json & received) {
-	_action = received["_action"];
+	_action = received["action"];
 	return;
 
 }
