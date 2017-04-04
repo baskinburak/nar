@@ -53,6 +53,7 @@ set(DAEMON_SOURCES
     nar/narnode/File/File.cpp
     nar/lib/Cryption/aes.cpp
     nar/lib/Cryption/rsa.cpp
+    nar/lib/Messaging/MessageTypes/FilePush.cpp
     nar/lib/Messaging/MessageTypes/IPCLs.cpp
     nar/lib/Messaging/MessageTypes/IPCBaseRequest.cpp
     nar/lib/Messaging/MessageTypes/IPCBaseResponse.cpp

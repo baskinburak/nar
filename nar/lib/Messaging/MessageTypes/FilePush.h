@@ -17,12 +17,13 @@ namespace nar {
                         std::string stream_id;
                         unsigned long long int chunk_size;
                     };
-                    Response(int statcode = -1, unsigned short  rport = 0): ResponseHeader(statcode, std::string("file_push_request")), randevous_port(rport) {}
-                    Response(int statcode = -1, unsigned short  rport,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_push_request")), randevous_port(rport),  elements(eles) {}
+                    Response() : ResponseHeader(-1, std::string("file_push_request")) {}
+                    Response(int statcode , unsigned short  rport): ResponseHeader(statcode, std::string("file_push_request")), _rendezvous_port(rport) {}
+                    Response(int statcode , unsigned short  rport,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_push_request")), _rendezvous_port(rport),  _elements(eles) {}
                     void add_element(struct PeerListElement& ele);
                     void add_element(std::string mid, unsigned long long int cid, std::string sid, unsigned long long int csize);
                     std::vector<struct PeerListElement>& get_elements();
-                    unsigned short get_randevous_port();
+                    unsigned short get_rendezvous_port();
                     void send_mess(nar::Socket* skt);
                     nlohmann::json test_json();
                     /**
@@ -34,26 +35,26 @@ namespace nar {
                       * @tested = No
                       * @return = void
                     */
-                    void receive_message(nlohmann::json push_resp_recv);
+                    void receive_message(std::string push_resp_recv);
                 private:
-                    unsigned short randevous_port;
-                    std::vector<struct PeerListElement> elements;
+                    unsigned short _rendezvous_port;
+                    std::vector<struct PeerListElement> _elements;
 
             };
 
             class Request : public RequestHeader {
                 private:
-                    unsigned long long int filesize;
-                    std::string dir;
-                    std::string filename;
+                    unsigned long long int _file_size;
+                    std::string _dir_name;
+                    std::string _file_name;
                 public:
                     Request() : RequestHeader(std::string("file_push_request")) {}
-                    Request(std::string fn , std::string d , unsigned long long int fs ): RequestHeader(std::string("file_push_request")), filesize(fs), dir(d), filename(fn) {}
-                    std::string& get_filename();
-                    std::string& get_dir();
-                    unsigned long long int get_filesize();
+                    Request(std::string fn , std::string d , unsigned long long int fs ): RequestHeader(std::string("file_push_request")), _file_size(fs), _dir_name(d), _file_name(fn) {}
+                    std::string& get_file_name();
+                    std::string& get_dir_name();
+                    unsigned long long int get_file_size();
                     void send_mess(nar::Socket* skt,  nar::MessageTypes::FilePush::Response & resp);
-                    void receive_message(nlohmann::json push_req_recv);
+                    void receive_message(std::string push_req_recv);
                     nlohmann::json test_json();
             };
 
