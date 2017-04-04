@@ -9,7 +9,7 @@
 #include <nar/narnode/uservars.h>
 #include <nar/lib/Messaging/MessageTypes/IPCLs.h>
 #include <nar/lib/Messaging/messaging_utility.h>
-//#include <nar/narnode/reactive.h>
+#include <nar/narnode/reactive.h>
 
 using std::string;
 using std::cout;
@@ -69,9 +69,9 @@ int main() {
     nar::Global* globals = new nar::Global(std::string("/root/.nar/config"));
     nar::Socket ipc_entry(globals->get_ioserv(), 's');
     ipc_entry.bind(17700, "127.0.0.1");
-
-    //std::thread reactive_thr(nar::reactive_dispatcher, globals);
-    //reactive_thr.detach();
+    std::cout << "alive and well" << std::endl;
+    std::thread reactive_thr(nar::reactive_dispatcher, globals);
+    reactive_thr.detach();
 
 
     while(true) {

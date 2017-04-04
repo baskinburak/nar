@@ -54,12 +54,18 @@ set(DAEMON_SOURCES
     nar/lib/Messaging/MessageTypes/IPCLs.cpp
     nar/lib/Messaging/MessageTypes/IPCBaseRequest.cpp
     nar/lib/Messaging/MessageTypes/IPCBaseResponse.cpp
+    nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
+    nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
+    nar/lib/Messaging/MessageTypes/KeepAlive.cpp
+    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
+    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
     nar/lib/Messaging/messaging_utility.cpp
+    nar/narnode/reactive.cpp
 )
 
-add_executable(narcli ${CLI_SOURCES})
-target_link_libraries(narcli ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
-add_dependencies(narcli narsocket)
+#add_executable(narcli ${CLI_SOURCES})
+#target_link_libraries(narcli ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
+#add_dependencies(narcli narsocket)
 
 add_executable(nardaemon ${DAEMON_SOURCES})
 target_link_libraries(nardaemon ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
