@@ -10,7 +10,7 @@ find_library(CryptoPP REQUIRED)
 find_library(Z REQUIRED)
 find_library(MYSQLCPPCONN REQUIRED)
 
-find_package(Boost COMPONENTS system filesystem random iostreams REQUIRED)
+find_package(Boost COMPONENTS system filesystem iostreams random REQUIRED)
 
 file(GLOB SOCKET_SOURCES nar/lib/Socket/Packet.cpp nar/lib/Socket/Socket.cpp nar/lib/Socket/USocket.cpp)
 add_library(narsocket SHARED ${SOCKET_SOURCES})

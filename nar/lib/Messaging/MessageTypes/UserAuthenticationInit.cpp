@@ -28,6 +28,7 @@ void nar::MessageTypes::UserAuthenticationInit::Response::send_mess(nar::Socket*
     keep_resp_send["header"] = send_head();
     keep_resp_send["payload"]["private_key"] = _private_key;
     keep_resp_send["payload"]["task_string"] = _task_string;
+    keep_resp_send["payload"]["aes_crypted"] = _aes_crypted;
     send_message(skt,keep_resp_send.dump());
     return;
 }
@@ -39,6 +40,7 @@ void nar::MessageTypes::UserAuthenticationInit::Response::receive_message(nlohma
     }
     _private_key = keep_resp_recv["payload"]["private_key"];
     _task_string = keep_resp_recv["payload"]["task_string"];
+    _aes_crypted = keep_resp_recv["payload"]["aes_crypted"];
     return;
 }
 
@@ -57,4 +59,8 @@ std::string & nar::MessageTypes::UserAuthenticationInit::Response::get_task_stri
 
 std::string& nar::MessageTypes::UserAuthenticationInit::Request::get_username() {
     return _username;
+}
+
+std::string& nar::MessageTypes::UserAuthenticationInit::Request::get_aes_crypted() {
+    return _aes_crypted;
 }
