@@ -122,8 +122,9 @@ void nar::Socket::connect(const std::string& host, const unsigned short port) {
     }
 
     boost::system::error_code ec = boost::asio::error::host_not_found;
+    std::cout << host << " " << port << std::endl;
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(host), port);
-    _sock->connect(endpoint,ec);
+    _sock->connect(endpoint, ec);
     if(ec) {
         throw nar::Exception::Socket::ConnectionError("Error on a connect call", host, port, _type);
     }

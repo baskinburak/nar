@@ -14,6 +14,9 @@
 #include <nar/narserver/ServerGlobal.h>
 #include <nar/narserver/Actions/ServerActions.h>
 #include <nar/lib/Messaging/messaging_utility.h>
+#include <nar/narnode/utility.h>
+#include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
+#include <nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.h>
 
 using namespace nlohmann;
 
@@ -53,7 +56,7 @@ int main(int argc, char *argv[]) {
     rand.detach();
 
     nar::Socket entry_skt(s_global.get_ioserv(), 's');
-    entry_skt.bind(12345);
+    entry_skt.bind(16670, "127.0.0.1");
 
     while(true) {
         nar::Socket* new_skt = new nar::Socket(s_global.get_ioserv(), 'c');

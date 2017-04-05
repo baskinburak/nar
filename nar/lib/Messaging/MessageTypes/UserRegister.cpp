@@ -35,9 +35,6 @@ void nar::MessageTypes::UserRegister::Request::receive_message(std::string& recv
     auto usrreg_req_recv = nlohmann::json::parse(recv_jsn);
     nlohmann::json head = usrreg_req_recv["header"];
     recv_fill(head);
-    if(_status_code == 300) {
-        throw nar::Exception::MessageTypes::UserNameAlreadyExist("User name already exists", _status_code);
-    }
     this->_username = usrreg_req_recv["payload"]["username"];
     this->_aes_crypted = usrreg_req_recv["payload"]["aes_crypted"];
     this->_rsa_pub = usrreg_req_recv["payload"]["rsa_pub"];
@@ -54,6 +51,9 @@ void nar::MessageTypes::UserRegister::Response::send_mess(nar::Socket* skt) {
 void nar::MessageTypes::UserRegister::Response::receive_message(nlohmann::json usrreg_resp_recv){
     nlohmann::json head = usrreg_resp_recv["header"];
     recv_fill(head);
+    if(_status_code == 300) {
+        throw nar::Exception::MessageTypes::UserNameAlreadyExist("User name already exists", _status_code);
+    }
     return;
 }
 nlohmann::json nar::MessageTypes::UserRegister::Response::test_json() {

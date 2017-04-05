@@ -10,7 +10,8 @@ void nar::MessageTypes::UserAuthenticationAnswer::Request::send_mess(nar::Socket
     resp.receive_message(uans_req_recv);
     return;
 }
-void nar::MessageTypes::UserAuthenticationAnswer::Request::receive_message(nlohmann::json uans_req_recv){
+void nar::MessageTypes::UserAuthenticationAnswer::Request::receive_message(std::string& recv_req){
+    auto uans_req_recv = nlohmann::json::parse(recv_req);
     nlohmann::json head = uans_req_recv["header"];
     this->_result_string = uans_req_recv["payload"]["result_string"];
     recv_fill(head);

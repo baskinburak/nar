@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include "base64.h"
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/zlib.hpp>

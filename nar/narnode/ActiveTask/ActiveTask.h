@@ -12,6 +12,7 @@
 #include <nar/lib/Messaging/MessageTypes/IPCPush.h>
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
 #include <nar/lib/Messaging/MessageTypes/IPCPull.h>
+#include <nar/lib/Messaging/MessageTypes/IPCRegister.h>
 
 
 namespace nar {
@@ -51,6 +52,10 @@ namespace nar {
         };
 
         class Register : public IActiveTask {
+            private:
+            public:
+                Register(nar::Global* globals, nar::UserVariables* variables): IActiveTask(globals, variables) {}
+                void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCRegister::Request* req);
         };
 
     }

@@ -28,7 +28,7 @@ namespace nar {
                     Request() : RequestHeader(std::string("user_authentication_answer")){}
                     Request(std::string result_string ): RequestHeader(std::string("user_authentication_answer")), _result_string(result_string) {}
                     void send_mess(nar::Socket* skt, nar::MessageTypes::UserAuthenticationAnswer::Response & resp);
-                    void receive_message(nlohmann::json uans_req_recv);
+                    void receive_message(std::string& recv_req);
                     nlohmann::json test_json();
                     std::string& get_result_string();
             };

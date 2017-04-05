@@ -8,8 +8,6 @@ using std::string;
 using namespace nlohmann;
 string nar::Messaging::get_action(string & msg) {
     auto jsn = json::parse(msg);
-    cout << "lemme Error" << endl;
-    cout << "BURAYAY "<<jsn["header"]["action"] << endl;
     return jsn["header"]["action"];
 }
 

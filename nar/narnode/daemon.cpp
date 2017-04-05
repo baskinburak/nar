@@ -46,12 +46,10 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         cout<<"daemon pull>"<<endl;
 */
     } else if(action == string("register")) {
-/*
-        cout<<"<daemon register"<<endl;
-        nar::MessageTypes::IPCRegister::Request ipc_reg(string(""));
-        ipc_reg.receive_message(jsn);
-        cout<<"daemon register>"<<endl;
-*/
+        nar::MessageTypes::IPCRegister::Request ipc_register;
+        ipc_register.populate_object(msg);
+        nar::ActiveTask::Register register_task(globals, &uservars);
+        register_task.run(sck, &ipc_register);
     } else if(action == string("config")) {
 /*
         cout<<"<daemon config"<<endl;
@@ -74,7 +72,7 @@ int main() {
     nar::Global* globals = new nar::Global(std::string("/root/.nar/config"));
     nar::Socket ipc_entry(globals->get_ioserv(), 's');
     ipc_entry.bind(17700, "127.0.0.1");
-    std::cout << "alive and well" << std::endl;
+
     std::thread reactive_thr(nar::reactive_dispatcher, globals);
     reactive_thr.detach();
 

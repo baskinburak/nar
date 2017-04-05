@@ -6,7 +6,7 @@
 namespace nar {
     namespace MessageTypes{
         class RequestHeader {
-            private:
+            protected:
                 std::string _action;
             public:
                 RequestHeader(std::string a): _action(a) {
