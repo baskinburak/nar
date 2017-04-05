@@ -1,23 +1,19 @@
-
 #include <map>
 #include <nar/lib/Socket/Socket.h>
 #include <thread>
 #include <iostream>
 #include <stdlib.h>
-#include <nar/narnode/utility.h>
 #include <nar/narserver/Database.h>
 #include <nar/narserver/dbstructs.h>
-#include <nar/narserver/sockinfo.h>
 #include <math.h>
 #include <cstdlib>
 #include <ctime>
 #include <iterator>
 #include <mutex>
 #include <atomic>
-
-#include <nar/lib/Messaging/server_receive.h>
 #include <nar/narserver/ServerGlobal.h>
 #include <nar/narserver/Actions/ServerActions.h>
+#include <nar/lib/Messaging/messaging_utility.h>
 
 using namespace nlohmann;
 
@@ -33,6 +29,9 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
         nar::ServerAction::authenticated_action(s_global, req, skt);
     } else if(action == "machine_authentication_init") {
     } else if(action == "user_register") {
+        nar::MessageTypes::UserRegister::Request req;
+        req.receive_message(msg);
+        nar::ServerAction::register_action(s_global, req, skt);
     } else if(action == "machine_register") {
     }
 }
@@ -40,15 +39,15 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
 
 void randezvous_thread(nar::ServerGlobal *s_global) {
     nar::USocket randezvous_socket(s_global->get_ioserv(), "127.0.0.1", 10000, 0);
-    s_global->set_randezvous_port(randevous_socket.get_port());
+    s_global->set_randezvous_port(randezvous_socket.get_port());
     s_global->set_next_stream_id(1);
-    randevous_socket.randezvous_server();
+    randezvous_socket.randezvous_server();
 }
 
 int main(int argc, char *argv[]) {
     std::srand(std::time(NULL));
 
-    nar::ServerGlobal s_global("nar", "root", "123");
+    nar::ServerGlobal s_global(std::string("nar"), std::string("root"), std::string("123"));
 
     std::thread rand(&randezvous_thread, &s_global);
     rand.detach();
@@ -58,9 +57,9 @@ int main(int argc, char *argv[]) {
 
     while(true) {
         nar::Socket* new_skt = new nar::Socket(s_global.get_ioserv(), 'c');
-        entry_skt.accept(*new_skt, NULL);
+        entry_skt.accept(*new_skt);
 
-        std::thread thr(&nar::server_receive, new_skt, &s_global);
+        std::thread thr(&handle_request, new_skt, &s_global);
         thr.detach();
     }
     return 0;

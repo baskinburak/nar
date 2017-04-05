@@ -48,6 +48,7 @@ namespace nar {
         public:
             map<string, nar::SockInfo*> keepalives;
             ServerGlobal();
+            ServerGlobal(std::string db_name, std::string db_user, std::string db_pass);
             string get_db_name();
             string get_db_user();
             string get_db_pass();
@@ -59,7 +60,7 @@ namespace nar {
             void set_randezvous_port(unsigned short port);
             void set_next_stream_id(unsigned int);
             void connect_db();
-            boost::asio::io_service& get_ioserv() const;
+            boost::asio::io_service& get_ioserv();
             nar::Database* get_db();
     };
 }

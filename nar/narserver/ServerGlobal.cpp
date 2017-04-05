@@ -80,7 +80,7 @@ nar::Database* nar::ServerGlobal::get_db() {
     return db;
 }
 
-boost::asio::io_service& nar::ServerGlobal::get_ioserv() const {
+boost::asio::io_service& nar::ServerGlobal::get_ioserv() {
     read_start();
     boost::asio::io_service& ioserv = this->io_service;
     read_end();
