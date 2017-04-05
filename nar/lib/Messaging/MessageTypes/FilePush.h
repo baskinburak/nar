@@ -14,16 +14,17 @@ namespace nar {
                     struct PeerListElement {
                         std::string machine_id;
                         unsigned long long int chunk_id;
-                        std::string stream_id;
+                        unsigned int stream_id;
                         unsigned long long int chunk_size;
+                        bool operator<(struct PeerListElement& rhs) { return chunk_id < rhs.chunk_id; }
                     };
                     Response() : ResponseHeader(-1, std::string("file_push_request")) {}
-                    Response(int statcode , unsigned short  rport): ResponseHeader(statcode, std::string("file_push_request")), _rendezvous_port(rport) {}
-                    Response(int statcode , unsigned short  rport,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_push_request")), _rendezvous_port(rport),  _elements(eles) {}
+                    Response(int statcode , unsigned short  rport): ResponseHeader(statcode, std::string("file_push_request")), _randezvous_port(rport) {}
+                    Response(int statcode , unsigned short  rport,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_push_request")), _randezvous_port(rport),  _elements(eles) {}
                     void add_element(struct PeerListElement& ele);
-                    void add_element(std::string mid, unsigned long long int cid, std::string sid, unsigned long long int csize);
+                    void add_element(std::string mid, unsigned long long int cid, unsigned int sid, unsigned long long int csize);
                     std::vector<struct PeerListElement>& get_elements();
-                    unsigned short get_rendezvous_port();
+                    unsigned short get_randezvous_port();
                     void send_mess(nar::Socket* skt);
                     nlohmann::json test_json();
                     /**
@@ -37,7 +38,7 @@ namespace nar {
                     */
                     void receive_message(std::string push_resp_recv);
                 private:
-                    unsigned short _rendezvous_port;
+                    unsigned short _randezvous_port;
                     std::vector<struct PeerListElement> _elements;
 
             };

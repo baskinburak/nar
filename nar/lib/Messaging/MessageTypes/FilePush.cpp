@@ -1,4 +1,5 @@
 #include "FilePush.h"
+#include <algorithm>
 
 std::string& nar::MessageTypes::FilePush::Request::get_file_name() {
     return this->_file_name;
@@ -16,7 +17,7 @@ void nar::MessageTypes::FilePush::Response::add_element(struct nar::MessageTypes
     this->_elements.push_back(ele);
 }
 
-void nar::MessageTypes::FilePush::Response::add_element(std::string mid, unsigned long long int cid, std::string sid, unsigned long long int csize) {
+void nar::MessageTypes::FilePush::Response::add_element(std::string mid, unsigned long long int cid, unsigned int sid, unsigned long long int csize) {
     struct PeerListElement ele = {
         mid, //peer id
         cid, // chunk id
@@ -30,8 +31,8 @@ std::vector<struct nar::MessageTypes::FilePush::Response::PeerListElement>& nar:
     return this->_elements;
 
 }
-unsigned short nar::MessageTypes::FilePush::Response::get_rendezvous_port() {
-    return this->_rendezvous_port;
+unsigned short nar::MessageTypes::FilePush::Response::get_randezvous_port() {
+    return this->_randezvous_port;
 }
 
 
@@ -70,7 +71,7 @@ void nar::MessageTypes::FilePush::Response::send_mess(nar::Socket* skt){
     if(status == 200) {
         nlohmann::json push_resp_send;
         push_resp_send["header"] = send_head();
-        push_resp_send["payload"]["rand_port"] = this->_rendezvous_port;
+        push_resp_send["payload"]["rand_port"] = this->_randezvous_port;
         push_resp_send["payload"]["peer_list"] = nlohmann::json::array();
         push_resp_send["payload"]["size"] = _elements.size();
         for(int i = 0;i < _elements.size();i++) {
@@ -99,21 +100,22 @@ void nar::MessageTypes::FilePush::Response::receive_message(std::string msg){
     } else if(_status_code == 301) {
         throw nar::Exception::MessageTypes::NoValidPeerPush("Not enough valid peer for push operation", _status_code);
     }
-    this->_rendezvous_port = push_resp_recv["payload"]["rand_port"];
+    this->_randezvous_port = push_resp_recv["payload"]["rand_port"];
     unsigned long int size = push_resp_recv["payload"]["size"];
     for(int i=0;i<size;i++) {
         std::string mid = push_resp_recv["payload"]["peer_list"][i]["machine_id"];
         unsigned long long int cid = push_resp_recv["payload"]["peer_list"][i]["chunk_id"];
-        std::string sid = push_resp_recv["payload"]["peer_list"][i]["stream_id"];
+        unsigned int sid = push_resp_recv["payload"]["peer_list"][i]["stream_id"];
         unsigned long long int csize = push_resp_recv["payload"]["peer_list"][i]["chunk_size"];
         this->add_element(mid,cid,sid,csize);
     }
+    sort(this->_elements.begin(), this->_elements.end());
     return;
 }
 nlohmann::json nar::MessageTypes::FilePush::Response::test_json() {
     nlohmann::json push_resp_test;
     push_resp_test["header"] = send_head();
-    push_resp_test["payload"]["rand_port"] = this->_rendezvous_port;
+    push_resp_test["payload"]["rand_port"] = this->_randezvous_port;
     push_resp_test["payload"]["peer_list"] = nlohmann::json::array();
     push_resp_test["payload"]["size"] = _elements.size();
     for(int i = 0;i < _elements.size();i++) {

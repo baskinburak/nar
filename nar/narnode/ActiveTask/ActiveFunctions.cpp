@@ -11,7 +11,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-bool nar::ActiveTask::user_authenticate(nar::Socket* skt, nar::UserVariables* user_vars) {
+nar::MessageTypes::UserAuthenticationInit::Response nar::ActiveTask::user_authenticate(nar::Socket* skt, nar::UserVariables* user_vars) {
     string user_name = user_vars->get_username();
     string pass_aes = user_vars->get_pass_aes();
     nar::MessageTypes::UserAuthenticationInit::Request init_req(user_name);
@@ -20,9 +20,9 @@ bool nar::ActiveTask::user_authenticate(nar::Socket* skt, nar::UserVariables* us
         init_req.send_mess(skt, init_resp);
     }
     catch (nar::Exception::MessageTypes::UserDoesNotExist ex) {
-        cout<<"Error in ActiveFunctions "<<ex.what()<<endl;
-        return false;
+        throw;
     }
+
     string fake_private = init_resp.get_private_key();
     string real_private;
     string task_string = init_resp.get_task_string();
@@ -39,8 +39,7 @@ bool nar::ActiveTask::user_authenticate(nar::Socket* skt, nar::UserVariables* us
         answer_req.send_mess(skt, answer_resp);
     }
     catch(nar::Exception::MessageTypes::ResultStringIsWrong ex) {
-        cout<<"Error in ActiveFunctions "<<ex.what()<<endl;
-        return false;
+        throw;
     }
-    return true;
+    return init_resp;
 }

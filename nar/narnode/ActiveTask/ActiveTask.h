@@ -10,11 +10,12 @@
 #include <nar/lib/Messaging/MessageTypes/IPCBaseRequest.h>
 #include <nar/lib/Messaging/MessageTypes/IPCLs.h>
 #include <nar/lib/Messaging/MessageTypes/IPCPush.h>
+#include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
 
 
 namespace nar {
     namespace ActiveTask {
-        bool user_authenticate(nar::Socket* skt, nar::UserVariables* uservars);
+        nar::MessageTypes::UserAuthenticationInit::Response user_authenticate(nar::Socket* skt, nar::UserVariables* uservars);
 
         class IActiveTask {
             protected:
@@ -22,7 +23,6 @@ namespace nar {
                 nar::UserVariables* _vars;
             public:
                 IActiveTask(nar::Global* globals,nar::UserVariables* vars) : _globals(globals), _vars(vars) {}
-                virtual void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCBaseRequest* req) = 0;
         };
 
         class LS : public IActiveTask {
