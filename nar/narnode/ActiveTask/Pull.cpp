@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <boost/filesystem.hpp>
 
 using std::string;
 using std::cout;
@@ -16,16 +17,51 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     if (!nar::ActiveTask::user_authenticate(server_sck, this->_vars)) {
         cout << "user_authentication fail" << endl;
     }
-    string file_name = req.get_file_name();
-    string dir_name =  req.get_current_directory();
 
-    nar::MessageTypes::FilePull::Request pull_req(file_name, dir_name);
+    string file_name = req.get_file_name();
+    string system_dir = req.get_dir_path(); // to be changed
+    string nar_dir_name =  req.get_current_directory();
+
+    nar::MessageTypes::FilePull::Request pull_req(file_name, nar_dir_name);
     nar::MessageTypes::FilePull::Response pull_resp;
     pull_req.send_mess(server_sck, pull_resp);
-
+    unsigned short rand_port = pull_req.get_rendezvous_port();
     std::vector<struct nar::MessageTypes::FilePull::PeerListElement> elements = pull_resp.get_elements();
     std::sort(elements.begin(), elements.end());
-    for(int i=0;i<elements.size();i++) {
-        
+
+    boost::filesystem::path tpath(system_dir);
+    tpath /= file_name;
+
+
+    boost::filesystem::path temp;
+    try {
+        temp = boost::filesystem::unique_path();
+    } catch(std::ios_base::failure& Exp) {
+        throw nar::Exception::Unknown(Exp.what());
     }
+    if(this->_mode != "r") {
+        throw nar::Exception::File::WrongMode("File is not opened with 'r'", _mode.c_str());
+    }
+    std::string temp_native = temp.native();
+
+
+
+
+    nar::File tempfile1(temp_native,"w",false);
+
+    for(int i=0;i<elements.size();i++) {
+        unsigned long stream_id = elements[i].stream_id;
+        nar::USocket cli_sck(this->_globals->get_ioserv(), this->_globals->get_server_ip(), rand_port, stream_id);
+        cli_sck.connect();
+        long int total_read = 0
+        char buff[1024];
+        while(total_read < elements[i].chunk_size) {
+            int len = cli_sck.recv(buf, 1024);
+            tempfile1.write(buf,len);
+            total_read += len;
+        }
+
+    }
+    nar::File (temp_nat)
+    nar::File*
 }
