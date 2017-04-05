@@ -11,6 +11,7 @@
 #include <nar/lib/Messaging/MessageTypes/IPCLs.h>
 #include <nar/lib/Messaging/MessageTypes/IPCPush.h>
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
+#include <nar/lib/Messaging/MessageTypes/IPCPull.h>
 
 
 namespace nar {
@@ -40,6 +41,10 @@ namespace nar {
         };
 
         class Pull : public IActiveTask{
+            private:
+            public:
+                Pull(nar::Global* globals, nar::UserVariables* variables): IActiveTask(globals,variables) {}
+                void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPull::Request* req);
         };
 
         class MakeDir : public IActiveTask {
