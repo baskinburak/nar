@@ -26,7 +26,13 @@ namespace nar {
                         unsigned long long int chunk_id;
                         long long int stream_id;
                         unsigned long long int chunk_size;
+
+                        bool operator < (const PeerListElement& str) const
+                        {
+                           return (chunk_id < str.chunk_id);
+                        }
                     };
+                    Response(): ResponseHeader(-1, std::string("file_pull_request")){}
                     /*
                      * Constructor
                      *
@@ -35,7 +41,7 @@ namespace nar {
                      * @param: rport, unsigned short, aes key information
                      * @tested: Yes
                     */
-                    Response(int statcode = -1, unsigned short  rport = 0): ResponseHeader(statcode, std::string("file_pull_request")), _randevous_port(rport) {}
+                    Response(int statcode , unsigned short  rport): ResponseHeader(statcode, std::string("file_pull_request")), _rendezvous_port(rport) {}
                     /*
                      * Constructor
                      *
@@ -44,7 +50,7 @@ namespace nar {
                      * @param: rport, unsigned short, aes key information
                      * @tested: Yes
                     */
-                    Response(int statcode = -1, unsigned short  rport = 0,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_pull_request")), _randevous_port(rport),  elements(eles) {}
+                    Response(int statcode  , unsigned short  rport,  std::vector<struct PeerListElement>& eles): ResponseHeader(statcode, std::string("file_pull_request")), _rendezvous_port(rport),  _elements(eles) {}
                     /*
                      * adds new elements to pull file message
                      *
@@ -79,13 +85,13 @@ namespace nar {
                      * @return: unsigned short, value of the randevous_port
                      * @tested: Yes
                     */
-                    unsigned short get_randevous_port();
+                    unsigned short get_rendezvous_port();
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json pull_req_recv);
                     nlohmann::json test_json();
                 private:
-                    unsigned short _randevous_port;
-                    std::vector<struct PeerListElement> elements;
+                    unsigned short _rendezvous_port;
+                    std::vector<struct PeerListElement> _elements;
 
 
 
@@ -94,13 +100,14 @@ namespace nar {
 
             class Request : public RequestHeader {
                 private:
-                    std::string dir;
-                    std::string file_name;
+                    std::string _dir_name;
+                    std::string _file_name;
 
                 public:
-                    Request(std::string fn = std::string(""), std::string d = std::string("")): RequestHeader(std::string("file_pull_request")),  dir(d), file_name(fn) {}
-                    std::string& get_filename();
-                    std::string& get_dir();
+                    Request() :RequestHeader(std::string("file_pull_request")) {}
+                    Request(std::string fn = std::string(""), std::string d = std::string("")): RequestHeader(std::string("file_pull_request")),  _dir_name(d), _file_name(fn) {}
+                    std::string& get_file_name();
+                    std::string& get_dir_name();
                     void send_mess(nar::Socket* skt, nar::MessageTypes::FilePull::Response & resp);
                     void receive_message(nlohmann::json pull_req_recv);
                     nlohmann::json test_json();
