@@ -1,15 +1,19 @@
 #include "ServerActions.h"
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.h>
+#include <nar/lib/Messaging/MessageTypes/FilePush.h>
+#include <nar/lib/Messaging/MessageTypes/FilePull.h>
 #include <nar/narserver/Database.h>
 #include <nar/narserver/dbstructs.h>
 #include <nar/lib/Cryption/aes.h>
+#include <nar/narserver/Actions/AuthAction.h>
+#include <nar/lib/Messaging/message_utility.h>
 
 
-void nar::ServerAction::authenticated_action(nar::ServerGlobal* s_global, nar::MessageTypes::UserAuthenticationInit::Request& req, nar::Socket* skt) {
+void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::MessageTypes::UserAuthenticationInit::Request& req, nar::Socket* skt) {
     std::string username = req.get_username();
     nar::Database* db = s_global->get_db();
-    nar::User user = db->getUser(username);
+    nar::DBStruct::User user = db->getUser(username);
     if (user.user_id == -1) {                       // NO SUCH USER
         nar::MessageTypes::UserAuthenticationInit::Response auth_resp(400,std::string("bla"),std::string("bla"));
         return;
@@ -33,10 +37,12 @@ void nar::ServerAction::authenticated_action(nar::ServerGlobal* s_global, nar::M
     int comp,status_code;
     comp = rand_string.compare(0,rand_string.size(),result_string);
     status_code = 400
-    if(comp == 0) {         // Equeal
+    if(comp == 0) {         // Equal
         status_code = 200;
     }
 
     nar::MessageTypes::UserAuthenticationAnswer::Response ans_resp(status_code);
     ans_resp.send_mess(skt);
+    nar::AuthAction::authentication_dispatcher(s_global,skt,user);
+
 }
