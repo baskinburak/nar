@@ -61,6 +61,6 @@ std::string& nar::MessageTypes::UserAuthenticationInit::Request::get_username() 
     return _username;
 }
 
-std::string& nar::MessageTypes::UserAuthenticationInit::Request::get_aes_crypted() {
+std::string& nar::MessageTypes::UserAuthenticationInit::Response::get_aes_crypted() {
     return _aes_crypted;
 }
