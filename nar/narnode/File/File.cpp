@@ -168,16 +168,8 @@ nar::File* nar::File::compress() {
     nar::File* r_version = new nar::File(temp_file, "r", true);
     return  r_version;
 }
-nar::File* nar::File::decompress() {
-    boost::filesystem::path temp;
-    try {
-        temp = boost::filesystem::unique_path();
-    } catch(std::ios_base::failure& Exp) {
-        throw nar::Exception::Unknown(Exp.what());
-    }
-    std::string temp_file =temp.native();
-    temp_file += std::string(".txt");
-    nar::File tempfile(temp_file, "w", false);
+nar::File* nar::File::decompress(std::string& fname) {
+    nar::File tempfile(fname, "w", false);
     if(this->_mode != "r") {
         throw nar::Exception::File::WrongMode("Compressed file should have opened with 'r'", _mode.c_str());
     }
@@ -186,7 +178,7 @@ nar::File* nar::File::decompress() {
     in.push(this->_file_handle);
     boost::iostreams::copy(in, tempfile._file_handle);
 
-    nar::File* r_version = new nar::File(temp_file, "r", true);
+    nar::File* r_version = new nar::File(fname, "r", false);
     return  r_version;
 }
 
@@ -225,12 +217,22 @@ nar::File* nar::File::encrypt(std::string& aes) {
     return out2;
 }
 
-nar::File* nar::File::decrypt(std::string& aes, std::string& fname) {
+nar::File* nar::File::decrypt(std::string& aes ) {
     using namespace CryptoPP;
+
+    boost::filesystem::path temp;
+    try {
+        temp = boost::filesystem::unique_path();
+    } catch(std::ios_base::failure& Exp) {
+        throw nar::Exception::Unknown(Exp.what());
+    }
+    std::string temp_file =temp.native();
+    temp_file += std::string(".z");
+
     if(this->_mode != "r") {
         throw nar::Exception::File::WrongMode("File is not opened with 'r'", _mode.c_str());
     }
-    nar::File out(fname.c_str(),"w",false);
+    nar::File out(temp_file,"w",false);
 
     std::string hexIv;
     for(int ind=0; ind<512;++ind) {
@@ -243,7 +245,7 @@ nar::File* nar::File::decrypt(std::string& aes, std::string& fname) {
 
     const int TAG_SIZE = 12;
     CryptoPP::FileSource ss(this->_file_handle, true, new CryptoPP::AuthenticatedDecryptionFilter(dec, new CryptoPP::FileSink(out._file_handle),CryptoPP::AuthenticatedDecryptionFilter::DEFAULT_FLAGS, TAG_SIZE));
-    nar::File* out2 = new nar::File(fname,"r",false);
+    nar::File* out2 = new nar::File(temp_file,"r",true);
     return out2;
 
 }
