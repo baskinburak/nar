@@ -18,14 +18,12 @@ add_library(narsocket SHARED ${SOCKET_SOURCES})
 file(GLOB IPC_MESSAGING_SOURCES nar/lib/Messaging/MessageTypes/IPC*cpp)
 add_library(naripcmessaging SHARED ${IPC_MESSAGING_SOURCES})
 
-#file(GLOB MESSAGE_SOURCES nar/lib/Messaging/MessageTypes/*cpp nar/lib/Messaging/messaging_utility.cpp)
-#add_library(narmessage SHARED ${MESSAGE_SOURCES})
 
 set(SERVER_SOURCES
     nar/narserver/Database.cpp
     nar/narserver/server.cpp
     nar/narserver/ServerGlobal.cpp
-    nar/narserver/Actions/authenticated_action.cpp
+    nar/narserver/Actions/authenticate_action.cpp
     nar/narserver/Actions/register_action.cpp
     nar/narnode/utility.cpp
     nar/lib/Cryption/aes.cpp
@@ -38,17 +36,13 @@ set(SERVER_SOURCES
     nar/lib/Messaging/MessageTypes/RequestHeader.cpp
     nar/narnode/uservars.cpp
     nar/narnode/File/File.cpp
+    nar/narserver/Actions/AuthActions.cpp
 )
 
 set(NAR_LIBRARIES libnaripcmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn)
 set(SERVER_LIBRARIES libnarsocket.so pthread cryptopp z mysqlcppconn)
 
 
-#add_executable(narserver ${SERVER_SOURCES})
-
-#target_link_libraries(narserver ${NAR_LIBRARIES} mysqlcppconn)
-
-#add_dependencies(narserver narsocket narfile narmessage)
 
 set(CLI_SOURCES
     nar/narnode/cli.cpp
@@ -84,22 +78,22 @@ set(DAEMON_SOURCES
     nar/lib/base64/base64.cpp
 )
 
-set(REACT_TEST_SOURCES
-    nar/narnode/utility.cpp
-    nar/narnode/uservars.cpp
-    nar/narnode/global.cpp
-    nar/narnode/File/File.cpp
-    nar/lib/Messaging/MessageTypes/IPCLs.cpp
-    nar/lib/Messaging/MessageTypes/IPCBaseRequest.cpp
-    nar/lib/Messaging/MessageTypes/IPCBaseResponse.cpp
-    nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
-    nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
-    nar/lib/Messaging/MessageTypes/KeepAlive.cpp
-    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
-    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
-    nar/lib/Messaging/messaging_utility.cpp
-    nar/narnode/reacTest.cpp
-)
+#set(REACT_TEST_SOURCES
+#    nar/narnode/utility.cpp
+#    nar/narnode/uservars.cpp
+#    nar/narnode/global.cpp
+#    nar/narnode/File/File.cpp
+#    nar/lib/Messaging/MessageTypes/IPCLs.cpp
+#    nar/lib/Messaging/MessageTypes/IPCBaseRequest.cpp
+#    nar/lib/Messaging/MessageTypes/IPCBaseResponse.cpp
+#    nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
+#   nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
+#    nar/lib/Messaging/MessageTypes/KeepAlive.cpp
+#    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
+#    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
+#    nar/lib/Messaging/messaging_utility.cpp
+#    nar/narnode/reacTest.cpp
+#)
 
 add_executable(narcli ${CLI_SOURCES})
 target_link_libraries(narcli ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})

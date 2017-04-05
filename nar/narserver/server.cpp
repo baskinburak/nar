@@ -29,7 +29,7 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
     if(action == "user_authentication_init") {
         nar::MessageTypes::UserAuthenticationInit::Request req;
         req.receive_message(msg);
-        nar::ServerAction::authenticated_action(s_global, req, skt);
+        nar::ServerAction::authenticate_action(s_global, req, skt);
     } else if(action == "machine_authentication_init") {
     } else if(action == "user_register") {
         nar::MessageTypes::UserRegister::Request req;

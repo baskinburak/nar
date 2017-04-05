@@ -32,38 +32,14 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         ipc_push.populate_object(msg);
         nar::ActiveTask::Push push_task(globals, &uservars);
         push_task.run(sck, &ipc_push);
-/*
-        cout<<"<daemon push"<<endl;
-        nar::MessageTypes::IPCPush::Request ipc_push(string(""));
-        ipc_push.receive_message(jsn);
-        cout<<"daemon push>"<<endl;
-*/
     } else if(action == string("pull")) {
-/*
-        cout<<"<daemon pull"<<endl;
-        nar::MessageTypes::IPCPull::Request ipc_pull(string(""),string(""));
-        ipc_pull.receive_message(jsn);
-        cout<<"daemon pull>"<<endl;
-*/
     } else if(action == string("register")) {
         nar::MessageTypes::IPCRegister::Request ipc_register;
         ipc_register.populate_object(msg);
         nar::ActiveTask::Register register_task(globals, &uservars);
         register_task.run(sck, &ipc_register);
     } else if(action == string("config")) {
-/*
-        cout<<"<daemon config"<<endl;
-        nar::MessageTypes::IPCConfig::Request ipc_con(string(""),string(""));
-        ipc_con.receive_message(jsn);
-        cout<<"daemon config>"<<endl;
-*/
     } else if(action == string("status")) {
-/*
-        cout<<"<daemon status"<<endl;
-        nar::MessageTypes::IPCStatus::Request ipc_stat;
-        ipc_stat.receive_message(jsn);
-        cout<<"daemon status>"<<endl;
-*/
     }
 }
 

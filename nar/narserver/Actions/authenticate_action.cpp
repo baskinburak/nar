@@ -6,8 +6,8 @@
 #include <nar/narserver/Database.h>
 #include <nar/narserver/dbstructs.h>
 #include <nar/lib/Cryption/aes.h>
-#include <nar/narserver/Actions/AuthAction.h>
-#include <nar/lib/Messaging/message_utility.h>
+#include <nar/narserver/Actions/AuthActions.h>
+#include <nar/lib/Messaging/messaging_utility.h>
 #include <nar/lib/Cryption/rsa.h>
 
 

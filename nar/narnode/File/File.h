@@ -150,11 +150,11 @@ namespace nar {
              * @throws: nar::Exception::File::WrongMode, if the output file  is opened with mode "r".
              * @tested: yes
             */
-            nar::File* decompress();
+            nar::File* decompress(std::string& fname);
 
             nar::File* encrypt(std::string& aes);
 
-            nar::File* decrypt(std::string& aes, std::string& fname);
+            nar::File* decrypt(std::string& aes);
     };
 }
 
