@@ -44,10 +44,7 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     }
     std::string temp_native = temp.native();
 
-
-
-
-    nar::File tempfile1(temp_native,"w",false);
+    nar::File* tempfile1 = new nar::File(temp_native,"w",false);
 
     for(int i=0;i<elements.size();i++) {
         unsigned long stream_id = elements[i].stream_id;
@@ -57,11 +54,20 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         char buff[1024];
         while(total_read < elements[i].chunk_size) {
             int len = cli_sck.recv(buf, 1024);
-            tempfile1.write(buf,len);
+            tempfile1->write(buf,len);
             total_read += len;
         }
 
     }
-    nar::File (temp_nat)
-    nar::File*
+    delete tempfile1;
+    tempfile1 = new nar::File(temp_native,"r",true);
+
+    nar::File * decrypted = tempfile->decrypt(aes);
+
+    string  dust= tpath.native();
+    nar::File * decompressed = decrypted->decompress(dust);
+
+    delete tempfile1;
+    delete decrypted;
+    delete decompressed;
 }

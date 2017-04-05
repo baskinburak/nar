@@ -7,6 +7,8 @@
 #include <nar/lib/Cryption/rsa.h>
 
 
+
+
 void nar::ServerAction::authenticated_action(nar::ServerGlobal* s_global, nar::MessageTypes::UserAuthenticationInit::Request& req, nar::Socket* skt) {
     std::string username = req.get_username();
     nar::Database* db = s_global->get_db();
@@ -40,4 +42,8 @@ void nar::ServerAction::authenticated_action(nar::ServerGlobal* s_global, nar::M
 
     nar::MessageTypes::UserAuthenticationAnswer::Response ans_resp(status_code);
     ans_resp.send_mess(skt);
+
+    authenticated_dispatcher(skt, s_global);
+
+
 }
