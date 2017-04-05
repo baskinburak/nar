@@ -6,15 +6,18 @@ nlohmann::json nar::MessageTypes::IPCStatus::Request::get_myrequestjson() {
     return json_to_sent;
 }
 
-void nar::MessageTypes::IPCStatus::Request::send_action(nar::Socket* skt) {
-    nlohmann::json json_to_sent;
-    json_to_sent["header"]["_action"] = "status";
-    send_message(skt, json_to_sent.dump());
-    return;
+nlohmann::json nar::MessageTypes::IPCStatus::Request::generate_json() {
+	nlohmann::json jsn = IPCBaseRequest::generate_json();
+    return jsn;
+}
+void nar::MessageTypes::IPCStatus::Request::populate_object(std::string& jsn_str) {
+	auto jsn = nlohmann::json::parse(jsn_str);
+    IPCBaseRequest::populate_object(jsn);
 }
 
-void nar::MessageTypes::IPCStatus::Request::receive_message(nlohmann::json &js){
-    this -> _action = js["header"]["action"];
+void nar::MessageTypes::IPCStatus::Request::send_action(nar::Socket* skt) {
+    nlohmann::json json_to_sent = this->generate_json();
+    send_message(skt, json_to_sent.dump());
     return;
 }
 
