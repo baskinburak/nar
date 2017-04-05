@@ -30,6 +30,7 @@ set(SERVER_SOURCES
     nar/lib/Cryption/rsa.cpp
     nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.cpp
     nar/lib/Messaging/MessageTypes/UserAuthenticationInit.cpp
+    nar/lib/Messaging/MessageTypes/FilePush.cpp
     nar/lib/Messaging/MessageTypes/UserRegister.cpp
     nar/lib/Messaging/messaging_utility.cpp
     nar/lib/Messaging/MessageTypes/ResponseHeader.cpp

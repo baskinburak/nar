@@ -7,7 +7,7 @@
 #include <nar/lib/Messaging/messaging_utility.h>
 
 
-void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar::Socket* skt, nar::DBStruct::User& user) {
+void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar::Socket* skt, nar::DBStructs::User& user) {
     std::string message = get_message(skt);
     std::string action = Messaging::get_action(message);
     if(action == std::string("file_push_request")) {
@@ -19,7 +19,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
     }
 }
 
-void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageType::Request& req, nar::DBStruct::User& user) {
+void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::FilePush::Request& req, nar::DBStructs::User& user) {
     unsigned long long int file_size = req.get_file_size();
     std::string dir_name = req.get_dir_name();
     std::string file_name = req.get_file_name();
