@@ -10,6 +10,7 @@
 #include <map>
 #include <atomic>
 
+#define CHUNK_SIZE 1024*1024                            // BURAYA BAKARLAR
 
 using std::string;
 using std::map;
