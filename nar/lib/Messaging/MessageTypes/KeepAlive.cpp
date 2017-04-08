@@ -3,6 +3,7 @@
 void nar::MessageTypes::KeepAlive::Request::send_mess(nar::Socket* skt, nar::MessageTypes::KeepAlive::Response & resp) {
     nlohmann::json keep_req_send;
     keep_req_send["header"] = send_head();
+    keep_req_send["payload"]["machine_id"] = this->_machine_id;
     send_message(skt,keep_req_send.dump());
     std::string temp = get_message(skt);
     nlohmann::json keep_req_recv = nlohmann::json::parse(temp);
@@ -12,7 +13,7 @@ void nar::MessageTypes::KeepAlive::Request::send_mess(nar::Socket* skt, nar::Mes
 void nar::MessageTypes::KeepAlive::Request::receive_message(nlohmann::json keep_req_recv){
     nlohmann::json head = keep_req_recv["header"];
     recv_fill(head);
-
+    this->_machine_id = keep_req_send["payload"]["machine_id"];
     return;
 }
 nlohmann::json nar::MessageTypes::KeepAlive::Request::test_json() {
@@ -25,9 +26,6 @@ void nar::MessageTypes::KeepAlive::Response::send_mess(nar::Socket* skt) {
     nlohmann::json keep_resp_send;
     keep_resp_send["header"] = send_head();
     send_message(skt,keep_resp_send.dump());
-    //std::string temp = get_message(skt);
-    //nlohmann::json keep_resp_recv = nlohmann::json::parse(temp);
-    //receive_message(keep_resp_recv);
     return;
 }
 void nar::MessageTypes::KeepAlive::Response::receive_message(nlohmann::json& keep_resp_recv){

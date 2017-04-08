@@ -30,7 +30,7 @@ void nar::Global::write_end() {
     write_mtx.unlock();
 }
 
-nar::Global::Global(std::string config_path): _server_ip(std::string()), _server_port(0), _nar_folder(std::string()), _file_folder(std::string()), _machine_id(std::string()) {
+nar::Global::Global(std::string config_path): _server_ip(std::string()), _server_port(0), _nar_folder(std::string()), _file_folder(std::string()), _machine_id(std::string()), _config_path(config_path) {
     _config_file.open(config_path.c_str(), std::fstream::in | std::fstream::out);
     std::string line;
     char mask = 0;
@@ -65,10 +65,15 @@ nar::Global::Global(std::string config_path): _server_ip(std::string()), _server
             mask |= 16;
             this->_machine_id = value;
             if (this->_machine_id == std::string("")) {
-                machine_register();
+                this->_machine_id = machine_register();
+                std::cout << "machine id: " << this->_machine_id << std::endl;
             }
         }
     }
+
+    this->_config_file.close();
+
+    this->write_config();
 
     if(mask != (1 | 2 | 4 | 8 | 16)) {
         std::cout << "Config file is not complete" << std::endl;
@@ -148,19 +153,21 @@ void nar::Global::set_machine_id(std::string& id) {
 
 void nar::Global::write_config() {
     this->_file_mtx.lock();
-    this->_config_file.close();
+    std::cout << "conf file: " << this->_config_path.c_str() << std::endl;
     this->_config_file.open(this->_config_path.c_str(), std::ios::out | std::ios::trunc);
     this->_config_file.write("NAR_FOLDER=", 11);
     this->_config_file.write(this->_nar_folder.c_str(), this->_nar_folder.size());
     this->_config_file.write("\nFILE_FOLDER=", 13);
     this->_config_file.write(this->_file_folder.c_str(), this->_file_folder.size());
-    this->_config_file.write("\nMACHINE_ID=", 12);
-    this->_config_file.write(this->_machine_id.c_str(), this->_machine_id.size());
     this->_config_file.write("\nSERVER_IP=", 11);
     this->_config_file.write(this->_server_ip.c_str(), this->_server_ip.size());
-    this->_config_file.write("\nSERVER_PORT=\n", 14);
+    this->_config_file.write("\nSERVER_PORT=", 13);
     std::string port_str = std::to_string(this->_server_port);
     this->_config_file.write(std::to_string(this->_server_port).c_str(), std::to_string(this->_server_port).size());
+    this->_config_file.write("\nMACHINE_ID=", 12);
+    this->_config_file.write(this->_machine_id.c_str(), this->_machine_id.size());
+    this->_config_file.write("\n", 1);
+    this->_config_file.close();
     this->_file_mtx.unlock();
 }
 
@@ -178,24 +185,34 @@ std::string nar::Global::machine_register() {
     std::cout << "Do you have an existing user? [Y/n] ";
     std::string line;
     std::getline(std::cin, line);
+    std::cout << line.size() << " " << line << std::endl;
     line = nar::trim(line);
-    if(line.size() > 0 && line[0] == 'Y') exs_user = line[0];
+    std::cout << line << std::endl;
+    if(line.size() > 0) exs_user = std::toupper(line[0]);
+    std::cout << exs_user << std::endl;
     std::string machineid;
     if(exs_user == 'Y') {
         std::cout << "todo" << std::endl;
         exit(0);
     } else {
-        std::cout << "Username: " << std::endl;
+        std::cout << "Username: ";
         std::string username;
-        std::cin >> username;
+        std::getline(std::cin, username);
+        username = nar::trim(username);
+        std::cout << username << "<<<" << std::endl;
         std::string password;
-        std::cout << "Password: " << std::endl;
-        std::cin >> password;
-        nar::UserVariables uservars(username,password,std::string(""));
+        std::cout << "Password: ";
+        std::getline(std::cin, password);
+        password = nar::trim(password);
+        std::cout << "diri diri " << std::endl;
+        nar::UserVariables uservars(std::string(""), username, password);
+        std::cout << "diri diri " << std::endl;
         nar::MessageTypes::IPCRegister::Request ipc_register(username, password, std::string(""));
         nar::ActiveTask::Register register_task(this, &uservars);
+        std::cout << "???" << std::endl;
         register_task.run(&ipc_register);
 
+        std::cout << "here i am " << std::endl;
 
         nar::Socket* macreqsock = this->establish_server_connection();
         auto tmp = nar::ActiveTask::user_authenticate(macreqsock, &uservars);
@@ -205,6 +222,7 @@ std::string nar::Global::machine_register() {
         std::cout << "Montly network usage(in MB) [10000MB]: " << std::endl;
         std::string quota;
         std::getline(std::cin, quota);
+        std::cout << "quota:: " << quota << std::endl;
         quota = nar::trim(quota);
         if(quota.size() > 0) quota_default = std::stoll(quota);
 

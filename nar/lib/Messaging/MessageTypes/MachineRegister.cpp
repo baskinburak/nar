@@ -16,7 +16,7 @@ void nar::MessageTypes::MachineRegister::Request::receive_message(std::string& m
     nlohmann::json  macreg_req_recv = nlohmann::json::parse(msg);
     nlohmann::json head = macreg_req_recv["header"];
     this->_machine_quota = macreg_req_recv["payload"]["machine_quota"];
-    this->_machine_diskspace = macreg_req_recv["payload"]["machine_disk_space"];
+    this->_machine_diskspace = macreg_req_recv["payload"]["machine_diskspace"];
     recv_fill(head);
     return;
 }

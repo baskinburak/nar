@@ -8,13 +8,11 @@
 #include <thread>
 #include <string>
 
-void nar::machine_authenticate(nar::Socket* sck, nar::Global* globals) {
-    // todo
-}
 
-void nar::keep_alive(nar::Socket* sck) {
+void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
     //while(!nar::DaemonTasks::handshake(sck, globals));
-    nar::MessageTypes::KeepAlive::Request req;
+    std::string macid = globals->get_machine_id();
+    nar::MessageTypes::KeepAlive::Request req(macid);
     nar::MessageTypes::KeepAlive::Response resp(200);
     int tried = 5;
 
@@ -71,7 +69,7 @@ void nar::chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int c
 
 void nar::reactive_dispatcher(nar::Global *globals) {
     nar::Socket* server_socket = globals->establish_server_connection();
-    keep_alive(server_socket);
+    keep_alive(server_socket, globals);
 
 
     //resp.receive_message(transform(message))

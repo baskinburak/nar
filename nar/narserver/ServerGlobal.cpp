@@ -112,3 +112,24 @@ unsigned int nar::ServerGlobal::get_next_stream_id() {
     write_end();
     return next;
 }
+
+void insert_keepalive(std::string& macid, nar::SockInfo* sckinf) {
+    write_start();
+    this->_keepalives[macid] = sckinf;
+    this->_keepalive_macids.insert(macid);
+    write_end();
+}
+
+nar::SockInfo* get_keepalive(std::string& macid) {
+    read_start();
+    nar::SockInfo* sckinf = this->_keepalives[macid];
+    read_end();
+    return sckinf;
+}
+
+void delete_keepalive(std::string& macid) {
+    write_start();
+    this->_keepalives.erase(macid);
+    this->_keepalive_macids.erase(macid);
+    write_end();
+}
