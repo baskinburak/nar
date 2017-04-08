@@ -34,8 +34,6 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
      unsigned long long int remainder = file_size - (peer_num*CHUNK_SIZE);
      if( file_size - (peer_num*CHUNK_SIZE) ) peer_num++;
 
-    //nar socketler, peer selection
-
     unsigned short r_port = s_global->get_randezvous_port();
 
     nar::MessageTypes::FilePush::Response p_resp(200, r_port);
@@ -43,10 +41,17 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
     nar::SockInfo* peer_sock;
 
     std::vector<nar::DBStructs::Chunk> v_chunks;
+    std::vector<nar::DBStructs::ChunkToMachine> v_chunktomac;
+    std::vector<>std::string> v_macid;
+
+    long long int c_id = db->getNextChunkIds(peer_num);
+    long long int f_id = db->getNextFileIds(1);
+    c_id--;
     for(int i=0;i<peer_num;i++) {
         nar::DBStructs::Chunk chnk;
+        nar::DBStructs::ChunkToMachine c_to_m;
 
-        long long int c_id = db->getNextChunkId();
+        c_id++;
         long long int c_size = CHUNK_SIZE;
         if ( peer_num-1 == i) c_size = remainder;
         long long int s_id = s_global->get_next_stream_id();
@@ -57,26 +62,32 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
             peer_sock = peerSelect(...);
             chunk_req.send_mess(peer_sock->getSck(), chunk_resp);
         } while(chunk_resp.get_status_code() != 200)
-        total++;
+
+        v_macid.push_back(peer_sock.get_machine_id());
         p_resp.add_element(peer_sock->get_machine_id(), c_id, s_id, c_size);
-
-        //insert file
-        //insert chunk
-        //insert chunktomachine
-
-        chnk.chunk_id = c_id;
-        chnk.file_id = ;
-        chnk.chunk_size = c_size;
-        chnk.change_time = ;
-        insertChunk(struct DBStructs::Chunk & chunk);
     }
 
-    //insertFile
+    p_resp.send_mess(skt);
 
-    p_resp.send_mess(peer_sock->getSck());
+    // WAIT FOR CONFIRMATION IF THERE ARE ANY
 
-    //todo reactive responselari ve active'in response'ini almadik.
+    nar::DBStructs::File fl;
+    fl.file_id = f_id;
+    fl.file_name = file_name;
+    fl.file_size = file_size;
+    db->insertFile(fl);
 
+    for(int i=0;i<peer_num;i++){
+        nar::DBStructs::Chunk chnk;
+        nar::DBStructs::ChunkToMachine c_to_m;
+        c_to_m.chunk_id = chnk.chunk_id = c_id;
+        chnk.file_id = f_id ;
+        chnk.chunk_size = CHUNK_SIZE;
+        if (i == peer_num-1) chnk.chunk_size = remainder;
+        db->insertChunk(chnk);
+        c_to_m.machine_id = v_macid[i];
+        db->insertChunkToMachine(c_to_m);
+    }
     return;
 }
 
