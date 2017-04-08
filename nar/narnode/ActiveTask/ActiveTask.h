@@ -56,6 +56,7 @@ namespace nar {
             public:
                 Register(nar::Global* globals, nar::UserVariables* variables): IActiveTask(globals, variables) {}
                 void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCRegister::Request* req);
+                void run(nar::MessageTypes::IPCRegister::Request* req);
         };
 
     }

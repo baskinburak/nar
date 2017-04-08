@@ -216,9 +216,9 @@ void nar::send_message(nar::Socket* skt, std::string message) {
 }
 
 std::string nar::trim(std::string inp) {
-    size_t first = inp.find_first_not_of(' ');
+    size_t first = inp.find_first_not_of(std::string(" \n"));
     if(std::string::npos == first)
         return inp;
-    size_t last = inp.find_last_not_of(' ');
+    size_t last = inp.find_last_not_of(std::string(" \n"));
     return inp.substr(first, (last-first+1));
 }

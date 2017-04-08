@@ -4,7 +4,6 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <nar/lib/nlohJson/json.hpp>
 #include <nar/narnode/utility.h>
 #include <boost/asio.hpp>
 #include <cstdlib>
@@ -48,6 +47,7 @@ namespace nar {
             void set_file_folder(std::string& fold);
 			void set_machine_id(std::string& id);
             nar::Socket* establish_server_connection();
+            std::string machine_register();
     };
 }
 

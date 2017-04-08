@@ -32,6 +32,7 @@ file(GLOB NAR_MESSAGING_SOURCES
     nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
     nar/lib/Messaging/MessageTypes/RequestHeader.cpp
     nar/lib/Messaging/MessageTypes/UserRegister.cpp
+    nar/lib/Messaging/MessageTypes/MachineRegister.cpp
     nar/lib/base64/base64.cpp
 )
 add_library(narmessaging SHARED ${NAR_MESSAGING_SOURCES})

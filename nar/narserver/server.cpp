@@ -17,6 +17,10 @@
 #include <nar/narnode/utility.h>
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.h>
+#include <nar/lib/Messaging/MessageTypes/MachineRegister.h>
+
+
+
 
 using namespace nlohmann;
 
@@ -31,11 +35,13 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
         req.receive_message(msg);
         nar::ServerAction::authenticate_action(s_global, req, skt);
     } else if(action == "machine_authentication_init") {
+//        nar::MessageTypes::MachineAuthenticationInit::Request req;
+//        req.receive_message(msg);
+//        nar::ServerAction::machine_authenticate_action(s_global, req, skt);
     } else if(action == "user_register") {
         nar::MessageTypes::UserRegister::Request req;
         req.receive_message(msg);
         nar::ServerAction::register_action(s_global, req, skt);
-    } else if(action == "machine_register") {
     }
 }
 

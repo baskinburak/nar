@@ -11,19 +11,26 @@ namespace nar {
         namespace MachineRegister {
             class Response : public ResponseHeader {
                 private:
-                    std::string machine_id;
+                    std::string _machine_id;
                 public:
-                    Response(int statcode = -1 , std::string _machine_id  = std::string("")) : ResponseHeader(statcode, std::string("machine_register")), machine_id(_machine_id) {}
+                    Response() : ResponseHeader(-1, std::string("machine_register")) {}
+                    Response(int statcode , std::string machine_id ) : ResponseHeader(statcode, std::string("machine_register")), _machine_id(machine_id) {}
                     std::string& get_machine_id();
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json macreg_resp_recv);
                     nlohmann::json test_json();
             };
             class Request : public RequestHeader {
+                private:
+                    long long int _machine_quota;
+                    long long int _machine_diskspace;
                 public:
                     Request(): RequestHeader(std::string("machine_register")) {}
-                    void send_mess(nar::Socket* skt);
-                    void receive_message(nlohmann::json macreg_req_recv);
+                    Request(long long int machine_quota, long long int machine_diskspace) : RequestHeader(std::string("machine_register")), _machine_quota(machine_quota), _machine_diskspace(machine_diskspace) {}
+                    void send_mess(nar::Socket* skt, nar::MessageTypes::MachineRegister::Response& resp);
+                    void receive_message(std::string& macreg_req_recv);
+                    long long int get_machine_quota();
+                    long long int get_machine_diskspace();
                     nlohmann::json test_json();
 
             };

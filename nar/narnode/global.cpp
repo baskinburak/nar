@@ -1,12 +1,18 @@
 #include <nar/narnode/global.h>
 #include <iostream>
+#include <nar/narnode/uservars.h>
+#include <nar/narnode/ActiveTask/ActiveTask.h>
+#include <nar/lib/Messaging/MessageTypes/IPCRegister.h>
+#include <nar/lib/Messaging/MessageTypes/MachineRegister.h>
+
+
 void nar::Global::read_start() {
     read_mtx.lock();
     read_count++;
     if(read_count == 1)
         write_mtx.lock();
-    read_mtx.unlock(); 
-} 
+    read_mtx.unlock();
+}
 
 void nar::Global::read_end() {
     read_mtx.lock();
@@ -47,17 +53,20 @@ nar::Global::Global(std::string config_path): _server_ip(std::string()), _server
         } else if(key == "FILE_FOLDER") {
             mask |= 2;
             this->_file_folder = value;
-        } else if(key == "MACHINE_ID") {
-            mask |= 4;
-            this->_machine_id = value;
         } else if(key == "SERVER_IP") {
-            mask |= 8;
+            mask |= 4;
             this->_server_ip = value;
         } else if(key == "SERVER_PORT") {
-            mask |= 16;
+            mask |= 8;
             std::cout << value << " <<<< " << std::endl;
             this->_server_port = std::stoi(value);
             std::cout << this->_server_port << std::endl;
+        } else if(key == "MACHINE_ID") {
+            mask |= 16;
+            this->_machine_id = value;
+            if (this->_machine_id == std::string("")) {
+                machine_register();
+            }
         }
     }
 
@@ -161,4 +170,60 @@ nar::Socket* nar::Global::establish_server_connection() {
 	serverSck->connect(this->get_server_ip(),this->get_server_port());
     read_end();
 	return serverSck;
+}
+std::string nar::Global::machine_register() {
+
+    std::cout << "Your Machine is not registered." << std::endl;
+    char exs_user = 'Y';
+    std::cout << "Do you have an existing user? [Y/n] ";
+    std::string line;
+    std::getline(std::cin, line);
+    line = nar::trim(line);
+    if(line.size() > 0 && line[0] == 'Y') exs_user = line[0];
+    std::string machineid;
+    if(exs_user == 'Y') {
+        std::cout << "todo" << std::endl;
+        exit(0);
+    } else {
+        std::cout << "Username: " << std::endl;
+        std::string username;
+        std::cin >> username;
+        std::string password;
+        std::cout << "Password: " << std::endl;
+        std::cin >> password;
+        nar::UserVariables uservars(username,password,std::string(""));
+        nar::MessageTypes::IPCRegister::Request ipc_register(username, password, std::string(""));
+        nar::ActiveTask::Register register_task(this, &uservars);
+        register_task.run(&ipc_register);
+
+
+        nar::Socket* macreqsock = this->establish_server_connection();
+        auto tmp = nar::ActiveTask::user_authenticate(macreqsock, &uservars);
+
+
+        long long int quota_default = 10000;
+        std::cout << "Montly network usage(in MB) [10000MB]: " << std::endl;
+        std::string quota;
+        std::getline(std::cin, quota);
+        quota = nar::trim(quota);
+        if(quota.size() > 0) quota_default = std::stoll(quota);
+
+        long long int diskspace_default = 10000;
+        std::cout << "Total disk space (in MB) [10000MB]: " << std::endl;
+        std::string diskspace;
+        std::getline(std::cin, diskspace);
+        diskspace = nar::trim(diskspace);
+        if(diskspace.size() > 0) diskspace_default = std::stoll(diskspace);
+
+        nar::MessageTypes::MachineRegister::Request macreq(quota_default, diskspace_default);
+        nar::MessageTypes::MachineRegister::Response macresp;
+        macreq.send_mess(macreqsock,macresp);
+
+        machineid = macresp.get_machine_id();
+
+
+    }
+
+    return machineid;
+
 }

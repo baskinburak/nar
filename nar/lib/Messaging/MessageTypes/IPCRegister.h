@@ -17,7 +17,7 @@ namespace nar {
 
 					Request() : IPCBaseRequest(std::string("register")) {}
                     Request(std::string username, std::string password, std::string curdir) : IPCBaseRequest(std::string("register"), username, password, curdir) {}
-					
+
                     nlohmann::json get_myrequestjson();
                     void receive_message(nlohmann::json &js);
                     void send_action(nar::Socket* skt);
