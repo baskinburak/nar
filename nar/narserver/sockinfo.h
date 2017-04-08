@@ -16,6 +16,7 @@ namespace nar {
             std::string getAuthenticationHash();
             std::string getUser();
             bool isKeepalive();
+            std::string get_machine_id();
     };
 }
 

@@ -27,7 +27,57 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
     unsigned long long int file_size = req.get_file_size();
     std::string dir_name = req.get_dir_name();
     std::string file_name = req.get_file_name();
+
     nar::Database* db = s_global->get_db();
+
+     unsigned long long int peer_num = (file_size / CHUNK_SIZE);
+     unsigned long long int remainder = file_size - (peer_num*CHUNK_SIZE);
+     if( file_size - (peer_num*CHUNK_SIZE) ) peer_num++;
+
+    //nar socketler, peer selection
+
+    unsigned short r_port = s_global->get_randezvous_port();
+
+    nar::MessageTypes::FilePush::Response p_resp(200, r_port);
+
+    nar::SockInfo* peer_sock;
+
+    std::vector<nar::DBStructs::Chunk> v_chunks;
+    for(int i=0;i<peer_num;i++) {
+        nar::DBStructs::Chunk chnk;
+
+        long long int c_id = db->getNextChunkId();
+        long long int c_size = CHUNK_SIZE;
+        if ( peer_num-1 == i) c_size = remainder;
+        long long int s_id = s_global->get_next_stream_id();
+
+        nar::MessageTypes::WaitChunkPush::Request chunk_req(r_port, s_id, c_id, c_size);
+        nar::MessageTypes::WaitChunkPush::Response chunk_resp;
+        do {
+            peer_sock = peerSelect(...);
+            chunk_req.send_mess(peer_sock->getSck(), chunk_resp);
+        } while(chunk_resp.get_status_code() != 200)
+        total++;
+        p_resp.add_element(peer_sock->get_machine_id(), c_id, s_id, c_size);
+
+        //insert file
+        //insert chunk
+        //insert chunktomachine
+
+        chnk.chunk_id = c_id;
+        chnk.file_id = ;
+        chnk.chunk_size = c_size;
+        chnk.change_time = ;
+        insertChunk(struct DBStructs::Chunk & chunk);
+    }
+
+    //insertFile
+
+    p_resp.send_mess(peer_sock->getSck());
+
+    //todo reactive responselari ve active'in response'ini almadik.
+
+    return;
 }
 
 void nar::AuthAction::machine_register_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::MachineRegister::Request& req, nar::DBStructs::User& user) {

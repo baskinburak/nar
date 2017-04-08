@@ -13,6 +13,10 @@ nar::Socket* nar::SockInfo::getSck() {
     return this->skt;
 }
 
+std::string nar::SockInfo::get_machine_id() {
+    return this->machineId;
+}
+
 bool nar::SockInfo::isAuthenticated() {
     return this->username != std::string();
 }
