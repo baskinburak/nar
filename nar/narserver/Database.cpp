@@ -994,3 +994,22 @@ std::vector<nar::DBStructs::User> nar::Database::getUserFromFile(long long int f
     delete res;
     return output;
 }
+std::set<std::string> nar::Database::get_user_machines(nar::DBStructs::User& us) {
+    nar::db::User user = turnUser(us);
+    sql::PreparedStatement  *prep_stmt;
+    sql::ResultSet *res;
+    std::set<std::string> output;
+    prep_stmt = _con->prepareStatement("SELECT Machine_id "
+                                        "From Machines "
+                                        "Where User_id = ?;");
+    prep_stmt->setBigInt(1,user.user_id);
+    res = prep_stmt->executeQuery();
+    while (res->next()) {
+        std::string machine_id = res->getString("Machine_id").asStdString();
+        output.insert(machine_id);
+    }
+
+    delete prep_stmt;
+    delete res;
+    return output;
+}

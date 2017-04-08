@@ -18,6 +18,7 @@
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.h>
 #include <nar/lib/Messaging/MessageTypes/MachineRegister.h>
+#include <nar/lib/Messaging/MessageTypes/KeepAlive.h>
 
 
 

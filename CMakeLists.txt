@@ -50,6 +50,7 @@ set(SERVER_SOURCES
     nar/narnode/uservars.cpp
     nar/narnode/File/File.cpp
     nar/narserver/Actions/AuthActions.cpp
+    nar/narserver/peers.cpp
 )
 
 set(NAR_LIBRARIES narmessaging.so libnaripcmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn)

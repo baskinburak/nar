@@ -10,6 +10,7 @@
 #include <map>
 #include <algorithm>
 #include <time.h>
+#include <set>
 /*
   Include directly the different
   headers from cppconn/ and mysql_driver.h + mysql_util.h
@@ -109,6 +110,7 @@ namespace nar {
             std::vector<struct DBStructs::Chunk> getChunks(long long int file_id);
             struct DBStructs::Chunk getChunk(long long int  chunk_id);
             std::vector<struct DBStructs::Machine> getMachines(long long int chunk_id);
+            std::set<std::string> get_user_machines(nar::DBStructs::User& us);
 
 
             long long int getNextFileId();

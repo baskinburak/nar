@@ -13,7 +13,7 @@ void nar::MessageTypes::KeepAlive::Request::send_mess(nar::Socket* skt, nar::Mes
 void nar::MessageTypes::KeepAlive::Request::receive_message(nlohmann::json keep_req_recv){
     nlohmann::json head = keep_req_recv["header"];
     recv_fill(head);
-    this->_machine_id = keep_req_send["payload"]["machine_id"];
+    this->_machine_id = keep_req_recv["payload"]["machine_id"];
     return;
 }
 nlohmann::json nar::MessageTypes::KeepAlive::Request::test_json() {

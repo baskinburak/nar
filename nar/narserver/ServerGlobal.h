@@ -10,6 +10,7 @@
 #include <map>
 #include <atomic>
 #include <set>
+#include <nar/narserver/peers.h>
 
 #define CHUNK_SIZE 1024*1024                            // BURAYA BAKARLAR
 
@@ -38,10 +39,9 @@ namespace nar {
             string _db_pass;
             string _db_user;
             unsigned short _randezvous_port;
-            map<string, nar::SockInfo*> _keepalives;
-            std::set<string> _keepalive_macids;
             nar::Database* _db;
             boost::asio::io_service io_service;
+
             unsigned int _next_stream_id;
             int read_count = 0;
             void read_start();
@@ -52,9 +52,7 @@ namespace nar {
         public:
             ServerGlobal();
             ServerGlobal(std::string db_name, std::string db_user, std::string db_pass);
-            void insert_keepalive(std::string& macid, nar::SockInfo* sckinf);
-            nar::SockInfo* get_keepalive(std::string& machine_id);
-            map<string, nar::SockInfo*>& get_keepalives();
+            nar::Peers* peers;
             string get_db_name();
             string get_db_user();
             string get_db_pass();

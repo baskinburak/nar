@@ -1,29 +1,12 @@
 #include <nar/narserver/sockinfo.h>
 
-void nar::SockInfo::elevateKeepalive() {
-    this->keepalive = true;
+
+
+
+nar::Socket* nar::SockInfo::get_sck() {
+    return this->_skt;
 }
 
-void nar::SockInfo::authenticate(const std::string& uname,const std::string& macid) {
-    this->username = uname;
-    this->machineId = macid;
-}
-
-nar::Socket* nar::SockInfo::getSck() {
-    return this->skt;
-}
-
-bool nar::SockInfo::isAuthenticated() {
-    return this->username != std::string();
-}
-std::string nar::SockInfo::getUser() {
-    return this->username;
-}
-
-std::string nar::SockInfo::getAuthenticationHash() {
-    return this->machineId;
-}
-
-bool nar::SockInfo::isKeepalive() {
-    return this->keepalive;
+nar::DBStruct::Machine& nar::SockInfo::get_machine() {
+    return this->_machine;
 }
