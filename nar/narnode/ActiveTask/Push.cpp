@@ -16,16 +16,14 @@ using std::endl;
 
 void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPush::Request* req) {
     nar::Socket* server_sck = this->_globals->establish_server_connection();
-    nar::MessageTypes::UserAuthenticationInit::Response init_resp;
+    std::string file_aes;
     try {
-        init_resp = nar::ActiveTask::user_authenticate(server_sck, this->_vars);
+        file_aes = nar::ActiveTask::user_authenticate(server_sck, this->_vars);
     } catch(nar::Exception::ExcpBase& excp) {
         throw;
     }
 
-    string aes;
-    AesCryptor aes_crypt(this->_vars->get_pass_aes());
-    aes_crypt.decrypt(init_resp.get_aes_crypted(), aes);
+    string aes = file_aes;
 
     string file_path = req->get_file_path();
 
@@ -44,13 +42,17 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     }
     std::reverse(file_name.begin(), file_name.end());
 
+    std::cout << "push 1<<" << std::endl;
+
     nar::MessageTypes::FilePush::Request push_req(file_name, pushdir, file_size);
     nar::MessageTypes::FilePush::Response push_resp;
     push_req.send_mess(server_sck, push_resp);
     
+    std::cout << "push 2<<" << std::endl;
     std::vector<nar::MessageTypes::FilePush::Response::PeerListElement> elements = push_resp.get_elements();
 
 
+    std::cout << "push 3<<" << std::endl;
     unsigned long start = 0;
     for(int i=0; i<elements.size(); i++) {
         boost::asio::io_service& ioserv = this->_globals->get_ioserv();
@@ -58,6 +60,8 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         usck.send(*encrypted, start, elements[i].chunk_size);
         start += elements[i].chunk_size;
     }
+
+    std::cout << "push 4<<" << std::endl;
 
     delete compressed;
     delete encrypted;

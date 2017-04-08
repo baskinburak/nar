@@ -256,9 +256,9 @@ nar::DBStructs::User nar::Database::getUser(std::string name)
     while(res->next()){
         a.user_id = std::stoll(res->getString("User_id").asStdString());
         a.user_name = res->getString("User_name").asStdString();
-        a.aes_crypted = res->getString("Quota").asStdString();
-        a.rsa_pri_crypted = res->getString("Disk_space").asStdString();
-        a.rsa_pub = res->getString("CryptedKey").asStdString();
+        a.aes_crypted = res->getString("AESCrypted").asStdString();
+        a.rsa_pri_crypted = res->getString("RSAPriCrypted").asStdString();
+        a.rsa_pub = res->getString("RSAPub").asStdString();
         a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
 
         a.change_time = res->getUInt64("Time");

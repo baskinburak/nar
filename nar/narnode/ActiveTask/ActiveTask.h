@@ -17,7 +17,7 @@
 
 namespace nar {
     namespace ActiveTask {
-        nar::MessageTypes::UserAuthenticationInit::Response user_authenticate(nar::Socket* skt, nar::UserVariables* uservars);
+        std::string user_authenticate(nar::Socket* skt, nar::UserVariables* uservars);
 
         class IActiveTask {
             protected:

@@ -18,6 +18,24 @@ add_library(narsocket SHARED ${SOCKET_SOURCES})
 file(GLOB IPC_MESSAGING_SOURCES nar/lib/Messaging/MessageTypes/IPC*cpp)
 add_library(naripcmessaging SHARED ${IPC_MESSAGING_SOURCES})
 
+file(GLOB NAR_MESSAGING_SOURCES
+    nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.cpp
+    nar/lib/Messaging/MessageTypes/UserAuthenticationInit.cpp
+    nar/lib/Messaging/MessageTypes/FilePush.cpp
+    nar/lib/Messaging/MessageTypes/UserRegister.cpp
+    nar/lib/Messaging/messaging_utility.cpp
+    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
+    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
+    nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
+    nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
+    nar/lib/Messaging/MessageTypes/KeepAlive.cpp
+    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
+    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
+    nar/lib/Messaging/MessageTypes/UserRegister.cpp
+    nar/lib/base64/base64.cpp
+)
+add_library(narmessaging SHARED ${NAR_MESSAGING_SOURCES})
+
 
 set(SERVER_SOURCES
     nar/narserver/Database.cpp
@@ -28,20 +46,13 @@ set(SERVER_SOURCES
     nar/narnode/utility.cpp
     nar/lib/Cryption/aes.cpp
     nar/lib/Cryption/rsa.cpp
-    nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.cpp
-    nar/lib/Messaging/MessageTypes/UserAuthenticationInit.cpp
-    nar/lib/Messaging/MessageTypes/FilePush.cpp
-    nar/lib/Messaging/MessageTypes/UserRegister.cpp
-    nar/lib/Messaging/messaging_utility.cpp
-    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
-    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
     nar/narnode/uservars.cpp
     nar/narnode/File/File.cpp
     nar/narserver/Actions/AuthActions.cpp
 )
 
-set(NAR_LIBRARIES libnaripcmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn)
-set(SERVER_LIBRARIES libnarsocket.so pthread cryptopp z mysqlcppconn)
+set(NAR_LIBRARIES narmessaging.so libnaripcmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn)
+set(SERVER_LIBRARIES narmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn)
 
 
 
@@ -61,22 +72,10 @@ set(DAEMON_SOURCES
     nar/narnode/File/File.cpp
     nar/lib/Cryption/aes.cpp
     nar/lib/Cryption/rsa.cpp
-    nar/lib/Messaging/MessageTypes/FilePush.cpp
-    nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.cpp
-    nar/lib/Messaging/MessageTypes/UserAuthenticationInit.cpp
-    nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
-    nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
-    nar/lib/Messaging/MessageTypes/KeepAlive.cpp
-    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
-    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
-    nar/lib/Messaging/MessageTypes/UserRegister.cpp
-    nar/lib/Messaging/MessageTypes/FilePush.cpp
-    nar/lib/Messaging/messaging_utility.cpp
     nar/narnode/reactive.cpp
     nar/narnode/ActiveTask/ActiveFunctions.cpp
     nar/narnode/ActiveTask/Push.cpp
     nar/narnode/ActiveTask/Register.cpp
-    nar/lib/base64/base64.cpp
 )
 
 #set(REACT_TEST_SOURCES
@@ -98,15 +97,15 @@ set(DAEMON_SOURCES
 
 add_executable(narcli ${CLI_SOURCES})
 target_link_libraries(narcli ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
-add_dependencies(narcli narsocket naripcmessaging)
+add_dependencies(narcli narsocket naripcmessaging narmessaging)
 
 add_executable(narserver ${SERVER_SOURCES})
 target_link_libraries(narserver ${SERVER_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_RANDOM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
-add_dependencies(narserver narsocket)
+add_dependencies(narserver narsocket narmessaging)
 
 add_executable(nardaemon ${DAEMON_SOURCES})
 target_link_libraries(nardaemon ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY} ${Boost_RANDOM_LIBRARY})
-add_dependencies(nardaemon narsocket naripcmessaging)
+add_dependencies(nardaemon narsocket naripcmessaging narmessaging)
 
 #add_executable(narreact ${REACT_TEST_SOURCES})
 #target_link_libraries(narreact ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY} ${Boost_RANDOM_LIBRARY})
