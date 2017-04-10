@@ -1,8 +1,5 @@
 #include <nar/narserver/sockinfo.h>
 
-
-
-
 nar::Socket* nar::SockInfo::get_sck() {
     return this->_skt;
 }
