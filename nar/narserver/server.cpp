@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     rand.detach();
 
     nar::Socket entry_skt(s_global.get_ioserv(), 's');
-    entry_skt.bind(16670, "127.0.0.1");
+    entry_skt.bind(16670);
 
     while(true) {
         nar::Socket* new_skt = new nar::Socket(s_global.get_ioserv(), 'c');

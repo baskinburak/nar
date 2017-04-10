@@ -25,7 +25,8 @@ namespace nar {
                     Request(): RequestHeader(std::string("keepalive")) {}
                     Request(std::string machine_id): RequestHeader(std::string("keepalive")), _machine_id(machine_id) {}
                     void send_mess(nar::Socket* skt, nar::MessageTypes::KeepAlive::Response & resp);
-                    void receive_message(nlohmann::json keep_req_recv);
+                    void receive_message(std::string& msg);
+                    std::string& get_machine_id();
                     nlohmann::json test_json();
             };
         }

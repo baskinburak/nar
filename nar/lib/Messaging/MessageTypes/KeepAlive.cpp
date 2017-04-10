@@ -10,7 +10,8 @@ void nar::MessageTypes::KeepAlive::Request::send_mess(nar::Socket* skt, nar::Mes
     resp.receive_message(keep_req_recv);
     return;
 }
-void nar::MessageTypes::KeepAlive::Request::receive_message(nlohmann::json keep_req_recv){
+void nar::MessageTypes::KeepAlive::Request::receive_message(std::string& msg){
+    auto keep_req_recv = nlohmann::json::parse(msg);
     nlohmann::json head = keep_req_recv["header"];
     recv_fill(head);
     this->_machine_id = keep_req_recv["payload"]["machine_id"];
@@ -42,4 +43,8 @@ nlohmann::json nar::MessageTypes::KeepAlive::Response::test_json() {
     nlohmann::json keep_resp_test;
     keep_resp_test["header"] = send_head();
     return keep_resp_test;
+}
+
+std::string& nar::MessageTypes::KeepAlive::Request::get_machine_id() {
+    return this->_machine_id;
 }

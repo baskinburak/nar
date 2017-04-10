@@ -16,18 +16,26 @@ void nar::Peers::read_end() {
 }
 
 void nar::Peers::write_start() {
+    std::cout << "here i am333" << std::endl;
     write_mtx.lock();
+    std::cout << "here i am222" << std::endl;
 }
 void nar::Peers::write_end() {
     write_mtx.unlock();
 }
 
 void nar::Peers::insert_keepalive(std::string& mac_id, nar::Socket* skt) {
+    std::cout << "-1here i am" << std::endl;
     write_start();
+    std::cout << "0here i am" << std::endl;
     nar::DBStructs::Machine mac = this->_db->getMachine(mac_id);
+    std::cout << "1here i am" << std::endl;
     nar::SockInfo* sck_inf = new nar::SockInfo(skt,mac);
+    std::cout << "2here i am" << std::endl;
     this->_keepalives[mac_id] = sck_inf;
+    std::cout << "3here i am" << std::endl;
     this->_macs.push_back(mac_id);
+    std::cout << "4here i am" << std::endl;
     write_end();
 }
 void nar::Peers::delete_keepalive(std::string& mac_id) {
