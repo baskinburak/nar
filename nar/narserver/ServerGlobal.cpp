@@ -29,6 +29,7 @@ nar::ServerGlobal::ServerGlobal(std::string db_name, std::string db_user, std::s
     _db->setPass(_db_pass);
     _db->setDbname(_db_name);
     _db->connect();
+    peers = new nar::Peers(_db);
 }
 
 

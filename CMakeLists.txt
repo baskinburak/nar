@@ -111,6 +111,7 @@ add_executable(nardaemon ${DAEMON_SOURCES})
 target_link_libraries(nardaemon ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY} ${Boost_RANDOM_LIBRARY})
 add_dependencies(nardaemon narsocket naripcmessaging narmessaging)
 
+
 #add_executable(narreact ${REACT_TEST_SOURCES})
 #target_link_libraries(narreact ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY} ${Boost_RANDOM_LIBRARY})
 #add_dependencies(narreact narsocket)

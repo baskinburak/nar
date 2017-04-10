@@ -26,7 +26,7 @@ namespace nar {
             void write_start();
             void write_end();
         public:
-            Peers(nar::Database * db): _db(db) {}
+            Peers(nar::Database * db): read_mtx(), write_mtx(), _db(db) {}
             void insert_keepalive(string& mac_id, nar::Socket* skt);
             void delete_keepalive(string& mac_id);
             nar::SockInfo* peer_select(nar::DBStructs::User& user, unsigned long int chunk_size);

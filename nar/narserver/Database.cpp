@@ -303,7 +303,7 @@ nar::DBStructs::Machine nar::Database::getMachine(std::string machine_id)
 {
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT Machine_id, Machine_quota, Machine_diskSpace, User_id "
+    prep_stmt = _con -> prepareStatement("SELECT Machine_id, Machine_quota, Machine_diskSpace, User_id, "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "FROM Machines "
                                         "WHERE Machines.Machine_id = ?;");
