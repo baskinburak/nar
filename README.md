@@ -4,11 +4,10 @@ A distributed file cloud
 - design: UMLs that describes the designs
   - nar-node: Software design of nar-nodes.
   - nar-server: Software design of nar-server.
-- doc: Documentations for project
 - nar: Code of the project
-  - lib: External libraries
-  - nar-node: Code of nar-nodes.
-  - nar-server: Code of nar-server.
+  - lib: Libraries that are external and internal
+  - narnode: Code of narnodes.
+  - narserver: Code of narserver.
 - tests: Test scripts.
 
 
