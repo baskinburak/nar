@@ -48,14 +48,12 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
 
     long long int c_id = db->getNextChunkId(peer_num);
     long long int f_id = db->getNextFileId(1);
-    c_id--;
-    for(int i=0;i<peer_num;i++) {
+    for(int i=0;i<peer_num;i++, c_id++) {
         nar::DBStructs::Chunk chnk;
         nar::DBStructs::ChunkToMachine c_to_m;
 
-        c_id++;
         long long int c_size = CHUNK_SIZE;
-        if ( peer_num-1 == i) c_size = remainder;
+        if ( peer_num-1 == i && remainder) c_size = remainder;
         long long int s_id = s_global->get_next_stream_id();
 
         nar::MessageTypes::WaitChunkPush::Request chunk_req(r_port, s_id, c_id, c_size);
