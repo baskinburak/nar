@@ -33,6 +33,7 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
     nar::Database* db = s_global->get_db();
 
      unsigned long long int peer_num = (file_size / CHUNK_SIZE);
+     std::cout<<"peer_num>>>>>"<<peer_num<<std::endl;
      unsigned long long int remainder = file_size - (peer_num*CHUNK_SIZE);
      if( file_size - (peer_num*CHUNK_SIZE) ) peer_num++;
 
@@ -48,6 +49,7 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
 
     long long int c_id = db->getNextChunkId(peer_num);
     long long int f_id = db->getNextFileId(1);
+    long long int f_cid = c_id;
     for(int i=0;i<peer_num;i++, c_id++) {
         nar::DBStructs::Chunk chnk;
         nar::DBStructs::ChunkToMachine c_to_m;
@@ -80,7 +82,7 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
     for(int i=0;i<peer_num;i++){
         nar::DBStructs::Chunk chnk;
         nar::DBStructs::ChunkToMachine c_to_m;
-        c_to_m.chunk_id = chnk.chunk_id = c_id;
+        c_to_m.chunk_id = chnk.chunk_id = f_cid++;
         chnk.file_id = f_id ;
         chnk.chunk_size = CHUNK_SIZE;
         if (i == peer_num-1) chnk.chunk_size = remainder;

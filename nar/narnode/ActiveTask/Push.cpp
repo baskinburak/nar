@@ -57,6 +57,7 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     for(int i=0; i<elements.size(); i++) {
         boost::asio::io_service& ioserv = this->_globals->get_ioserv();
         nar::USocket usck(ioserv, this->_globals->get_server_ip(), push_resp.get_randezvous_port(), elements[i].stream_id);
+        usck.connect();
         usck.send(*encrypted, start, elements[i].chunk_size);
         start += elements[i].chunk_size;
     }
