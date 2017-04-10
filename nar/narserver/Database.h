@@ -113,9 +113,9 @@ namespace nar {
             std::set<std::string> get_user_machines(nar::DBStructs::User& us);
 
 
-            long long int getNextFileId();
-            long long int getNextChunkId();
-            long long int getNextDirectoryId();
+            long long int getNextFileId(long long int N);
+            long long int getNextChunkId(long long int N);
+            long long int getNextDirectoryId(long long int N);
             struct DBStructs::Directory findDirectoryId(std::string user_name,std::string dir_name);
 
     };

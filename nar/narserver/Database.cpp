@@ -110,7 +110,7 @@ void nar::Database::insertUser(struct DBStructs::User &us)
 {
     nar::DBStructs::Directory d;
     d.dir_name = std::string("/");
-    long long int dirId = getNextDirectoryId();
+    long long int dirId = getNextDirectoryId(1);
     if (dirId == -1){
         dirId = 1;
     }
@@ -764,51 +764,71 @@ std::vector<nar::DBStructs::Directory> nar::Database::getDirectoryDir(long long 
     return output;
 
 }
-long long int nar::Database::getNextFileId(){
-    sql::PreparedStatement *prep_stmt;
-    long long int keep = -1;
-    sql::ResultSet *res;
-    prep_stmt=_con->prepareStatement("Select MAX(File_id)+1 AS f From Files");
-    res = prep_stmt->executeQuery();
-    while(res->next()){
-        if(!res->isNull("f")){
-            keep = std::stoll(res->getString("f").asStdString());
+long long int nar::Database::getNextFileId(long long int N){
+    static long long int next_id = -1;
+    if(next_id == -1) {
+        sql::PreparedStatement *prep_stmt;
+        long long int keep = 1;
+        sql::ResultSet *res;
+        prep_stmt=_con->prepareStatement("Select MAX(File_id)+1 AS f From Files");
+        res = prep_stmt->executeQuery();
+        while(res->next()){
+            if(!res->isNull("f")){
+                keep = std::stoll(res->getString("f").asStdString());
+            }
         }
+        delete res;
+        delete prep_stmt;
+        next_id = keep;
     }
-    delete res;
-    delete prep_stmt;
-    return keep;
-}
-long long int nar::Database::getNextChunkId(){
-    sql::PreparedStatement *prep_stmt;
-    long long int keep = -1;
-    sql::ResultSet *res;
-    prep_stmt=_con->prepareStatement("Select MAX(Chunk_id)+1 AS f From Chunks");
-    res = prep_stmt->executeQuery();
-    while(res->next()){
-        if(!res->isNull("f")){
-            keep = std::stoll(res->getString("f").asStdString());
-        }
-    }
-    delete res;
-    delete prep_stmt;
-    return keep;
-}
-long long int nar::Database::getNextDirectoryId(){
-    sql::PreparedStatement *prep_stmt;
-    long long int keep = -1;
-    sql::ResultSet *res;
-    prep_stmt=_con->prepareStatement("Select MAX(Dir_id)+1 AS f From Directories");
-    res = prep_stmt->executeQuery();
-    while(res->next()){
 
-        if(!res->isNull("f")){
-            keep = std::stoll(res->getString("f").asStdString());
+    long long int ret = next_id;
+    next_id += N;
+    return ret;
+}
+long long int nar::Database::getNextChunkId(long long int N){
+    static long long int next_id = -1;
+    if(next_id == -1) {
+        sql::PreparedStatement *prep_stmt;
+        long long int keep = 1;
+        sql::ResultSet *res;
+        prep_stmt=_con->prepareStatement("Select MAX(Chunk_id)+1 AS f From Chunks");
+        res = prep_stmt->executeQuery();
+        while(res->next()){
+            if(!res->isNull("f")){
+                keep = std::stoll(res->getString("f").asStdString());
+            }
         }
+        delete res;
+        delete prep_stmt;
+        next_id = keep;
     }
-    delete res;
-    delete prep_stmt;
-    return keep;
+    long long int ret = next_id;
+    next_id += N;
+    return ret;
+    
+}
+long long int nar::Database::getNextDirectoryId(long long int N){
+    static long long int next_id = -1;
+    if(next_id == -1) {
+        sql::PreparedStatement *prep_stmt;
+        long long int keep = 1;
+        sql::ResultSet *res;
+        prep_stmt=_con->prepareStatement("Select MAX(Dir_id)+1 AS f From Directories");
+        res = prep_stmt->executeQuery();
+        while(res->next()){
+
+            if(!res->isNull("f")){
+                keep = std::stoll(res->getString("f").asStdString());
+            }
+        }
+        delete res;
+        delete prep_stmt;
+        next_id = keep;
+    }
+    long long int ret = next_id;
+    next_id += N;
+    return ret;
 }
 std::vector<nar::DBStructs::File>  nar::Database::getUserFiles(long long int userId){
     sql::SQLString user_id = std::to_string(userId);

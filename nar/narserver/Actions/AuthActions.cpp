@@ -5,6 +5,8 @@
 #include <nar/lib/Cryption/aes.h>
 #include <nar/narserver/Actions/AuthActions.h>
 #include <nar/lib/Messaging/messaging_utility.h>
+#include <nar/lib/Messaging/MessageTypes/WaitChunkPush.h>
+#include <nar/lib/Messaging/MessageTypes/WaitChunkPull.h>
 
 
 void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar::Socket* skt, nar::DBStructs::User& user) {
@@ -42,10 +44,10 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
 
     std::vector<nar::DBStructs::Chunk> v_chunks;
     std::vector<nar::DBStructs::ChunkToMachine> v_chunktomac;
-    std::vector<>std::string> v_macid;
+    std::vector<std::string> v_macid;
 
-    long long int c_id = db->getNextChunkIds(peer_num);
-    long long int f_id = db->getNextFileIds(1);
+    long long int c_id = db->getNextChunkId(peer_num);
+    long long int f_id = db->getNextFileId(1);
     c_id--;
     for(int i=0;i<peer_num;i++) {
         nar::DBStructs::Chunk chnk;
@@ -59,12 +61,12 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
         nar::MessageTypes::WaitChunkPush::Request chunk_req(r_port, s_id, c_id, c_size);
         nar::MessageTypes::WaitChunkPush::Response chunk_resp;
         do {
-            peer_sock = peerSelect(...);
-            chunk_req.send_mess(peer_sock->getSck(), chunk_resp);
-        } while(chunk_resp.get_status_code() != 200)
+            peer_sock = s_global->peers->peer_select(user,CHUNK_SIZE);
+            chunk_req.send_mess(peer_sock->get_sck(), chunk_resp);
+        } while(chunk_resp.get_status_code() != 200);
 
-        v_macid.push_back(peer_sock.get_machine_id());
-        p_resp.add_element(peer_sock->get_machine_id(), c_id, s_id, c_size);
+        v_macid.push_back(peer_sock->get_machine_id());
+        p_resp.add_element(std::string(""), c_id, s_id, c_size);
     }
 
     p_resp.send_mess(skt);

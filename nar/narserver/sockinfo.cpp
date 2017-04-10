@@ -4,6 +4,10 @@ nar::Socket* nar::SockInfo::get_sck() {
     return this->_skt;
 }
 
-nar::DBStruct::Machine& nar::SockInfo::get_machine() {
+nar::DBStructs::Machine& nar::SockInfo::get_machine() {
     return this->_machine;
+}
+
+std::string& nar::SockInfo::get_machine_id() {
+    return this->_machine.machine_id;
 }

@@ -7,6 +7,8 @@
 #include "Database.h"
 #include "dbstructs.h"
 #include <random>
+#include <set>
+#include <algorithm>
 using std::string;
 namespace nar {
     class Peers {
@@ -29,6 +31,7 @@ namespace nar {
             void delete_keepalive(string& mac_id);
             nar::SockInfo* peer_select(nar::DBStructs::User& user, unsigned long int chunk_size);
             nar::SockInfo* random_policy(nar::DBStructs::User& user, unsigned long chunk_size);
+            
     };
 }
 

@@ -51,6 +51,8 @@ set(SERVER_SOURCES
     nar/narnode/File/File.cpp
     nar/narserver/Actions/AuthActions.cpp
     nar/narserver/peers.cpp
+    nar/narserver/sockinfo.cpp
+    nar/narserver/Actions/keepalive_action.cpp
 )
 
 set(NAR_LIBRARIES narmessaging.so libnaripcmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn)

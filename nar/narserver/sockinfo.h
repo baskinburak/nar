@@ -11,6 +11,7 @@ namespace nar {
             SockInfo(nar::Socket* sk, nar::DBStructs::Machine& machine): _skt(sk), _machine(machine) {  }
             nar::Socket* get_sck();
             nar::DBStructs::Machine& get_machine();
+            std::string& get_machine_id();
     };
 }
 

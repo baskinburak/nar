@@ -27,11 +27,18 @@ void nar::Peers::insert_keepalive(std::string& mac_id, nar::Socket* skt) {
     nar::DBStructs::Machine mac = this->_db->getMachine(mac_id);
     nar::SockInfo* sck_inf = new nar::SockInfo(skt,mac);
     this->_keepalives[mac_id] = sck_inf;
+    this->_macs.push_back(mac_id);
     write_end();
 }
 void nar::Peers::delete_keepalive(std::string& mac_id) {
     write_start();
-    this->_keepalives.erase(mac_id);
+    this->_keepalives.erase(mac_id);std::vector<std::string>::iterator it;
+    if ( ( it = std::find(_macs.begin(), _macs.end(), mac_id) ) != _macs.end() ) {
+       this->_macs.erase(it);
+    }
+    else {
+       std::cout<<"cant delete"<<std::endl;
+    }
     write_end();
 }
 
@@ -53,7 +60,6 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
     do {
         auto random_integer = uni(rng);
         selected = _macs[random_integer];
-    }
-    while((it = user_machines.find(selected)) != user_machines.end());
+    } while((it = user_machines.find(selected)) != user_machines.end());
     return _keepalives[selected];
 }
