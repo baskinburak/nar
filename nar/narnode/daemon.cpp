@@ -35,6 +35,10 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         nar::ActiveTask::Push push_task(globals, &uservars);
         push_task.run(sck, &ipc_push);
     } else if(action == string("pull")) {
+        nar::MessageTypes::IPCPull::Request ipc_pull;
+        ipc_pull.populate_object(msg);
+        nar::ActiveTask::Pull pull_task(globals, &uservars);
+        pull_task.run(sck, &ipc_pull);
     } else if(action == string("register")) {
         nar::MessageTypes::IPCRegister::Request ipc_register;
         ipc_register.populate_object(msg);
