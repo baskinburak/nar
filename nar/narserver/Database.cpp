@@ -823,7 +823,6 @@ std::vector<nar::DBStructs::Directory> nar::Database::getDirectoryDir(long long 
 
 }
 unsigned long  nar::Database::getNextSessionId(long long int N) {
-    read_start();
     static long long int next_id = -1;
     if(next_id == -1) {
         sql::PreparedStatement *prep_stmt;
@@ -843,7 +842,6 @@ unsigned long  nar::Database::getNextSessionId(long long int N) {
 
     long long int ret = next_id;
     next_id += N;
-    read_end();
     return ret;
 }
 long long int nar::Database::getNextFileId(long long int N){
