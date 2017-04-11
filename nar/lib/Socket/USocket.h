@@ -110,6 +110,8 @@ namespace nar {
 
             std::vector<pair<nar::Packet*, udp::endpoint*> > _ran_packs;
 
+            bool _exp_sqnm_set;
+
             unsigned int rand_seqnum();
         public:
             /*

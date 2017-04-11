@@ -51,7 +51,9 @@ void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long
     int total_read = 0;
     char buf[1024];
     while(total_read < chunk_size) {
+        std::cout << stream_id << " before" << std::endl;
          int len = cli_sck->recv(buf, 1024);
+        std::cout << stream_id << " after " << len << std::endl;
          recvfile.write(buf, len);
          total_read += len;
     }

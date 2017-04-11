@@ -63,6 +63,7 @@ unsigned short nar::USocket::get_port() const {
 }
 
 nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id), _iserv(&io_serv) {
+    this->_exp_sqnm_set = false;
     this->_server_ip = server_ip;
     this->_server_port = std::to_string(server_port);
     udp::resolver resolver(io_serv);
@@ -157,6 +158,10 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
     std::map<unsigned int, nar::Packet*> received_packets; // map from seqnum to packets themselves.
 
     while(true) {
+        std::cout << sock->_stream_id << " recvd " << received_packets.size() << " " << sock->_expected_seqnum << std::endl;
+        if(received_packets.size() > 0) {
+            std::cout << ((received_packets.begin())->second)->get_seqnum() << " " << sock->_expected_seqnum << std::endl;
+        }
         lck.unlock();
         std::size_t len = sock->_socket.receive_from(boost::asio::buffer(buff, nar::Packet::PACKET_LEN), remote_endpoint, 0, ec);
         lck.lock();
@@ -189,9 +194,12 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
 
 
         if (rcvpck->is_syn() && rcvpck->is_ack()) {
-            //cout << "synack" << endl;
+            cout << "synack" << endl;
             sock->_syned = true;
-            sock->_expected_seqnum = rcvpck->get_seqnum() + 1;
+            if(!sock->_exp_sqnm_set) {
+                sock->_expected_seqnum = rcvpck->get_seqnum() + 1;
+                sock->_exp_sqnm_set = true;
+            }
             sock->_synack_flag = true;
             sock->_event_cv.notify_all();
             delete rcvpck;
@@ -204,7 +212,12 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
                 sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
             } else {
                 sock->_syned = true;
-                sock->_expected_seqnum = rcvpck->get_seqnum() + 1;
+                
+                if(!sock->_exp_sqnm_set) {
+                    sock->_expected_seqnum = rcvpck->get_seqnum() + 1;
+                    sock->_exp_sqnm_set = true;
+                }
+                
                 nar::Packet rplpck;
                 rplpck.make_synack(sock->_stream_id, sock->_start_seqnum, rcvpck->get_seqnum());
                 rplpck.print();
@@ -394,14 +407,17 @@ void nar::USocket::connect() {
 
 
 int nar::USocket::recv(char* buf, int len) {
+    std::cout << "recv hola" << std::endl;
     std::unique_lock<std::mutex> lck(this->_work_mutex);
     while(!this->_recv_flag) {
+        std::cout << this->_stream_id << " buffer length: " << _recv_buffer.size() << std::endl;
         this->_event_cv.wait(lck);
     }
     int read_len = this->_recv_buffer.copy(buf, len, 0);
     this->_recv_buffer.erase(0, read_len);
-    this->_recv_flag = this->_recv_buffer.size() > 0;
+    this->_recv_flag = (this->_recv_buffer.size() > 0);
     lck.unlock();
+    std::cout << "recv bb" << std::endl;
     return read_len;
 }
 
