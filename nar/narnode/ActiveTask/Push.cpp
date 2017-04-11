@@ -56,10 +56,10 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     unsigned long start = 0;
     for(int i=0; i<elements.size(); i++) {
         boost::asio::io_service& ioserv = this->_globals->get_ioserv();
-        nar::USocket usck(ioserv, this->_globals->get_server_ip(), push_resp.get_randezvous_port(), elements[i].stream_id);
-        usck.connect();
+        nar::USocket* usck = new nar::USocket(ioserv, this->_globals->get_server_ip(), push_resp.get_randezvous_port(), elements[i].stream_id);
+        usck->connect();
         std::cout << elements[i].chunk_size << std::endl;
-        usck.send(*encrypted, start, elements[i].chunk_size);
+        usck->send(*encrypted, start, elements[i].chunk_size);
         start += elements[i].chunk_size;
     }
 

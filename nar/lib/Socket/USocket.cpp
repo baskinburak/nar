@@ -519,4 +519,5 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
         this->_event_cv.wait(lck);
     }
     lck.unlock();
+    return true;
 }
