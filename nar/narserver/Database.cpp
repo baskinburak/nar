@@ -968,7 +968,7 @@ std::vector<nar::DBStructs::Machine>  nar::Database::getMachines(long long int c
     std::vector<nar::DBStructs::Machine> output;
     sql::PreparedStatement  *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con->prepareStatement("SELECT Machine_id,  Machine_quota, Machine_diskSpace, User_id "
+    prep_stmt = _con->prepareStatement("SELECT Machine_id,  Machine_quota, Machine_diskSpace, User_id, "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "From Machines "
                                         "Where Machines.Machine_id IN (Select Machine_id "
