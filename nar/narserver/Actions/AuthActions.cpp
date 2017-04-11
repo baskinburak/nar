@@ -112,7 +112,9 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
         nar::MessageTypes::WaitChunkPush::Request chunk_req(r_port, s_id, c_id, c_size);
         nar::MessageTypes::WaitChunkPush::Response chunk_resp;
         do {
+            std::cout << "peer select" << std::endl;
             peer_sock = s_global->peers->peer_select(user,CHUNK_SIZE);
+            std::cout << "peer select end" << std::endl;
             chunk_req.send_mess(peer_sock->get_sck(), chunk_resp);
         } while(chunk_resp.get_status_code() != 200);
 
