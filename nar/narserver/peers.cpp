@@ -99,6 +99,7 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
             if ( ( it = std::find(_macs.begin(), _macs.end(), selected) ) != _macs.end() ) {
                this->_macs.erase(it);
             }
+            continue;
         }
     } while((it = user_machines.find(selected)) != user_machines.end());
     return this->_keepalives[selected];
