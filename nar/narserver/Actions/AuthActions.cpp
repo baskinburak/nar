@@ -24,6 +24,57 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         machine_register_action(s_global,skt,req,user);
     }
 }
+long long int findFileId(std::string& file_name,std::string& dir_name,std::string& uname, nar::Database *db)
+{// returns -1 in any case of problem
+     long long int file_id = -1;
+     nar::DBStructs::Directory dir = db->findDirectoryId(uname,dir_name);
+     if(dir.dir_id == -1)
+     {
+         std::cout<<"No such User directory pair"<<std::endl;
+     } else {
+         std::vector<nar::DBStructs::File> files = db->getDirectoryFile(dir.dir_id);
+         for(int i= 0;i<files.size();i++){
+             if(files[i].file_name.compare(file_name)== 0) {
+                 file_id = files[i].file_id;
+                }
+         }
+    }
+    return file_id;
+}
+
+
+void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::FilePull::Request& req, nar::DBStructs::User&  user) {
+    std::string file_name = req.get_file_name();
+    std::string dir_name = req.get_dir_name();
+
+    nar::Database* db = s_global->get_db();
+    long long int f_id = findFileId(file_name,dir_name,user.user_name, db);
+    std::vector<struct DBStructs::Chunk> chunks = db->getChunks(f_id);
+
+    unsigned short r_port = s_global->get_randezvous_port();
+
+
+    nar::MessageTypes::FilePull::Response resp(200, r_port);
+
+    for(int i=0; i < chunks.size(); ++i) {
+        std::vector<struct DBStructs::Machine> machines = db->getMachines(chunks[i].chunk_id);
+        nar::SockInfo* peer_sck;
+        for(int j=0; !(peer_sck = s_global->peers->get_peer(machines[j].machine_id )); ++j);
+
+        long long int s_id = s_global->get_next_stream_id();
+        nar::MessageTypes::WaitChunkPull::Request chunk_req(r_port, s_id, chunks[i].chunk_id, chunks[i].chunk_size);
+        nar::MessageTypes::WaitChunkPull::Response chunk_resp;
+
+        chunk_req.send_mess(peer_sck->get_sck(), chunk_resp);
+        if (chunk_resp.get_status_code() != 200 )
+            std::cout << "Pull Server: Peer does not respond to WaitChunkPull" << std::endl;
+
+        resp.add_element(peer_sck->get_machine_id(), chunks[i].chunk_id, s_id, chunks[i].chunk_size);
+    }
+    resp.send_mess(skt);
+    return;
+}
+
 
 void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::FilePush::Request& req, nar::DBStructs::User& user) {
     unsigned long long int file_size = req.get_file_size();
