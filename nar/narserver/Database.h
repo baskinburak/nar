@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <time.h>
 #include <set>
+#include <mutex>
 /*
   Include directly the different
   headers from cppconn/ and mysql_driver.h + mysql_util.h
@@ -39,6 +40,15 @@ namespace nar {
             std::string _pass;
             sql::Connection * _con;
             sql::Driver * _driver;
+            std::mutex read_mtx;
+            std::mutex write_mtx;
+
+
+            int read_count = 0;
+            void read_start();
+            void read_end();
+            void write_start();
+            void write_end();
 
             nar::db::User turnUser(nar::DBStructs::User & user);
             nar::db::File turnFile(nar::DBStructs::File & file);
@@ -48,9 +58,10 @@ namespace nar {
             nar::db::Machine turnMachine(nar::DBStructs::Machine & machine);
             nar::db::Directory turnDirectory(nar::DBStructs::Directory & directory);
             nar::db::DirectoryTo turnDirectoryTo(nar::DBStructs::DirectoryTo & directoryTo);
+            nar::db::Session turnSession(nar::DBStructs::Session & session);
 
         public:
-            Database()=default;
+            Database():read_mtx(), write_mtx() {}
             ~Database();
 
 
@@ -70,6 +81,9 @@ namespace nar {
             void insertUserToFile(struct DBStructs::UserToFile & userToFile);
             void insertChunkToMachine(struct DBStructs::ChunkToMachine & chunkToMachine);
 
+            unsigned long insertSession(struct DBStructs::Session & session);
+            void leaveSession(struct DBStructs::Session& session);
+
             void updateUserName(struct DBStructs::User & user);
             void updateUserAESCrypted(struct DBStructs::User & user);
             void updateUserRSAPriCrypted(struct DBStructs::User & user);
@@ -88,6 +102,7 @@ namespace nar {
             void updateMachineQuota(struct DBStructs::Machine & machine);
             void updateMachineDiskSpace(struct DBStructs::Machine & machine);
             void updateMachineUserId(struct DBStructs::Machine & machine);
+
 
             void deleteUser(struct DBStructs::User & user);
             void deleteChunk(struct DBStructs::Chunk & chunk);
@@ -116,6 +131,7 @@ namespace nar {
             long long int getNextFileId(long long int N);
             long long int getNextChunkId(long long int N);
             long long int getNextDirectoryId(long long int N);
+            unsigned long getNextSessionId(long long int N);
             struct DBStructs::Directory findDirectoryId(std::string user_name,std::string dir_name);
 
     };

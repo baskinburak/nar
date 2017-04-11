@@ -5,6 +5,14 @@
 
 namespace nar {
     namespace DBStructs {
+        struct Session {
+            Session():session_id(-1){}
+            long long int session_id;
+            std::string machine_id;
+            long long int join_time;
+            long long int leave_time;
+        };
+
         struct Directory{
             Directory():dir_id(-1),dir_size(0){}
             long long int dir_id;

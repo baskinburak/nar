@@ -3,6 +3,13 @@
 
 namespace nar {
     namespace db{
+        struct Session {
+            sql::SQLString session_id;
+            std::string machine_id;
+            sql::SQLString join_time;
+            sql::SQLString leave_time;
+        };
+
         struct Directory{
             sql::SQLString dir_id;
             std::string dir_name;
