@@ -16,7 +16,8 @@ void nar::MessageTypes::FilePull::Request::send_mess(nar::Socket* skt ,nar::Mess
     resp.receive_message(pull_req_recv);
     return;
 }
-void nar::MessageTypes::FilePull::Request::receive_message(nlohmann::json pull_req_recv) {
+void nar::MessageTypes::FilePull::Request::receive_message(std::string& mess) {
+    nlohmann::json pull_req_recv = nlohmann::json::parse(mess);
     nlohmann::json head = pull_req_recv["header"];
     recv_fill(head);
     this->_file_name = pull_req_recv["payload"]["file_name"];
@@ -63,7 +64,7 @@ void nar::MessageTypes::FilePull::Response::send_mess(nar::Socket* skt){
         pull_resp_send["header"] = send_head();
         pull_resp_send["payload"]["rand_port"] = this->_rendezvous_port;
         pull_resp_send["payload"]["peer_list"] = nlohmann::json::array();
-        pull_resp_send["payload"]["size"] = elements.size();
+        pull_resp_send["payload"]["size"] = _elements.size();
         for(int i = 0;i < _elements.size();i++) {
             pull_resp_send["payload"]["peer_list"][i]["machine_id"] = _elements[i].machine_id;
             pull_resp_send["payload"]["peer_list"][i]["chunk_id"] = _elements[i].chunk_id;
@@ -108,7 +109,7 @@ nlohmann::json nar::MessageTypes::FilePull::Response::test_json() {
     pull_resp_test["header"] = send_head();
     pull_resp_test["payload"]["rand_port"] = this->_rendezvous_port;
     pull_resp_test["payload"]["peer_list"] = nlohmann::json::array();
-    pull_resp_test["payload"]["size"] = elements.size();
+    pull_resp_test["payload"]["size"] = _elements.size();
     for(int i = 0;i < _elements.size();i++) {
         pull_resp_test["payload"]["peer_list"][i]["machine_id"] = _elements[i].machine_id;
         pull_resp_test["payload"]["peer_list"][i]["chunk_id"] = _elements[i].chunk_id;

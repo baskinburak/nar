@@ -90,3 +90,18 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
     write_end();
     return this->_keepalives[selected];
 }
+
+nar::SockInfo* nar::Peers::get_peer(string& machine_id) {
+    read_start();
+    nar::SockInfo* result;
+    std::map<string, nar::SockInfo*>::iterator it;
+    it = _keepalives.find(machine_id);
+
+    if (it == _keepalives.end())
+        result = NULL;
+    else
+        result = it->second;
+
+    read_end();
+    return result;
+}

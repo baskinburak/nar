@@ -109,7 +109,7 @@ namespace nar {
                     std::string& get_file_name();
                     std::string& get_dir_name();
                     void send_mess(nar::Socket* skt, nar::MessageTypes::FilePull::Response & resp);
-                    void receive_message(nlohmann::json pull_req_recv);
+                    void receive_message(std::string& pull_req_recv);
                     nlohmann::json test_json();
             };
 

@@ -22,6 +22,7 @@ file(GLOB NAR_MESSAGING_SOURCES
     nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.cpp
     nar/lib/Messaging/MessageTypes/UserAuthenticationInit.cpp
     nar/lib/Messaging/MessageTypes/FilePush.cpp
+    nar/lib/Messaging/MessageTypes/FilePull.cpp
     nar/lib/Messaging/MessageTypes/UserRegister.cpp
     nar/lib/Messaging/messaging_utility.cpp
     nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
