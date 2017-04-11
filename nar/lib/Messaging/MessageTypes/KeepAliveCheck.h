@@ -21,7 +21,7 @@ namespace nar {
             class Request : public RequestHeader {
                 public:
                     Request(): RequestHeader(std::string("keepalive_check")) {}
-                    void send_mess(nar::Socket* skt, nar::MessageTypes::KeepAlive::Response & resp);
+                    void send_mess(nar::Socket* skt, nar::MessageTypes::KeepAliveCheck::Response & resp);
                     void receive_message(std::string& msg);
                     nlohmann::json test_json();
             };

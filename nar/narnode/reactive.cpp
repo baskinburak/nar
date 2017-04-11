@@ -116,7 +116,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
           std::thread thr(nar::chunk_pull_replier, stream_id, globals, chunk_size, rand_port, chunk_id);
           thr.detach();
         } else if(action == std::string("keepalive_check")) {
-            nar::MessageTypes::KeepAliveCheck::Response req(200);
+            nar::MessageTypes::KeepAliveCheck::Response resp(200);
             resp.send_mess(server_socket);
         }
     }

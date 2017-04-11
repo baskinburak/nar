@@ -28,9 +28,9 @@ void nar::Peers::insert_keepalive(std::string& mac_id, nar::Socket* skt) {
     write_start();
     nar::DBStructs::Machine mac = this->_db->getMachine(mac_id);
     nar::DBStructs::Session sess;
-    sess.machine_id = mac;
+    sess.machine_id = mac_id;
     unsigned long sessid = this->_db->insertSession(sess);
-    nar::SockInfo* sck_inf = new nar::SockInfo(skt,mac,sess);
+    nar::SockInfo* sck_inf = new nar::SockInfo(skt,mac,sessid);
     this->_keepalives[mac_id] = sck_inf;
     this->_macs.push_back(mac_id);
     write_end();
@@ -69,8 +69,8 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
     nar::MessageTypes::KeepAliveCheck::Response resp;
     do {
         auto random_integer = uni(rng);
-        selected = _macs[random_integer];
-        nar::SockInfo* sckinf = _keepalives[selected % keepalives.size()];
+        selected = _macs[random_integer % _keepalives.size()];
+        nar::SockInfo* sckinf = _keepalives[selected];
         nar::Socket* sck = sckinf->get_sck();
         try {
             req.send_mess(sck, resp);
