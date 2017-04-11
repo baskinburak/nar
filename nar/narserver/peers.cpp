@@ -2,6 +2,8 @@
 #include <nar/lib/Messaging/MessageTypes/KeepAliveCheck.h>
 #include <nar/narserver/dbstructs.h>
 void nar::Peers::read_start() {
+    static int cnt = 0;
+    std::cout << "read_start " << cnt++ << std::endl;
     read_mtx.lock();
     read_count++;
     if(read_count == 1)
@@ -10,6 +12,8 @@ void nar::Peers::read_start() {
 }
 
 void nar::Peers::read_end() {
+    static int cnt = 0;
+    std::cout << "read_end " << cnt++ << std::endl;
     read_mtx.lock();
     read_count--;
     if(read_count == 0)
@@ -18,9 +22,13 @@ void nar::Peers::read_end() {
 }
 
 void nar::Peers::write_start() {
+    static int cnt = 0;
+    std::cout << "write_start " << cnt++ << std::endl;
     write_mtx.lock();
 }
 void nar::Peers::write_end() {
+    static int cnt = 0;
+    std::cout << "write_end " << cnt++ << std::endl;
     write_mtx.unlock();
 }
 
