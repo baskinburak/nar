@@ -38,9 +38,9 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
 
 
 void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long long int chunk_size, unsigned short rand_port, long long int chunk_id) {
-    nar::USocket cli_sck(globals->get_ioserv(), globals->get_server_ip(), rand_port, stream_id);
+    nar::USocket* cli_sck = new nar::USocket(globals->get_ioserv(), globals->get_server_ip(), rand_port, stream_id);
     std::cout << "HERE THREAD, chunk size: "<< chunk_size << std::endl;
-    cli_sck.connect();
+    cli_sck->connect();
     std::cout << "Ready To Read" << std::endl;
 
 
@@ -51,10 +51,11 @@ void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long
     int total_read = 0;
     char buf[1024];
     while(total_read < chunk_size) {
-         int len = cli_sck.recv(buf, 1024);
+         int len = cli_sck->recv(buf, 1024);
          recvfile.write(buf, len);
          total_read += len;
     }
+    recvfile.close();
     return;
 }
 
