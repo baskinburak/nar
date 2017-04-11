@@ -12,7 +12,7 @@ using std::cout;
 using std::endl;
 
 
-void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPush::Request* req) {
+void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPull::Request* req) {
     nar::Socket* server_sck = this->_globals->establish_server_connection();
     if (!nar::ActiveTask::user_authenticate(server_sck, this->_vars)) {
         cout << "user_authentication fail" << endl;
