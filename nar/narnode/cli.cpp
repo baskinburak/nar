@@ -40,12 +40,13 @@ int main(int argc, char* argv[]){
         }
 
     } else if(first_arg == std::string("pull")) {
-        if(argc < 3) {
+        if(argc < 4) {
             return 0;
         }
         auto unamepwd = get_uname_pw();
         std::string file_name(argv[2]);
-        nar::CLITasks::nar_pull(file_name, unamepwd.first, unamepwd.second, std::string("/"));
+        std::string dir_name(argv[3]);
+        nar::CLITasks::nar_pull(file_name,dir_name, unamepwd.first, unamepwd.second, std::string("/"));
 
     } else if(first_arg == std::string("register")) {
         auto unamepwd = get_uname_pw();

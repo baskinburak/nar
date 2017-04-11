@@ -22,10 +22,10 @@ void nar::CLITasks::nar_ls(std::string dir_name, std::string username, std::stri
     return;
 
 }
-void nar::CLITasks::nar_pull(std::string file_name, std::string username, std::string password, std::string curdir) {
+void nar::CLITasks::nar_pull(std::string file_name,std::string dir_name, std::string username, std::string password, std::string curdir) {
     std::cout << "File name: " << file_name << std::endl;
 
-    nar::MessageTypes::IPCPull::Request req(file_name, username, password, curdir);
+    nar::MessageTypes::IPCPull::Request req(file_name,dir_name, username, password, curdir);
 
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, 'c');
