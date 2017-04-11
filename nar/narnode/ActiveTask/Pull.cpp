@@ -48,12 +48,12 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
 
     for(int i=0;i<elements.size();i++) {
         unsigned long stream_id = elements[i].stream_id;
-        nar::USocket cli_sck(this->_globals->get_ioserv(), this->_globals->get_server_ip(), rand_port, stream_id);
-        cli_sck.connect();
+        nar::USocket* cli_sck = new nar::USocket(this->_globals->get_ioserv(), this->_globals->get_server_ip(), rand_port, stream_id);
+        cli_sck->connect();
         long int total_read = 0;
         char buf[1024];
         while(total_read < elements[i].chunk_size) {
-            int len = cli_sck.recv(buf, 1024);
+            int len = cli_sck->recv(buf, 1024);
             tempfile1->write(buf,len);
             total_read += len;
         }
