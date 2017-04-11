@@ -50,7 +50,9 @@ void nar::Peers::delete_keepalive(std::string& mac_id) {
 
 
 nar::SockInfo* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long chunk_size) {
+    std::cout << "before read_start" << std::endl;
     read_start();
+    std::cout << "after read_start" << std::endl;
     nar::SockInfo* result = random_policy(user, chunk_size);
     read_end();
     return result;
