@@ -62,13 +62,15 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
 
     std::random_device rd; // only used once to initialise (seed) engine
     std::mt19937 rng(rd()); // random-number engine used (Mersenne-Twister in this case)
+    std::cout << "keepalives size: " << _keepalives.size() << std::endl;
     std::uniform_int_distribution<int> uni(0,_keepalives.size()-1); // guaranteed unbiased
     std::set<std::string>::iterator it;
-    std::string selected ;
+    std::string selected;
     nar::MessageTypes::KeepAliveCheck::Request req;
     nar::MessageTypes::KeepAliveCheck::Response resp;
     do {
         auto random_integer = uni(rng);
+        std::cout << "keepalives size, randint: " << _keepalives.size()<< " " << random_integer << std::endl;
         selected = _macs[random_integer % _keepalives.size()];
         nar::SockInfo* sckinf = _keepalives[selected];
         nar::Socket* sck = sckinf->get_sck();
