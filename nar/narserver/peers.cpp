@@ -1,5 +1,6 @@
 #include "peers.h"
 #include <nar/lib/Messaging/MessageTypes/KeepAliveCheck.h>
+#include <nar/narserver/dbstructs.h>
 void nar::Peers::read_start() {
     read_mtx.lock();
     read_count++;
