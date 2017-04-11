@@ -17,7 +17,9 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         req.receive_message(message);
         push_file_action(s_global,skt,req,user);
     } else if(action == std::string("file_pull_request")) {
-
+        nar::MessageTypes::FilePull::Request req;
+        req.receive_message(message);
+        pull_file_action(s_global,skt,req,user);
     } else if(action == std::string("machine_register")) {
         nar::MessageTypes::MachineRegister::Request req;
         req.receive_message(message);
