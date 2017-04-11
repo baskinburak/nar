@@ -49,8 +49,13 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     std::string file_name = req.get_file_name();
     std::string dir_name = req.get_dir_name();
 
+    std::cout << "File Pull Fnc Entered" << std::endl;
+
     nar::Database* db = s_global->get_db();
     long long int f_id = findFileId(file_name,dir_name,user.user_name, db);
+
+std::cout << "File id to pull : " << f_id << std::endl;
+
     std::vector<struct DBStructs::Chunk> chunks = db->getChunks(f_id);
 
     unsigned short r_port = s_global->get_randezvous_port();
@@ -63,16 +68,22 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
         nar::SockInfo* peer_sck;
         for(int j=0; !(peer_sck = s_global->peers->get_peer(machines[j].machine_id )); ++j);
 
+        std::cout << "Peer to get chunk " << peer_sck->get_machine_id() << std::endl;
+
         long long int s_id = s_global->get_next_stream_id();
+
         nar::MessageTypes::WaitChunkPull::Request chunk_req(r_port, s_id, chunks[i].chunk_id, chunks[i].chunk_size);
         nar::MessageTypes::WaitChunkPull::Response chunk_resp;
 
+        std::cout << "Peer req sending "  << std::endl;
         chunk_req.send_mess(peer_sck->get_sck(), chunk_resp);
+        std::cout << "Peer req received "  << std::endl;
         if (chunk_resp.get_status_code() != 200 )
             std::cout << "Pull Server: Peer does not respond to WaitChunkPull" << std::endl;
 
         resp.add_element(peer_sck->get_machine_id(), chunks[i].chunk_id, s_id, chunks[i].chunk_size);
     }
+    std::cout << "Waitchunkpull messages are completed time to send Resp "  << std::endl;
     resp.send_mess(skt);
     return;
 }

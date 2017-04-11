@@ -105,7 +105,7 @@ namespace nar {
 
                 public:
                     Request() :RequestHeader(std::string("file_pull_request")) {}
-                    Request(std::string fn = std::string(""), std::string d = std::string("")): RequestHeader(std::string("file_pull_request")),  _dir_name(d), _file_name(fn) {}
+                    Request(std::string fn , std::string d ): RequestHeader(std::string("file_pull_request")),  _dir_name(d), _file_name(fn) {}
                     std::string& get_file_name();
                     std::string& get_dir_name();
                     void send_mess(nar::Socket* skt, nar::MessageTypes::FilePull::Response & resp);
