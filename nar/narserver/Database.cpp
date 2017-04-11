@@ -272,13 +272,13 @@ void nar::Database::insertChunkToMachine(struct DBStructs::ChunkToMachine &chu)
 }
 unsigned long nar::Database::insertSession(struct DBStructs::Session &ses) {
     write_start();
+    unsigned long last = getNextSessionId(1);
     nar::db::Session session = turnSession(ses);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO Sessions(machine_id) "
                                                  "VALUES(?);");
     prep_stmt -> setString(1, session.machine_id);
     prep_stmt -> execute();
-    unsigned long last = getNextSessionId(0);
     delete prep_stmt;
 
     write_end();
@@ -828,7 +828,7 @@ unsigned long  nar::Database::getNextSessionId(long long int N) {
         sql::PreparedStatement *prep_stmt;
         long long int keep = 1;
         sql::ResultSet *res;
-        prep_stmt=_con->prepareStatement("Select MAX(File_id)+1 AS f From Sessions");
+        prep_stmt=_con->prepareStatement("Select MAX(session_id)+1 AS f From Sessions");
         res = prep_stmt->executeQuery();
         while(res->next()){
             if(!res->isNull("f")){
