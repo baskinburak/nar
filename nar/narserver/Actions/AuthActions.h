@@ -12,6 +12,7 @@ namespace nar {
     namespace AuthAction {
         void authentication_dispatcher(nar::ServerGlobal* s_global, nar::Socket* skt, nar::DBStructs::User& user);
         void push_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::FilePush::Request& req, nar::DBStructs::User&  user);
+        void pull_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::FilePull::Request& req, nar::DBStructs::User&  user);
         void machine_register_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::MachineRegister::Request& req, nar::DBStructs::User& user);
     }
 }
