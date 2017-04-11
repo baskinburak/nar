@@ -63,11 +63,11 @@ void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long
 
 
 void nar::chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int chunk_size, unsigned short rand_port, long long int chunk_id) {
-    nar::USocket cli_sck(globals->get_ioserv(), globals->get_server_ip(), rand_port, stream_id);
-    cli_sck.connect();
+    nar::USocket* cli_sck = new nar::USocket(globals->get_ioserv(), globals->get_server_ip(), rand_port, stream_id);
+    cli_sck->connect();
     std::string path(globals->get_file_folder() + std::string("/c"));
     nar::File f( (path+std::to_string(chunk_id) ).c_str(), "r", false);
-    cli_sck.send(f,0,f.size());
+    cli_sck->send(f,0,f.size());
 }
 
 void nar::reactive_dispatcher(nar::Global *globals) {
