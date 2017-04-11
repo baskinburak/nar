@@ -82,6 +82,7 @@ set(DAEMON_SOURCES
     nar/narnode/ActiveTask/ActiveFunctions.cpp
     nar/narnode/ActiveTask/Push.cpp
     nar/narnode/ActiveTask/Register.cpp
+    nar/narnode/ActiveTask/LS.cpp
 )
 
 #set(REACT_TEST_SOURCES

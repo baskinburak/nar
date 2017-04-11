@@ -24,6 +24,8 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         cout<<"<daemon ls"<<endl;
         nar::MessageTypes::IPCLs::Request ipc_ls;
         ipc_ls.populate_object(msg);
+        nar::ActiveTask::LS ls_task(globals, &uservars);
+        ls_task.run(sck, &ipc_ls);
         cout << ipc_ls.get_action() << " " << ipc_ls.get_username() << " " << ipc_ls.get_password() << " " << ipc_ls.get_current_directory() << " " << ipc_ls.get_dir_name() << endl;
         cout<<"daemon ls>"<<endl;
 

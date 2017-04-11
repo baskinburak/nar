@@ -73,7 +73,9 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
         nar::SockInfo* sckinf = _keepalives[selected];
         nar::Socket* sck = sckinf->get_sck();
         try {
+            std::cout << "try: " << selected << std::endl;
             req.send_mess(sck, resp);
+            std::cout << "OK." << std::endl;
         } catch(...) {
             nar::SockInfo* sckinf = this->_keepalives[selected];
             unsigned long sessid = sckinf->get_sessid();
