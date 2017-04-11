@@ -143,7 +143,12 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
     fl.file_id = f_id;
     fl.file_name = file_name;
     fl.file_size = file_size;
+    nar::DBStructs::DirectoryTo dt;
+    dt.dir_id = user.dir_id;
+    dt.item_id = f_id;
+    dt.ForD = false;
     db->insertFile(fl);
+    db->insertDirectoryTo(dt);
 
     for(int i=0;i<peer_num;i++){
         nar::DBStructs::Chunk chnk;
