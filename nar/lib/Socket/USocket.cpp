@@ -212,12 +212,12 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
                 sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
             } else {
                 sock->_syned = true;
-                
+
                 if(!sock->_exp_sqnm_set) {
                     sock->_expected_seqnum = rcvpck->get_seqnum() + 1;
                     sock->_exp_sqnm_set = true;
                 }
-                
+
                 nar::Packet rplpck;
                 rplpck.make_synack(sock->_stream_id, sock->_start_seqnum, rcvpck->get_seqnum());
                 rplpck.print();
