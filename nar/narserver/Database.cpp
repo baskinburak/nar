@@ -1,5 +1,28 @@
 #include <nar/narserver/Database.h>
+void nar::Database::read_start() {
+    read_mtx.lock();
+    read_count++;
+    if(read_count == 1)
+        write_mtx.lock();
+    read_mtx.unlock();
+}
 
+void nar::Database::read_end() {
+    read_mtx.lock();
+    read_count--;
+    if(read_count == 0)
+        write_mtx.unlock();
+    read_mtx.unlock();
+}
+
+void nar::Database::write_start() {
+
+    write_mtx.lock();
+
+}
+void nar::Database::write_end() {
+    write_mtx.unlock();
+}
 
 nar::Database::~Database()
 {
@@ -74,6 +97,17 @@ nar::db::DirectoryTo nar::Database::turnDirectoryTo(nar::DBStructs::DirectoryTo 
     dct.dir_id = std::to_string(directoryTo.dir_id);
     dct.item_id = std::to_string(directoryTo.item_id);
     return dct;
+}
+
+nar::db::Session nar::Database::turnSession(nar::DBStructs::Session &session) {
+    nar::db::Session ses;
+    ses.session_id = std::to_string(session.session_id);
+    ses.machine_id = session.machine_id;
+    ses.join_time = std::to_string(session.join_time);
+    ses.leave_time = std::to_string(session.leave_time);
+    return ses;
+
+
 }
 
 void nar::Database::setUser(std::string user)
@@ -234,6 +268,30 @@ void nar::Database::insertChunkToMachine(struct DBStructs::ChunkToMachine &chu)
 
     prep_stmt -> execute();
 
+    delete prep_stmt;
+}
+unsigned long nar::Database::insertSession(struct DBStructs::Session &ses) {
+    write_start();
+    nar::db::Session session = turnSession(ses);
+    sql::PreparedStatement *prep_stmt;
+    prep_stmt = _con -> prepareStatement("INSERT INTO Sessions(machine_id) "
+                                                 "VALUES(?);");
+    prep_stmt -> setString(1, session.machine_id);
+    prep_stmt -> execute();
+    unsigned long last = getNextSessionId(0);
+    delete prep_stmt;
+
+    write_end();
+    return last;
+}
+
+
+void nar::Database::leaveSession(struct DBStructs::Session &ses) {
+    nar::db::Session session = turnSession(ses);
+    sql::PreparedStatement *prep_stmt;
+    prep_stmt = _con -> prepareStatement("UPDATE Sessions SET leave_time = NOW() WHERE session_id = ? ");
+    prep_stmt -> setBigInt(1, session.session_id);
+    prep_stmt -> execute();
     delete prep_stmt;
 }
 
@@ -764,6 +822,30 @@ std::vector<nar::DBStructs::Directory> nar::Database::getDirectoryDir(long long 
     return output;
 
 }
+unsigned long  nar::Database::getNextSessionId(long long int N) {
+    read_start();
+    static long long int next_id = -1;
+    if(next_id == -1) {
+        sql::PreparedStatement *prep_stmt;
+        long long int keep = 1;
+        sql::ResultSet *res;
+        prep_stmt=_con->prepareStatement("Select MAX(File_id)+1 AS f From Sessions");
+        res = prep_stmt->executeQuery();
+        while(res->next()){
+            if(!res->isNull("f")){
+                keep = std::stoll(res->getString("f").asStdString());
+            }
+        }
+        delete res;
+        delete prep_stmt;
+        next_id = keep;
+    }
+
+    long long int ret = next_id;
+    next_id += N;
+    read_end();
+    return ret;
+}
 long long int nar::Database::getNextFileId(long long int N){
     static long long int next_id = -1;
     if(next_id == -1) {
@@ -1033,3 +1115,4 @@ std::set<std::string> nar::Database::get_user_machines(nar::DBStructs::User& us)
     delete res;
     return output;
 }
+
