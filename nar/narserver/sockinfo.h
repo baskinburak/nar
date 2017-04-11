@@ -7,9 +7,11 @@ namespace nar {
         private:
             nar::DBStructs::Machine _machine;
             nar::Socket* _skt;
+            unsigned long _sessid;
         public:
-            SockInfo(nar::Socket* sk, nar::DBStructs::Machine& machine): _skt(sk), _machine(machine) {  }
+            SockInfo(nar::Socket* sk, nar::DBStructs::Machine& machine, unsigned long sessid): _skt(sk), _machine(machine), _sessid(sessid) {  }
             nar::Socket* get_sck();
+            unsigned long get_sessid();
             nar::DBStructs::Machine& get_machine();
             std::string& get_machine_id();
     };

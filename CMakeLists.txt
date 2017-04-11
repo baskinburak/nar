@@ -29,6 +29,7 @@ file(GLOB NAR_MESSAGING_SOURCES
     nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
     nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
     nar/lib/Messaging/MessageTypes/KeepAlive.cpp
+    nar/lib/Messaging/MessageTypes/KeepAliveCheck.cpp
     nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
     nar/lib/Messaging/MessageTypes/RequestHeader.cpp
     nar/lib/Messaging/MessageTypes/UserRegister.cpp

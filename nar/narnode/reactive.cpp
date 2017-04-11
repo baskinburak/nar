@@ -7,7 +7,7 @@
 #include "reactive.h"
 #include <thread>
 #include <string>
-
+#include <nar/lib/Messaging/MessageTypes/KeepAliveCheck.h>
 
 void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
     //while(!nar::DaemonTasks::handshake(sck, globals));
@@ -115,6 +115,9 @@ void nar::reactive_dispatcher(nar::Global *globals) {
 
           std::thread thr(nar::chunk_pull_replier, stream_id, globals, chunk_size, rand_port, chunk_id);
           thr.detach();
+        } else if(action == std::string("keepalive_check")) {
+            nar::MessageTypes::KeepAliveCheck::Response req(200);
+            resp.send_mess(server_socket);
         }
     }
 }
