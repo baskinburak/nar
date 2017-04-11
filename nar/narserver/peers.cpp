@@ -50,14 +50,13 @@ void nar::Peers::delete_keepalive(std::string& mac_id) {
 
 
 nar::SockInfo* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long chunk_size) {
-    read_start();
+    write_start();
     nar::SockInfo* result = random_policy(user, chunk_size);
-    read_end();
+    write_start();
     return result;
 }
 
 nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned long chunk_size) {
-    write_start();
     std::set<std::string> user_machines = _db->get_user_machines(user);
 
     std::random_device rd; // only used once to initialise (seed) engine
@@ -91,7 +90,6 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
             }
         }
     } while((it = user_machines.find(selected)) != user_machines.end());
-    write_end();
     return this->_keepalives[selected];
 }
 
