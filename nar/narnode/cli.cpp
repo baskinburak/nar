@@ -39,6 +39,14 @@ int main(int argc, char* argv[]){
             nar::CLITasks::nar_ls(dir_name, unamepwd.first, unamepwd.second, std::string("/"));
         }
 
+    } else if(first_arg == std::string("cd")) {
+        auto = unamepwd = get_uname_pw();
+        if(argc < 3) {
+            return 0;
+        }
+        std::string dir_name(argv[2]);
+        //nar::CLITasks::nar_cd( dir_name,  unamepwd.first, unamepwd.second, std::string("/"));
+
     } else if(first_arg == std::string("pull")) {
         if(argc < 4) {
             return 0;

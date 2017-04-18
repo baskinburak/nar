@@ -63,8 +63,11 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
 
     db->insertDirectory(new_dir);          // DIR_ID ASSIGNED
 
+    std::cout <<  "parent id " << pwd.dir_id << std::endl;
+
     nar::DBStructs::DirectoryTo tmp;
     tmp.dir_id=pwd.dir_id;
+    std::cout <<  "İtem id " << new_dir.dir_id << std::endl;
     tmp.item_id=new_dir.dir_id;
     tmp.ForD = true;
 
