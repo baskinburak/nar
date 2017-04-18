@@ -87,6 +87,7 @@ set(DAEMON_SOURCES
     nar/narnode/ActiveTask/Register.cpp
     nar/narnode/ActiveTask/Pull.cpp
     nar/narnode/ActiveTask/LS.cpp
+    nar/narnode/ActiveTask/Mkdir.cpp
 )
 
 #set(REACT_TEST_SOURCES

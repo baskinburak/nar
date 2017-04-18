@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <nar/narnode/uservars.h>
 #include <nar/lib/Messaging/MessageTypes/IPCLs.h>
+#include <nar/lib/Messaging/MessageTypes/IPCMkdir.h>
 #include <nar/lib/Messaging/messaging_utility.h>
 #include <nar/narnode/reactive.h>
 #include <nar/narnode/ActiveTask/ActiveTask.h>
@@ -46,6 +47,11 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         register_task.run(sck, &ipc_register);
     } else if(action == string("config")) {
     } else if(action == string("status")) {
+    } else if(action == string("mkdir")) {
+        nar::MessageTypes::IPCMkdir::Request ipc_mkdir;
+        ipc_mkdir.populate_object(msg);
+        nar::ActiveTask::Mkdir mkdir(globals, &uservars);
+        mkdir.run(sck, &ipc_mkdir);
     }
 }
 

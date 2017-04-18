@@ -54,6 +54,13 @@ int main(int argc, char* argv[]){
 
     } else if(first_arg == std::string("status")) {
         nar::CLITasks::nar_status();
+    } else if(first_arg == std::string("mkdir")) {
+        if(argc < 3 ){
+            return 0;
+        }
+        std::string dir_name(argv[2]);
+        auto unamepwd = get_uname_pw();
+        nar::CLITasks::nar_mkdir(dir_name, unamepwd.first, unamepwd.second, std::string("/"));
     }
     return 0;
 }

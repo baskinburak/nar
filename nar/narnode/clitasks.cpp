@@ -7,6 +7,7 @@
 #include <nar/lib/Messaging/MessageTypes/IPCPush.h>
 #include <nar/lib/Messaging/MessageTypes/IPCRegister.h>
 #include <nar/lib/Messaging/MessageTypes/IPCStatus.h>
+#include <nar/lib/Messaging/MessageTypes/IPCMkdir.h>
 
 
 
@@ -76,5 +77,65 @@ void nar::CLITasks::nar_status() {
 
     req.send_action(&cli_skt);
     req.print_loop(&cli_skt);
+    return;
+}
+void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::string password, std::string curdir) {
+    std::vector<std::string> names;
+    std::size_t found;
+    std::size_t last_found;
+    std::string temp;
+    std::string sql_string = "";
+    if((dir_name[dir_name.length()-1] == '/') && dir_name.length()>1 ){
+        dir_name = dir_name.substr(0,dir_name.length()-1);
+    }
+    if((dir_name[0] == '/') && dir_name.length()>1){
+        found = dir_name.find("/",1);
+        last_found = 1;
+    }
+    else{
+        found = dir_name.find("/");
+        last_found = 0;
+    }
+
+    while(found != std::string::npos){
+        if(found == 0 && last_found == 0){
+            temp = dir_name.substr(last_found,1);
+            last_found = found+1;
+            found = dir_name.find("/",last_found);
+            names.push_back(temp);
+        }
+        else{
+            temp = dir_name.substr(last_found,found-last_found);
+            last_found = found+1;
+            found = dir_name.find("/",last_found);
+            names.push_back(temp);
+        }
+
+    }
+    if(dir_name.length() != 1){
+        temp = dir_name.substr(last_found);
+        names.push_back(temp);
+    }
+    std::string dir_path("");
+    std::string file_name("");
+    for(int i=0;i<names.size();i++) {
+        if(i == names.size()-1) {
+            file_name = names[i];
+        }
+        else {
+            dir_path += names[i]+ std::string("/");
+
+        }
+    }
+    std::cout<<"file_name "<<file_name<<std::endl;
+    std::cout<<"dir_name "<<dir_path<<std::endl;
+    nar::MessageTypes::IPCMkdir::Request req(dir_name,file_name, username, password, std::string("/"));
+    boost::asio::io_service io_serv;
+    nar::Socket cli_skt(io_serv, 'c');
+    cli_skt.connect(std::string("127.0.0.1"), 17700);
+
+    req.send_action(&cli_skt);
+    req.print_loop(&cli_skt);
+    return;
     return;
 }

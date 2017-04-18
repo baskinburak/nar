@@ -21,7 +21,7 @@ void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPC
     nar::MessageTypes::Mkdir::Request mkdir_req(dir_name,dest_dir);
     nar::MessageTypes::Mkdir::Response mdkir_resp;
     try{
-        mkdir.send_mess(server_sck,resp);
+        mkdir_req.send_mess(server_sck,mdkir_resp);
     }
     catch(...){
         return;
