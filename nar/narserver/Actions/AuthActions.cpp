@@ -28,6 +28,10 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         nar::MessageTypes::DirInfo::Request req;
         req.receive_message(message);
         dir_info_action(s_global,skt,req,user);
+    } else if(action == std::string("mkdir")) {
+        nar::MessageTypes::Mkdir::Request req;
+        req.receive_message(message);
+        mkdir_action(s_global,skt,req,user);
     }
 }
 long long int findFileId(std::string& file_name,std::string& dir_name,std::string& uname, nar::Database *db)
@@ -46,6 +50,31 @@ long long int findFileId(std::string& file_name,std::string& dir_name,std::strin
          }
     }
     return file_id;
+}
+
+void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::Mkdir::Request& req, nar::DBStructs::User& user) {
+    std::string target_dir = req.get_dest_dir();
+    std::string dir_name = req.get_dir_name();
+    nar::Database* db = s_global->get_db();
+
+    nar::DBStructs::Directory pwd = db->findDirectoryId(user.user_name,target_dir);
+    nar::DBStructs::Directory new_dir;
+    new_dir.dir_name = dir_name;
+
+    db->insertDirectory(new_dir);          // DIR_ID ASSIGNED
+
+    std::cout <<  "parent id " << pwd.dir_id << std::endl;
+
+    nar::DBStructs::DirectoryTo tmp;
+    tmp.dir_id=pwd.dir_id;
+    std::cout <<  "İtem id " << new_dir.dir_id << std::endl;
+    tmp.item_id=new_dir.dir_id;
+    tmp.ForD = true;
+
+    db->insertDirectoryTo(tmp);
+    nar::MessageTypes::Mkdir::Response resp(200);
+    resp.send_mess(skt);
+    return;
 }
 
 
