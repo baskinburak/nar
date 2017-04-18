@@ -16,7 +16,7 @@ std::string nar::get_message(nar::Socket* skt) {
 
 std::string nar::get_message(nar::Socket& skt) {
     char buf[1035];
-    int received = skt.recv(buf, 1024);
+    int received = skt.recv(buf, 10);
     if(received <= 0) {
         std::cout << "connection lost"<< std::endl; exit(0);
     }

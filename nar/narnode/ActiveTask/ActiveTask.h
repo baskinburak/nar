@@ -13,6 +13,7 @@
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
 #include <nar/lib/Messaging/MessageTypes/IPCPull.h>
 #include <nar/lib/Messaging/MessageTypes/IPCRegister.h>
+#include <nar/lib/Messaging/MessageTypes/IPCMkdir.h>
 
 
 namespace nar {
@@ -48,7 +49,11 @@ namespace nar {
                 void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPull::Request* req);
         };
 
-        class MakeDir : public IActiveTask {
+        class Mkdir : public IActiveTask {
+            private:
+            public:
+                Mkdir(nar::Global* globals, nar::UserVariables* variables): IActiveTask(globals,variables) {}
+                void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCMkdir::Request* req);
         };
 
         class Register : public IActiveTask {

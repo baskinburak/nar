@@ -32,7 +32,8 @@ void nar::MessageTypes::DirInfo::Request::send_mess(nar::Socket* skt ,nar::Messa
     resp.receive_message(dir_req_recv);
     return;
 }
-void nar::MessageTypes::DirInfo::Request::receive_message(nlohmann::json dir_req_recv){
+void nar::MessageTypes::DirInfo::Request::receive_message(std::string msg){
+    nlohmann::json dir_req_recv = nlohmann::json::parse(msg);
     nlohmann::json head = dir_req_recv["header"];
     recv_fill(head);
     dir = dir_req_recv["payload"]["dir_name"];
