@@ -159,7 +159,7 @@ namespace nar {
                      * @todo: maybe it can take socket directly
                      * @tested: Yes
                     */
-                    void receive_message(nlohmann::json dir_req_recv);
+                    void receive_message(std::string dir_req_recv);
 
                     /*
                      * for testing and seeing what specific class
