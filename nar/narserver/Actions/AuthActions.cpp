@@ -24,6 +24,10 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         nar::MessageTypes::MachineRegister::Request req;
         req.receive_message(message);
         machine_register_action(s_global,skt,req,user);
+    } else if(action == std::string("get_dir_info"))  {
+        nar::MessageTypes::DirInfo::Request req;
+        req.receive_message(message);
+        dir_info_action(s_global,skt,req,user);
     }
 }
 long long int findFileId(std::string& file_name,std::string& dir_name,std::string& uname, nar::Database *db)
@@ -87,6 +91,30 @@ std::cout << "File id to pull : " << f_id << std::endl;
     resp.send_mess(skt);
     return;
 }
+
+void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::DirInfo::Request& req, nar::DBStructs::User& user) {
+    nar::Database* db = s_global->get_db();
+    std::string dir_name = req.get_dir();
+    nar::MessageTypes::DirInfo::Response resp(200);
+    struct DBStructs::Directory dir = db->findDirectoryId(user.user_name, dir_name);
+    std::vector<nar::DBStructs::File> files = db->getDirectoryFile(dir.dir_id);
+    std::vector<nar::DBStructs::Directory> dirs = db->getDirectoryDir(dir.dir_id);
+
+    for (size_t i = 0; i < dirs.size(); i++) {
+        struct DBStructs::Directory& tmpDir = dirs[i];
+        resp.add_element(std::to_string(tmpDir.change_time),tmpDir.dir_id,tmpDir.dir_name, tmpDir.dir_size, true );
+    }
+
+    for (size_t i = 0; i < files.size(); i++) {
+        struct DBStructs::File& tmpFile = files[i];
+        resp.add_element(std::to_string(tmpFile.change_time),tmpFile.file_id,tmpFile.file_name, tmpFile.file_size, false );
+    }
+    std::cout << "Dir Info response is being sent." << std::endl;
+    resp.send_mess(skt);
+    return;
+}
+
+
 
 
 void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::FilePush::Request& req, nar::DBStructs::User& user) {

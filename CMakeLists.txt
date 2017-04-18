@@ -35,6 +35,7 @@ file(GLOB NAR_MESSAGING_SOURCES
     nar/lib/Messaging/MessageTypes/RequestHeader.cpp
     nar/lib/Messaging/MessageTypes/UserRegister.cpp
     nar/lib/Messaging/MessageTypes/MachineRegister.cpp
+    nar/lib/Messaging/MessageTypes/DirInfo.cpp
     nar/lib/base64/base64.cpp
     nar/lib/Messaging/MessageTypes/DirInfo.cpp
     nar/lib/Messaging/MessageTypes/Mkdir.cpp
