@@ -63,6 +63,7 @@ unsigned short nar::USocket::get_port() const {
 }
 
 nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id), _iserv(&io_serv) {
+    this->_close_sck = false;
     this->_exp_sqnm_set = false;
     this->_server_ip = server_ip;
     this->_server_port = std::to_string(server_port);
@@ -164,6 +165,10 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
         }
         lck.unlock();
         std::size_t len = sock->_socket.receive_from(boost::asio::buffer(buff, nar::Packet::PACKET_LEN), remote_endpoint, 0, ec);
+        if(sock->_close_sck) {
+            delete sock;
+            break;
+        }
         lck.lock();
         if(ec) {
             continue;
@@ -536,4 +541,8 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
     }
     lck.unlock();
     return true;
+}
+
+void nar::USocket::close() {
+    this->_close_sck = true;
 }

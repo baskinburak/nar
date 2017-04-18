@@ -8,6 +8,7 @@
 #include <mutex>
 #include <set>
 #include <nar/narnode/File/File.h>
+#include <atomic>
 
 using boost::asio::ip::udp;
 using std::pair;
@@ -111,6 +112,8 @@ namespace nar {
             std::vector<pair<nar::Packet*, udp::endpoint*> > _ran_packs;
 
             bool _exp_sqnm_set;
+            std::atomic<bool> _close_sck;
+
 
             unsigned int rand_seqnum();
         public:
@@ -126,6 +129,7 @@ namespace nar {
             int recv(char* buf, int len);
             bool send(nar::File& file, unsigned long start, unsigned long len);
             unsigned short get_port() const;
+            void close();
     };
 }
 
