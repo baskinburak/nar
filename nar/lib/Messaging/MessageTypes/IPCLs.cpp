@@ -99,6 +99,18 @@ void nar::MessageTypes::IPCLs::Response::set_change_time(std::string ct) {
 void nar::MessageTypes::IPCLs::Response::set_type(std::string t) {
 	this -> _type = t;
 }
+void nar::MessageTypes::IPCLs::Response::send_message_progress(nar::Socket* skt, int p) {
+    nlohmann::json json_to_sent;
+    json_to_sent["header"]["reply_to"] = get_reply_to();
+    json_to_sent["payload"]["progress"] = get_progress();
+    json_to_sent["payload"]["status_code"] = get_status_code();
+    json_to_sent["payload"]["entity_name"] = get_entity_name();
+    json_to_sent["payload"]["entity_size"] = get_entity_size();
+    json_to_sent["payload"]["change_time"] = get_change_time();
+    json_to_sent["payload"]["type"] = get_type();
+    send_message(skt, json_to_sent.dump());
+    return;
+}
 
 nlohmann::json nar::MessageTypes::IPCLs::Response::give_myresponsejson() {
     nlohmann::json resp_json;

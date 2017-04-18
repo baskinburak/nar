@@ -36,6 +36,8 @@ file(GLOB NAR_MESSAGING_SOURCES
     nar/lib/Messaging/MessageTypes/UserRegister.cpp
     nar/lib/Messaging/MessageTypes/MachineRegister.cpp
     nar/lib/base64/base64.cpp
+    nar/lib/Messaging/MessageTypes/DirInfo.cpp
+    nar/lib/Messaging/MessageTypes/Mkdir.cpp
 )
 add_library(narmessaging SHARED ${NAR_MESSAGING_SOURCES})
 
@@ -83,6 +85,7 @@ set(DAEMON_SOURCES
     nar/narnode/ActiveTask/Push.cpp
     nar/narnode/ActiveTask/Register.cpp
     nar/narnode/ActiveTask/Pull.cpp
+    nar/narnode/ActiveTask/LS.cpp
 )
 
 #set(REACT_TEST_SOURCES
