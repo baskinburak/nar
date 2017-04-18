@@ -39,6 +39,7 @@ file(GLOB NAR_MESSAGING_SOURCES
     nar/lib/base64/base64.cpp
     nar/lib/Messaging/MessageTypes/DirInfo.cpp
     nar/lib/Messaging/MessageTypes/Mkdir.cpp
+    nar/lib/Messaging/MessageTypes/DeleteFile.cpp
 )
 add_library(narmessaging SHARED ${NAR_MESSAGING_SOURCES})
 
@@ -88,6 +89,7 @@ set(DAEMON_SOURCES
     nar/narnode/ActiveTask/Pull.cpp
     nar/narnode/ActiveTask/LS.cpp
     nar/narnode/ActiveTask/Mkdir.cpp
+    nar/narnode/ActiveTask/DeleteFile.cpp
 )
 
 #set(REACT_TEST_SOURCES

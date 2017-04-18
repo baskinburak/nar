@@ -14,6 +14,7 @@
 #include <nar/lib/Messaging/MessageTypes/IPCPull.h>
 #include <nar/lib/Messaging/MessageTypes/IPCRegister.h>
 #include <nar/lib/Messaging/MessageTypes/IPCMkdir.h>
+#include <nar/lib/Messaging/MessageTypes/IPCDeleteFile.h>
 
 
 namespace nar {
@@ -54,6 +55,12 @@ namespace nar {
             public:
                 Mkdir(nar::Global* globals, nar::UserVariables* variables): IActiveTask(globals,variables) {}
                 void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCMkdir::Request* req);
+        };
+        class DeleteFile : public IActiveTask {
+            private:
+            public:
+                DeleteFile(nar::Global* globals, nar::UserVariables* variables): IActiveTask(globals,variables) {}
+                void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCDeleteFile::Request* req);
         };
 
         class Register : public IActiveTask {

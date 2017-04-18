@@ -8,6 +8,7 @@
 #include <nar/lib/Messaging/MessageTypes/IPCRegister.h>
 #include <nar/lib/Messaging/MessageTypes/IPCStatus.h>
 #include <nar/lib/Messaging/MessageTypes/IPCMkdir.h>
+#include <nar/lib/Messaging/MessageTypes/IPCDeleteFile.h>
 
 
 
@@ -79,6 +80,22 @@ void nar::CLITasks::nar_status() {
     req.print_loop(&cli_skt);
     return;
 }
+
+void nar::CLITasks::nar_delete_file(std::string file_name, std::string username, std::string password, std::string curdir) {
+    std::string dir_path;
+    std::string file;
+    divide_nar_path(file_name,dir_path,file);
+    nar::MessageTypes::IPCDeleteFile::Request req(dir_path,file_name, username, password, std::string("/"));
+    boost::asio::io_service io_serv;
+    nar::Socket cli_skt(io_serv, 'c');
+    cli_skt.connect(std::string("127.0.0.1"), 17700);
+
+    req.send_action(&cli_skt);
+    req.print_loop(&cli_skt);
+    return;
+}
+
+
 void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::string password, std::string curdir) {
     std::vector<std::string> names;
     std::size_t found;
