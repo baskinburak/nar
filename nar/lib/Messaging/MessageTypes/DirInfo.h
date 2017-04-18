@@ -29,6 +29,7 @@ namespace nar {
                         unsigned long long int entity_size;
                         bool type; // true for DIR, false for FILE
                     };
+                    Response() : ResponseHeader(-1,std::string("get_dir_info")) {}
                     /*
                      * Constructor
                      *
@@ -37,7 +38,7 @@ namespace nar {
                      * @param: e, std::vector<struct DirListElement>&, giving all the elements in one go
                      * @tested: Yes
                     */
-                    Response(int statcode = -1, std::vector<struct DirListElement>& e) : ResponseHeader(statcode, std::string("get_dir_info")), elements(e) {}
+                    Response(int statcode , std::vector<struct DirListElement>& e) : ResponseHeader(statcode, std::string("get_dir_info")), elements(e) {}
                     /*
                      * Constructor
                      *
@@ -45,7 +46,7 @@ namespace nar {
                      * @param: statcode, int, status code of the response message
                      * @tested: Yes
                     */
-                    Response(int statcode = -1) : ResponseHeader(statcode, std::string("get_dir_info")) {}
+                    Response(int statcode) : ResponseHeader(statcode, std::string("get_dir_info")) {}
                     /*
                      * gets the all directory elemets as vector
                      *
