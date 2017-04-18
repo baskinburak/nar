@@ -78,7 +78,9 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
     std::string selected;
     nar::MessageTypes::KeepAliveCheck::Request req;
     nar::MessageTypes::KeepAliveCheck::Response resp;
+	bool flg = true;
     do {
+	flg = true;
         auto random_integer = uni(rng);
         std::cout << "keepalives size, randint: " << _keepalives.size()<< " " << random_integer << std::endl;
         selected = _macs[random_integer % _keepalives.size()];
@@ -99,9 +101,10 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
             if ( ( it = std::find(_macs.begin(), _macs.end(), selected) ) != _macs.end() ) {
                this->_macs.erase(it);
             }
-            continue;
-        }
-    } while((it = user_machines.find(selected)) != user_machines.end());
+		flg = false;
+       }
+    } while((it = user_machines.find(selected)) != user_machines.end() || !flg);
+	std::cout << "last size: " << _keepalives.size() << " " << selected << std::endl;
     return this->_keepalives[selected];
 }
 
@@ -119,3 +122,4 @@ nar::SockInfo* nar::Peers::get_peer(string& machine_id) {
     read_end();
     return result;
 }
+

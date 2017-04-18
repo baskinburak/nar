@@ -1077,7 +1077,7 @@ std::vector<nar::DBStructs::User> nar::Database::getUserFromFile(long long int f
     sql::ResultSet *res;
     prep_stmt = _con->prepareStatement("SELECT User_id,User_name "
                                         "From Users "
-                                        "Where User_id IN (Select User_id "
+                                        "Where User_id IN (Select User_id, "
                                                                 "From UserToFile "
                                                                 "Where UserToFile.File_id = ?);");
     prep_stmt->setBigInt(1,file_id);
