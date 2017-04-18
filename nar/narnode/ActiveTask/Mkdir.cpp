@@ -27,5 +27,6 @@ void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPC
         return;
     }
     nar::MessageTypes::IPCMkdir::Response resp;
+    resp.send_message_end(ipc_socket);
 
 }

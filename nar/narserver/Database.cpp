@@ -169,6 +169,7 @@ void nar::Database::insertUser(struct DBStructs::User &us)
 
 
 void nar::Database::insertDirectory(struct DBStructs::Directory & dir){
+    write_start();
     nar::db::Directory directory = turnDirectory(dir);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
@@ -180,7 +181,10 @@ void nar::Database::insertDirectory(struct DBStructs::Directory & dir){
 
     prep_stmt -> execute();
 
+    dir.dir_id = getNextDirectoryId(1);
+
     delete prep_stmt;
+    write_end();
 }
 
 void nar::Database::insertDirectoryTo(struct DBStructs::DirectoryTo & dirTo){
@@ -1114,3 +1118,33 @@ std::set<std::string> nar::Database::get_user_machines(nar::DBStructs::User& us)
     return output;
 }
 
+bool nar::Database::does_file_exist(std::string& file_name, std::string& parent_name,std::string& user_name) {
+    nar::DBStructs::Directory parent_dir =findDirectoryId(user_name,parent_name);
+    if(parent_dir.dir_id == -1){
+        return false;
+    }
+    else {
+        std::vector<nar::DBStructs::File> holder = getDirectoryFile(parent_dir.dir_id);
+        for(int i = 0;i<holder.size();i++) {
+            if(holder[i].file_name == file_name) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+bool nar::Database::does_dir_exist(std::string& dir_name, std::string& parent_name,std::string& user_name) {
+    nar::DBStructs::Directory parent_dir =findDirectoryId(user_name,parent_name);
+    if(parent_dir.dir_id == -1){
+        return false;
+    }
+    else {
+        std::vector<nar::DBStructs::Directory> holder = getDirectoryDir(parent_dir.dir_id);
+        for(int i = 0;i<holder.size();i++) {
+            if(holder[i].dir_name == dir_name) {
+                return false;
+            }
+        }
+    }
+    return true;
+}

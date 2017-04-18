@@ -134,6 +134,10 @@ namespace nar {
             unsigned long getNextSessionId(long long int N);
             struct DBStructs::Directory findDirectoryId(std::string user_name,std::string dir_name);
 
+
+            bool does_file_exist(std::string& file_name, std::string& parent_name ,std::string& user_name);
+            bool does_dir_exist(std::string& dir_name, std::string& parent_name, std::string& user_name);
+
     };
 
 }
