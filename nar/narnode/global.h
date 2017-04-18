@@ -20,6 +20,8 @@ namespace nar {
             boost::asio::io_service _ioserv;
             std::fstream _config_file;
 
+            boost::asio::ssl::context _srv_ctx;
+            boost::asio::ssl::context _ipc_ctx;
 
             std::mutex read_mtx;
             std::mutex write_mtx;
@@ -48,6 +50,8 @@ namespace nar {
 			void set_machine_id(std::string& id);
             nar::Socket* establish_server_connection();
             std::string machine_register();
+            boost::asio::ssl::context& get_ipc_ctx();
+            boost::asio::ssl::context& get_srv_ctx();
     };
 }
 

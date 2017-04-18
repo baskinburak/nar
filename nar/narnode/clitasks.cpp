@@ -13,8 +13,11 @@
 void nar::CLITasks::nar_ls(std::string dir_name, std::string username, std::string password, std::string curdir) {
     nar::MessageTypes::IPCLs::Request req(dir_name, username, password, curdir);
 
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
+    ctx.load_verify_file("ipcserver.crt");
+
     boost::asio::io_service io_serv;
-    nar::Socket cli_skt(io_serv, 'c');
+    nar::Socket cli_skt(io_serv, ctx, 'c');
     cli_skt.connect(std::string("127.0.0.1"), 17700);
 
     req.send_action(&cli_skt);
@@ -27,8 +30,11 @@ void nar::CLITasks::nar_pull(std::string file_name,std::string dir_name, std::st
 
     nar::MessageTypes::IPCPull::Request req(file_name,dir_name, username, password, curdir);
 
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
+    ctx.load_verify_file("ipcserver.crt");
+
     boost::asio::io_service io_serv;
-    nar::Socket cli_skt(io_serv, 'c');
+    nar::Socket cli_skt(io_serv, ctx, 'c');
     cli_skt.connect(std::string("127.0.0.1"), 17700);
 
     req.send_action(&cli_skt);
@@ -46,8 +52,11 @@ void nar::CLITasks::nar_push(std::string file_name, std::string username, std::s
 
     MessageTypes::IPCPush::Request req(curdirstr, username, password, curdir);
 
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
+    ctx.load_verify_file("ipcserver.crt");
+
     boost::asio::io_service io_serv;
-    nar::Socket cli_skt(io_serv, 'c');
+    nar::Socket cli_skt(io_serv, ctx, 'c');
     cli_skt.connect(std::string("127.0.0.1"), 17700);
 
     req.send_action(&cli_skt);
@@ -58,8 +67,11 @@ void nar::CLITasks::nar_push(std::string file_name, std::string username, std::s
 void nar::CLITasks::nar_register(std::string username, std::string password) {
     MessageTypes::IPCRegister::Request req(username, password, std::string("/"));
 
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
+    ctx.load_verify_file("ipcserver.crt");
+
     boost::asio::io_service io_serv;
-    nar::Socket cli_skt(io_serv, 'c');
+    nar::Socket cli_skt(io_serv, ctx, 'c');
     cli_skt.connect(std::string("127.0.0.1"), 17700);
 
     req.send_action(&cli_skt);
@@ -70,8 +82,13 @@ void nar::CLITasks::nar_register(std::string username, std::string password) {
 void nar::CLITasks::nar_status() {
     MessageTypes::IPCStatus::Request req(std::string(""), std::string(""), std::string("/"));
 
+
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
+    ctx.load_verify_file("ipcserver.crt");
+
+
     boost::asio::io_service io_serv;
-    nar::Socket cli_skt(io_serv, 'c');
+    nar::Socket cli_skt(io_serv, ctx, 'c');
     cli_skt.connect(std::string("127.0.0.1"), 17700);
 
     req.send_action(&cli_skt);

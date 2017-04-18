@@ -9,6 +9,9 @@ link_directories(build)
 find_library(CryptoPP REQUIRED)
 find_library(Z REQUIRED)
 find_library(MYSQLCPPCONN REQUIRED)
+find_library(OPENSSL_LIB ssl $ENV{OPENSSL_LIB_PATH} REQUIRED)
+find_library(libcrypto REQUIRED)
+
 
 find_package(Boost COMPONENTS system filesystem iostreams random REQUIRED)
 
@@ -60,8 +63,8 @@ set(SERVER_SOURCES
     nar/narserver/Actions/keepalive_action.cpp
 )
 
-set(NAR_LIBRARIES narmessaging.so libnaripcmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn)
-set(SERVER_LIBRARIES narmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn)
+set(NAR_LIBRARIES narmessaging.so libnaripcmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn ${OPENSSL_LIB} crypto)
+set(SERVER_LIBRARIES narmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn ${OPENSSL_LIB} crypto)
 
 
 

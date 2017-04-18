@@ -41,6 +41,7 @@ namespace nar {
             unsigned short _randezvous_port;
             nar::Database* _db;
             boost::asio::io_service io_service;
+            boost::asio::ssl::context ctx;
 
             unsigned int _next_stream_id;
             int read_count = 0;
@@ -65,6 +66,7 @@ namespace nar {
             void set_next_stream_id(unsigned int);
             void connect_db();
             boost::asio::io_service& get_ioserv();
+            boost::asio::ssl::context& get_ctx();
             nar::Database* get_db();
     };
 }

@@ -52,14 +52,14 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
 
 int main() {
     nar::Global* globals = new nar::Global(std::string("/root/.nar/config"));
-    nar::Socket ipc_entry(globals->get_ioserv(), 's');
+    nar::Socket ipc_entry(globals->get_ioserv(), globals->get_ipc_ctx(), 's');
     ipc_entry.bind(17700, "127.0.0.1");
 
     std::thread reactive_thr(nar::reactive_dispatcher, globals);
     reactive_thr.detach();
 
     while(true) {
-        nar::Socket* sck = new nar::Socket(globals->get_ioserv(), 'c');
+        nar::Socket* sck = new nar::Socket(globals->get_ioserv(), globals->get_ipc_ctx(), 'c');
         ipc_entry.accept(*sck);
         std::thread ipc_thread(handle_ipc_request, sck, globals);
         ipc_thread.detach();

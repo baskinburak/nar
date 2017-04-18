@@ -30,7 +30,9 @@ void nar::Global::write_end() {
     write_mtx.unlock();
 }
 
-nar::Global::Global(std::string config_path): _server_ip(std::string()), _server_port(0), _nar_folder(std::string()), _file_folder(std::string()), _machine_id(std::string()), _config_path(config_path) {
+nar::Global::Global(std::string config_path): _server_ip(std::string()), _server_port(0), _nar_folder(std::string()), _file_folder(std::string()), _machine_id(std::string()), _config_path(config_path), _srv_ctx(boost::asio::ssl::context::sslv23), _ipc_ctx(boost::asio::ssl::context::sslv23) {
+
+
     _config_file.open(config_path.c_str(), std::fstream::in | std::fstream::out);
     std::string line;
     char mask = 0;
@@ -79,6 +81,25 @@ nar::Global::Global(std::string config_path): _server_ip(std::string()), _server
         std::cout << "Config file is not complete" << std::endl;
         exit(0);
     }
+
+    _ipc_ctx.set_options(
+        boost::asio::ssl::context::default_workarounds
+        | boost::asio::ssl::context::no_sslv2
+        | boost::asio::ssl::context::single_dh_use);
+    
+    _ipc_ctx.use_certificate_chain_file(this->_nar_folder + std::string("ipcserver.crt")); 
+    _ipc_ctx.use_private_key_file(this->_nar_folder + std::string("ipcserver.key"), boost::asio::ssl::context::pem);
+    _ipc_ctx.use_tmp_dh_file(this->_nar_folder + std::string("ipcdh2048.pem"));
+
+    _srv_ctx.load_verify_file(this->_nar_folder + std::string("server.crt"));
+}
+
+boost::asio::ssl::context& nar::Global::get_ipc_ctx() {
+    return _ipc_ctx;
+}
+
+boost::asio::ssl::context& nar::Global::get_srv_ctx() {
+    return _srv_ctx;
 }
 
 nar::Global::~Global() {
@@ -173,7 +194,7 @@ void nar::Global::write_config() {
 
 nar::Socket* nar::Global::establish_server_connection() {
     read_start();
-    nar::Socket *serverSck = new nar::Socket(this->_ioserv,'c');
+    nar::Socket *serverSck = new nar::Socket(this->_ioserv, this->_srv_ctx, 'c');
 	serverSck->connect(this->get_server_ip(),this->get_server_port());
     read_end();
 	return serverSck;
