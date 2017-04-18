@@ -85,7 +85,8 @@ void nar::CLITasks::nar_delete_file(std::string file_name, std::string username,
     std::string dir_path;
     std::string file;
     divide_nar_path(file_name,dir_path,file);
-    nar::MessageTypes::IPCDeleteFile::Request req(dir_path,file_name, username, password, std::string("/"));
+    std::cout << file << " " << dir_path << std::endl;
+    nar::MessageTypes::IPCDeleteFile::Request req(dir_path,file, username, password, std::string("/"));
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, 'c');
     cli_skt.connect(std::string("127.0.0.1"), 17700);

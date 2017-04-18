@@ -16,14 +16,16 @@ void nar::MessageTypes::IPCDeleteFile::Request::set_dest_dir(std::string dd) {
 
 nlohmann::json nar::MessageTypes::IPCDeleteFile::Request::get_myrequestjson() {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["action"] = "ls";
+    json_to_sent["header"]["action"] = "delete_file";
     json_to_sent["payload"]["file_name"] = _file_name;
+    json_to_sent["payload"]["dir_name"] = _dest_dir;
     return json_to_sent;
 }
 
 nlohmann::json nar::MessageTypes::IPCDeleteFile::Request::generate_json() {
     nlohmann::json jsn = IPCBaseRequest::generate_json();
     jsn["payload"]["file_name"] = this->_file_name;
+    jsn["payload"]["dir_name"] = this->_dest_dir;
     return jsn;
 }
 
@@ -31,6 +33,7 @@ void nar::MessageTypes::IPCDeleteFile::Request::populate_object(std::string& jsn
     auto jsn = nlohmann::json::parse(jsn_str);
     IPCBaseRequest::populate_object(jsn);
     this->_file_name = jsn["payload"]["file_name"];
+    this->_dest_dir = jsn["payload"]["dir_name"];
 }
 
 void nar::MessageTypes::IPCDeleteFile::Request::send_action(nar::Socket* skt) {
