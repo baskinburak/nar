@@ -57,6 +57,11 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         ipc_mkdir.populate_object(msg);
         nar::ActiveTask::Mkdir mkdir(globals, &uservars);
         mkdir.run(sck, &ipc_mkdir);
+    } else if(action == string("delete_file")) {
+        nar::MessageTypes::IPCDeleteFile::Request ipc_delete_file;
+        ipc_delete_file.populate_object(msg);
+        nar::ActiveTask::DeleteFile delete_file(globals, &uservars);
+        delete_file.run(sck, &ipc_delete_file);
     }
 }
 

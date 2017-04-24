@@ -13,6 +13,7 @@ namespace nar {
         void nar_register(std::string username, std::string password);
         void nar_status();
         void nar_mkdir(std::string dir_name, std::string username, std::string password, std::string curdir);
+        void nar_delete_file(std::string file_name, std::string username, std::string password, std::string curdir);
     }
 }
 

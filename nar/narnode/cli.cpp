@@ -41,11 +41,13 @@ int main(int argc, char* argv[]){
 
     } else if(first_arg == std::string("cd")) {
         auto unamepwd = get_uname_pw();
+    } else if(first_arg == std::string("delete_file")) {
+        auto  unamepwd = get_uname_pw();
         if(argc < 3) {
             return 0;
         }
-        std::string dir_name(argv[2]);
-        //nar::CLITasks::nar_cd( dir_name,  unamepwd.first, unamepwd.second, std::string("/"));
+        std::string file_name(argv[2]);
+        nar::CLITasks::nar_delete_file( file_name,  unamepwd.first, unamepwd.second, std::string("/"));
 
     } else if(first_arg == std::string("pull")) {
         if(argc < 4) {

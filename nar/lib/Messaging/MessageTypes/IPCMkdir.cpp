@@ -56,7 +56,7 @@ void nar::MessageTypes::IPCMkdir::Request::print_loop(nar::Socket* skt) {
 		}
     }
 	for(int i=0;i<v_items.size();i++) {
-		std::cout << v_items[i];	
+		std::cout << v_items[i];
 	}
     return;
 }
@@ -84,4 +84,3 @@ nlohmann::json nar::MessageTypes::IPCMkdir::Response::give_myresponsejson() {
     resp_json["payload"]["progress"] = get_progress();
     return resp_json;
 }
-

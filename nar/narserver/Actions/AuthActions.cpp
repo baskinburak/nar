@@ -32,6 +32,8 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         nar::MessageTypes::Mkdir::Request req;
         req.receive_message(message);
         mkdir_action(s_global,skt,req,user);
+    } else if(action == std::string("delete_file")) {
+        std::cout << message << std::endl;
     }
 }
 long long int findFileId(std::string& file_name,std::string& dir_name,std::string& uname, nar::Database *db)
@@ -51,6 +53,8 @@ long long int findFileId(std::string& file_name,std::string& dir_name,std::strin
     }
     return file_id;
 }
+
+
 
 void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::Mkdir::Request& req, nar::DBStructs::User& user) {
     std::string target_dir = req.get_dest_dir();
