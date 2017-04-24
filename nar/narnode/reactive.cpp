@@ -39,9 +39,9 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
 
 void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long long int chunk_size, unsigned short rand_port, long long int chunk_id) {
     nar::USocket* cli_sck = new nar::USocket(globals->get_ioserv(), globals->get_server_ip(), rand_port, stream_id);
-    std::cout << "HERE THREAD, chunk size: "<< chunk_size << std::endl;
+    //std::cout << "HERE THREAD, chunk size: "<< chunk_size << std::endl;
     cli_sck->connect();
-    std::cout << "Ready To Read" << std::endl;
+    //std::cout << "Ready To Read" << std::endl;
 
 
     std::string path(globals->get_file_folder() + std::string("/c"));
@@ -51,13 +51,14 @@ void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long
     int total_read = 0;
     char buf[1024];
     while(total_read < chunk_size) {
-        std::cout << stream_id << " before" << std::endl;
+        //std::cout << stream_id << " before" << std::endl;
          int len = cli_sck->recv(buf, 1024);
-        std::cout << stream_id << " after " << len << std::endl;
+        //std::cout << stream_id << " after " << len << std::endl;
          recvfile.write(buf, len);
          total_read += len;
     }
     recvfile.close();
+    cli_sck->close();
     return;
 }
 
@@ -68,6 +69,7 @@ void nar::chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int c
     std::string path(globals->get_file_folder() + std::string("/c"));
     nar::File f( (path+std::to_string(chunk_id) ).c_str(), "r", false);
     cli_sck->send(f,0,f.size());
+    cli_sck->close();
 }
 
 void nar::reactive_dispatcher(nar::Global *globals) {
@@ -77,9 +79,9 @@ void nar::reactive_dispatcher(nar::Global *globals) {
 
     //resp.receive_message(transform(message))
     for(;;) {
-        std::cout<<"MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" <<std::endl;
+       // std::cout<<"MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" <<std::endl;
         std::string message = nar::get_message( *server_socket);
-        std::cout<<"MEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" <<message<<std::endl;
+       // std::cout<<"MEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" <<message<<std::endl;
         std::string action = Messaging::get_action(message);
         std::cout << "Action::    " <<  std::endl << action << std::endl;
         if(action == std::string("wait_chunk_push_request")) {
@@ -91,7 +93,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
             long long int chunk_size = req.get_chunk_size();
             unsigned short rand_port = req.get_randevous_port();
 
-            std::cout << "STREAM ID: ************ " << stream_id << std::endl;
+         //   std::cout << "STREAM ID: ************ " << stream_id << std::endl;
 
             // DO CHECKS IF THERE ARE ANY B4 SENDING SUCCESS
 

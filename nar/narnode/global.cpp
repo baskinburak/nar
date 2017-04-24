@@ -60,9 +60,9 @@ nar::Global::Global(std::string config_path): _server_ip(std::string()), _server
             this->_server_ip = value;
         } else if(key == "SERVER_PORT") {
             mask |= 8;
-            std::cout << value << " <<<< " << std::endl;
+            //std::cout << value << " <<<< " << std::endl;
             this->_server_port = std::stoi(value);
-            std::cout << this->_server_port << std::endl;
+            //std::cout << this->_server_port << std::endl;
         } else if(key == "MACHINE_ID") {
             mask |= 16;
             this->_machine_id = value;
@@ -174,7 +174,7 @@ void nar::Global::set_machine_id(std::string& id) {
 
 void nar::Global::write_config() {
     this->_file_mtx.lock();
-    std::cout << "conf file: " << this->_config_path.c_str() << std::endl;
+    std::cout << "Config File: " << this->_config_path.c_str() << std::endl;
     this->_config_file.open(this->_config_path.c_str(), std::ios::out | std::ios::trunc);
     this->_config_file.write("NAR_FOLDER=", 11);
     this->_config_file.write(this->_nar_folder.c_str(), this->_nar_folder.size());
@@ -206,11 +206,11 @@ std::string nar::Global::machine_register() {
     std::cout << "Do you have an existing user? [Y/n] ";
     std::string line;
     std::getline(std::cin, line);
-    std::cout << line.size() << " " << line << std::endl;
+    //std::cout << line.size() << " " << line << std::endl;
     line = nar::trim(line);
-    std::cout << line << std::endl;
+    //std::cout << line << std::endl;
     if(line.size() > 0) exs_user = std::toupper(line[0]);
-    std::cout << exs_user << std::endl;
+    //std::cout << exs_user << std::endl;
     std::string machineid;
     if(exs_user == 'Y') {
         std::cout << "todo" << std::endl;
@@ -220,35 +220,31 @@ std::string nar::Global::machine_register() {
         std::string username;
         std::getline(std::cin, username);
         username = nar::trim(username);
-        std::cout << username << "<<<" << std::endl;
+        //std::cout << username << "<<<" << std::endl;
         std::string password;
         std::cout << "Password: ";
         std::getline(std::cin, password);
         password = nar::trim(password);
-        std::cout << "diri diri " << std::endl;
         nar::UserVariables uservars(std::string(""), username, password);
-        std::cout << "diri diri " << std::endl;
         nar::MessageTypes::IPCRegister::Request ipc_register(username, password, std::string(""));
         nar::ActiveTask::Register register_task(this, &uservars);
-        std::cout << "???" << std::endl;
         register_task.run(&ipc_register);
 
-        std::cout << "here i am " << std::endl;
 
         nar::Socket* macreqsock = this->establish_server_connection();
         auto tmp = nar::ActiveTask::user_authenticate(macreqsock, &uservars);
 
 
         long long int quota_default = 10000;
-        std::cout << "Montly network usage(in MB) [10000MB]: " << std::endl;
+        std::cout << "Montly network usage(in MB) [10000MB]: ";
         std::string quota;
         std::getline(std::cin, quota);
-        std::cout << "quota:: " << quota << std::endl;
+        //std::cout << "quota:: " << quota << std::endl;
         quota = nar::trim(quota);
         if(quota.size() > 0) quota_default = std::stoll(quota);
 
         long long int diskspace_default = 10000;
-        std::cout << "Total disk space (in MB) [10000MB]: " << std::endl;
+        std::cout << "Total disk space (in MB) [10000MB]: ";
         std::string diskspace;
         std::getline(std::cin, diskspace);
         diskspace = nar::trim(diskspace);

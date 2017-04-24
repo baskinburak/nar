@@ -93,7 +93,7 @@ std::string nar::get_message(nar::Socket& skt) {
         }
     }
 
-    std::cout << "len: " << len << std::endl;
+   // std::cout << "len: " << len << std::endl;
     std::string data;
     int cur;
     data.append(buf+idx, cur = std::min((received - idx), len));
@@ -108,7 +108,7 @@ std::string nar::get_message(nar::Socket& skt) {
         std::cout << "wtf"<< std::endl; exit(0);
         }
     }
-    std::cout << "data: " << data << std::endl;
+    //std::cout << "data: " << data << std::endl;
     return data;
 }
 

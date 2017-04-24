@@ -65,6 +65,10 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
 
     std::cout << "push 4<<" << std::endl;
 
+    nar::MessageTypes::IPCPush::Response ipcpush_resp(3,5);
+
+    ipcpush_resp.send_message_end(ipc_socket);
+
     delete compressed;
     delete encrypted;
 }

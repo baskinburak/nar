@@ -46,11 +46,11 @@ std::string nar::ActiveTask::user_authenticate(nar::Socket* skt, nar::UserVariab
     }
 
     std::string crypted_aes = init_resp.get_aes_crypted();
-    std::cout << "aes recved enc b64: " << crypted_aes << std::endl;
+    //std::cout << "aes recved enc b64: " << crypted_aes << std::endl;
     crypted_aes = base64_decode(crypted_aes);
-    std::cout << "aes recved enc: " << crypted_aes << std::endl;
+    //std::cout << "aes recved enc: " << crypted_aes << std::endl;
     std::string file_aes;
     aes_crypt.decrypt(crypted_aes, file_aes);
-    std::cout << "aes first: " << file_aes << std::endl;
+    //std::cout << "aes first: " << file_aes << std::endl;
     return file_aes;
 }

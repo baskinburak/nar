@@ -67,6 +67,11 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     string  dust= tpath.native();
     nar::File * decompressed = decrypted->decompress(dust);
 
+
+    nar::MessageTypes::IPCPull::Response ipcpull_resp(3,5);
+
+    ipcpull_resp.send_message_end(ipc_socket);
+
     delete tempfile1;
     delete decrypted;
     delete decompressed;
