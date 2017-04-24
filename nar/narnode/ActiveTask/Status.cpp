@@ -22,7 +22,7 @@ void nar::ActiveTask::Status::run(nar::Socket* ipc_socket, nar::MessageTypes::IP
     cout<<"received by daemon status"<<endl;
 
     string config_path("/root/.nar");
-    const char* m = 'r';
+    const char* m = "r";
     File config_file(config_path.c_str(), m, false);
     char buffer[5000];
     config_file.read(buffer,0,1024);

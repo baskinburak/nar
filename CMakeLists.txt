@@ -93,6 +93,7 @@ set(DAEMON_SOURCES
     nar/narnode/ActiveTask/LS.cpp
     nar/narnode/ActiveTask/Mkdir.cpp
     nar/narnode/ActiveTask/DeleteFile.cpp
+    nar/narnode/ActiveTask/Status.cpp
 )
 
 #set(REACT_TEST_SOURCES
