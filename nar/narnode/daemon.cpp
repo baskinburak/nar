@@ -46,7 +46,12 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         nar::ActiveTask::Register register_task(globals, &uservars);
         register_task.run(sck, &ipc_register);
     } else if(action == string("config")) {
+
     } else if(action == string("status")) {
+        nar::MessageTypes::IPCStatus::Request ipc_status;
+        ipc_status.populate_object(msg);
+        nar::ActiveTask::Status status_task(globals, &uservars);
+        status_task.run(sck, &ipc_status);
     } else if(action == string("mkdir")) {
         nar::MessageTypes::IPCMkdir::Request ipc_mkdir;
         ipc_mkdir.populate_object(msg);

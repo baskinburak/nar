@@ -1,7 +1,6 @@
 #ifndef NAR_DAEMONTASKS_H
 #define NAR_DAEMONTASKS_H
 
-
 #include <nar/lib/Socket/Socket.h>
 #include <nar/narnode/global.h>
 #include <nar/narnode/uservars.h>
@@ -14,7 +13,7 @@
 #include <nar/lib/Messaging/MessageTypes/IPCPull.h>
 #include <nar/lib/Messaging/MessageTypes/IPCRegister.h>
 #include <nar/lib/Messaging/MessageTypes/IPCMkdir.h>
-
+#include <nar/lib/Messaging/MessageTypes/IPCStatus.h>
 
 namespace nar {
     namespace ActiveTask {
@@ -62,6 +61,13 @@ namespace nar {
                 Register(nar::Global* globals, nar::UserVariables* variables): IActiveTask(globals, variables) {}
                 void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCRegister::Request* req);
                 void run(nar::MessageTypes::IPCRegister::Request* req);
+        };
+
+        class Status : public IActiveTask {
+            private:
+            public:
+                Status(nar::Global* globals, nar::UserVariables* variables) : IActiveTask(globals,variables) {}
+                void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCStatus::Request* req);
         };
 
     }

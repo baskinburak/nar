@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
         }
 
     } else if(first_arg == std::string("cd")) {
-        auto = unamepwd = get_uname_pw();
+        auto unamepwd = get_uname_pw();
         if(argc < 3) {
             return 0;
         }
