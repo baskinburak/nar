@@ -23,7 +23,17 @@ void nar::ServerGlobal::write_end() {
 }
 
 
-nar::ServerGlobal::ServerGlobal(std::string db_name, std::string db_user, std::string db_pass): _db_name(db_name), _db_user(db_user), _db_pass(db_pass) {
+nar::ServerGlobal::ServerGlobal(std::string db_name, std::string db_user, std::string db_pass): _db_name(db_name), _db_user(db_user), _db_pass(db_pass), ctx(boost::asio::ssl::context::sslv23) {
+
+    ctx.set_options(
+        boost::asio::ssl::context::default_workarounds
+        | boost::asio::ssl::context::no_sslv2
+        | boost::asio::ssl::context::single_dh_use);
+    
+    ctx.use_certificate_chain_file("server.crt"); 
+    ctx.use_private_key_file("server.key", boost::asio::ssl::context::pem);
+    ctx.use_tmp_dh_file("dh2048.pem");
+
     _db = new nar::Database();
     _db->setUser(_db_user);
     _db->setPass(_db_pass);
@@ -86,6 +96,10 @@ boost::asio::io_service& nar::ServerGlobal::get_ioserv() {
     boost::asio::io_service& ioserv = this->io_service;
     read_end();
     return ioserv;
+}
+
+boost::asio::ssl::context& nar::ServerGlobal::get_ctx() {
+    return ctx;
 }
 
 void nar::ServerGlobal::set_randezvous_port(unsigned short port) {

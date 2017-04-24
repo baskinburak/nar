@@ -39,7 +39,7 @@ if(reclone):
     stdin.flush()
     exit_status = stdout.channel.recv_exit_status()
     print "CMake & Make..."
-    stdin, stdout, stderr = ssh.exec_command('cd nar; mkdir build; cd build; cmake ..; make narserver')
+    stdin, stdout, stderr = ssh.exec_command('cd nar; mkdir build; cd build; cmake ..; make narserver; cp /home/doguyeke/server.crt /home/doguyeke/nar/build/server.crt; cp /home/doguyeke/server.csr /home/doguyeke/nar/build/server.csr; cp /home/doguyeke/server.key /home/doguyeke/nar/build/server.key; cp /home/doguyeke/dh512.pem /home/doguyeke/nar/build/dh512.pem; ')
     for line in iter(lambda: stdout.readline(2048), ""):
         sys.stdout.write(line)
         sys.stdout.flush()
@@ -69,6 +69,7 @@ if(pull):
     exit_status = stdout.channel.recv_exit_status()
 print "Run..."
 stdin, stdout, stderr = ssh.exec_command('./nar/build/narserver')
+stdin.write("h4rd4tt4ck\n")
 for line in iter(lambda: stdout.readline(2048), ""):
     sys.stdout.write(line)
     sys.stdout.flush()

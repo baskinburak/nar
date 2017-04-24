@@ -62,11 +62,11 @@ int main(int argc, char *argv[]) {
     std::thread rand(&randezvous_thread, &s_global);
     rand.detach();
 
-    nar::Socket entry_skt(s_global.get_ioserv(), 's');
+    nar::Socket entry_skt(s_global.get_ioserv(), s_global.get_ctx(), 's');
     entry_skt.bind(16670);
 
     while(true) {
-        nar::Socket* new_skt = new nar::Socket(s_global.get_ioserv(), 'c');
+        nar::Socket* new_skt = new nar::Socket(s_global.get_ioserv(), s_global.get_ctx(), 'c');
         entry_skt.accept(*new_skt);
 
         std::thread thr(&handle_request, new_skt, &s_global);

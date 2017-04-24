@@ -16,9 +16,12 @@ int main() {
     sock.connect(endpoint);
     sock.set_option(boost::asio::ip::tcp::no_delay(true));
 
-    ssl_sck.set_verify_mode(boost::asio::ssl::verify_peer);
-    ssl_sck.set_verify_callback(boost::asio::ssl::rfc2818_verification("127.0.0.1"));
+    ssl_sck.set_verify_mode(boost::asio::ssl::verify_none);
+    //ssl_sck.set_verify_callback(boost::asio::ssl::rfc2818_verification("127.0.0.1"));
 
     ssl_sck.handshake(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>::client);
+
+    boost::system::error_code ec;
+    boost::asio::write(ssl_sck, boost::asio::buffer((void *)"12345678901234", 14), ec);
     return 0;
 }

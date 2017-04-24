@@ -4,6 +4,7 @@
 #include <string>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/bind.hpp>
 #include <nar/lib/Exception/Exception.h>
 
@@ -31,7 +32,7 @@ namespace nar {
             * @tested: yes
             * @todo: -
             **/
-            Socket(boost::asio::io_service& io_serv, char type); //"s", "c"
+            Socket(boost::asio::io_service& io_serv, boost::asio::ssl::context& ctx, char type); //"s", "c"
 
             /**
             * Destructor of a tcp-ip socket
@@ -152,7 +153,7 @@ namespace nar {
         private:
             char _type;
             boost::asio::ip::tcp::acceptor* _acceptor;
-            boost::asio::ip::tcp::socket* _sock;
+            boost::asio::ssl::stream<boost::asio::ip::tcp::socket>* _ssl_sock;
     };
 }
 
