@@ -16,7 +16,7 @@ void nar::CLITasks::nar_ls(std::string dir_name, std::string username, std::stri
     nar::MessageTypes::IPCLs::Request req(dir_name, username, password, curdir);
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/tmp/ipcserver.crt");
+    ctx.load_verify_file("/root/.nar/ipcserver.crt");
 
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
@@ -33,7 +33,7 @@ void nar::CLITasks::nar_pull(std::string file_name,std::string dir_name, std::st
     nar::MessageTypes::IPCPull::Request req(file_name,dir_name, username, password, curdir);
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/tmp/ipcserver.crt");
+    ctx.load_verify_file("/root/.nar/ipcserver.crt");
 
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
@@ -55,7 +55,7 @@ void nar::CLITasks::nar_push(std::string file_name, std::string username, std::s
     MessageTypes::IPCPush::Request req(curdirstr, username, password, curdir);
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/tmp/ipcserver.crt");
+    ctx.load_verify_file("/root/.nar/ipcserver.crt");
 
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
@@ -70,7 +70,7 @@ void nar::CLITasks::nar_register(std::string username, std::string password) {
     MessageTypes::IPCRegister::Request req(username, password, std::string("/"));
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/tmp/ipcserver.crt");
+    ctx.load_verify_file("/root/.nar/ipcserver.crt");
 
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
@@ -86,7 +86,7 @@ void nar::CLITasks::nar_status() {
 
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/tmp/ipcserver.crt");
+    ctx.load_verify_file("/root/.nar/ipcserver.crt");
 
 
     boost::asio::io_service io_serv;
@@ -100,7 +100,7 @@ void nar::CLITasks::nar_status() {
 
 void nar::CLITasks::nar_delete_file(std::string file_name, std::string username, std::string password, std::string curdir) {
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/tmp/ipcserver.crt");
+    ctx.load_verify_file("/root/.nar/ipcserver.crt");
 
     std::string dir_path;
     std::string file;
@@ -170,7 +170,7 @@ void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::s
     nar::MessageTypes::IPCMkdir::Request req(dir_name,file_name, username, password, std::string("/"));
     boost::asio::io_service io_serv;
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/tmp/ipcserver.crt");
+    ctx.load_verify_file("/root/.nar/ipcserver.crt");
     nar::Socket cli_skt(io_serv, ctx, 'c');
     cli_skt.connect(std::string("127.0.0.1"), 17700);
 
