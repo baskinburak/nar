@@ -13,6 +13,34 @@ namespace nar {
                 std::string what() const { return _message; }
         };
 
+        namespace LowLevelMessaging {
+            class NoSize : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    NoSize(const char* mess): ExcpBase(mess) {}
+            };
+
+            class SizeIntOverflow : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    SizeIntOverflow(const char* mess): ExcpBase(mess) {}
+            };
+
+            class FormatError : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    FormatError(const char* mess): ExcpBase(mess) {}
+            };
+
+            class ServerSizeIntOverflow : public nar::Exception::ExcpBase {
+                private:
+                    int _len;
+                public:
+                    ServerSizeIntOverflow(const char* mess, int len): ExcpBase(mess), _len(len) {}
+                    int get_len() { return _len; }
+            };
+        };
+
         namespace Socket {
             class UnknownType : public nar::Exception::ExcpBase {
                 private:

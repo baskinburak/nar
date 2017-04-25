@@ -39,8 +39,6 @@ AesCryptor::~AesCryptor() {
 }
 
 
-
-
 void AesCryptor::encrypt(std::string &text, std::string &crypted) {
     try {
         byte iv[256];
