@@ -140,6 +140,11 @@ namespace nar {
             };
         };
         namespace MessageTypes {
+            class BadlyConstructedMessageSend : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    BadlyConstructedMessageSend(const char* mess): nar::Exception::ExcpBase(mess){}
+            };
             class UserDoesNotExist : public nar::Exception::ExcpBase {
                 private:
                     int _status_code;
