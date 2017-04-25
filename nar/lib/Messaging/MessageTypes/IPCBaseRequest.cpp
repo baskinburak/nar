@@ -86,6 +86,7 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
     while(true){
         std::string tmp = get_message(*skt);
         nlohmann::json received = nlohmann::json::parse(tmp);
+        std::cout << tmp << std::endl;
         if(received["header"]["reply_to"] == std::string("END")){
             break;
         }

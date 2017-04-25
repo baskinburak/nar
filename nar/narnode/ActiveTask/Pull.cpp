@@ -25,6 +25,8 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     string system_dir = req->get_dir_path(); // to be changed
     string nar_dir_name =  req->get_current_directory();
 
+    std::cout << "B4 pull req" << std::endl;
+
     nar::MessageTypes::FilePull::Request pull_req(file_name, nar_dir_name);
     nar::MessageTypes::FilePull::Response pull_resp;
     pull_req.send_mess(server_sck, pull_resp);
@@ -32,8 +34,13 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     std::vector<struct nar::MessageTypes::FilePull::Response::PeerListElement> elements = pull_resp.get_elements();
     std::sort(elements.begin(), elements.end());
 
+    std::cout << "After pull req" << std::endl;
+
+
     boost::filesystem::path tpath(system_dir);
     tpath /= file_name;
+
+    std::cout << tpath.string() << std::endl;
 
 
     boost::filesystem::path temp;
