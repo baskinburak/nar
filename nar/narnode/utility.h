@@ -23,7 +23,7 @@ namespace nar {
     std::string trim(std::string);
     byte* string_to_byte(std::string &aes);
     void divide_nar_path(std::string &path, std::string& dir_path, std::string& file_name);
-
+	void isChunkExists(std::string& file_name);
 }
 
 #endif

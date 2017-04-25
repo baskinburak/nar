@@ -9,6 +9,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <boost/filesystem.hpp>
 
 std::string nar::get_message(nar::Socket* skt) {
     return get_message(*skt);
@@ -272,3 +273,17 @@ std::string nar::trim(std::string inp) {
     size_t last = inp.find_last_not_of(std::string(" \n"));
     return inp.substr(first, (last-first+1));
 }
+
+void nar::isChunkExists(std::string& file_name) {
+	bool isexists = true;
+	boost::filesystem::path dir(file_name);
+    try {
+        dir = boost::filesystem::canonical(dir);
+    } catch (boost::filesystem::filesystem_error er) {
+        std::cout << er.what() << '\n';
+		isexists = false;
+        return isexists;
+    }
+	return isexists;
+}
+
