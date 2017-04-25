@@ -8,6 +8,7 @@
 #include <mutex>
 #include <set>
 #include <nar/narnode/File/File.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <atomic>
 
 using boost::asio::ip::udp;
@@ -76,6 +77,17 @@ namespace nar {
 
             };
 
+            class RandezvousEntry {
+                public:
+                    udp::endpoint* _fep;
+                    udp::endpoint* _sep;
+                    RandezvousEntry();
+                    RandezvousEntry(udp::endpoint* fep);
+                    void add_second(udp::endpoint* sep);
+                    boost::posix_time::ptime _time;
+            };
+
+            static void poke_sock(unsigned short port, bool* stop, boost::asio::io_service* ioserv);
             static void receive_thread(nar::USocket* sock);
             void timer_thread(unsigned long usec, bool* stop_timer);
 

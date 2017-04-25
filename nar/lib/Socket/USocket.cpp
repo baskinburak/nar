@@ -47,8 +47,23 @@ nar::Packet* nar::USocket::PacketGenerator::operator[](unsigned int sqnm) {
 }
 
 void nar::USocket::PacketGenerator::remove(unsigned int sqnm) {
-    delete this->_packets[sqnm];
-    this->_packets.erase(sqnm);
+    if(this->_packets.find(sqnm) != this->_packets.end()) {
+        delete this->_packets[sqnm];
+        this->_packets.erase(sqnm);
+    }
+}
+
+nar::USocket::RandezvousEntry::RandezvousEntry(): _fep(NULL), _sep(NULL) {
+    _time = boost::posix_time::microsec_clock::local_time();
+}
+
+nar::USocket::RandezvousEntry::RandezvousEntry(udp::endpoint* fep): _fep(fep), _sep(NULL) {
+    _time = boost::posix_time::microsec_clock::local_time();
+}
+
+void nar::USocket::RandezvousEntry::add_second(udp::endpoint* sep) {
+    _sep = sep;
+    _time = boost::posix_time::microsec_clock::local_time();
 }
 
 unsigned int nar::USocket::rand_seqnum() {
@@ -87,7 +102,6 @@ nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, u
         throw nar::Exception::USocket::NoAvailablePort("No available UDP port to bind");
     }
 
-    //cout << "port: " << this->_port << endl;
 
     this->_syned = false;
     this->_timer_flag = false;
@@ -113,7 +127,6 @@ nar::USocket::~USocket() {
 }
 
 void nar::USocket::timer_thread(unsigned long usec, bool* stop_timer) {
-//    cout << "timer hello " << stop_timer << endl;
     boost::asio::deadline_timer timer(*(this->_iserv), boost::posix_time::microseconds(usec));
     try {
         timer.wait();
@@ -124,7 +137,6 @@ void nar::USocket::timer_thread(unsigned long usec, bool* stop_timer) {
         this->_timer_flag = true;
         this->_event_cv.notify_all();
     }
-//    cout << "timer leave " << stop_timer << endl;
     delete stop_timer;
 
     lck.unlock();
@@ -132,9 +144,6 @@ void nar::USocket::timer_thread(unsigned long usec, bool* stop_timer) {
 }
 
 bool* nar::USocket::start_timer(unsigned long usec) {
-    //cout << "timer started with: " << usec << endl;
-    /*if(usec > 5000000)
-        cout << "timer: " << usec << endl;*/
     bool* stp_tmr = new bool;
     *stp_tmr = false;
     std::thread thr(&nar::USocket::timer_thread, this, usec, stp_tmr);
@@ -150,7 +159,31 @@ void nar::USocket::stop_timer(bool* stp_tmr) {
     }
 }
 
+void nar::USocket::poke_sock(unsigned short port, bool* stop, boost::asio::io_service* ioserv) {
+    boost::asio::ip::udp::endpoint ep(boost::asio::ip::address(boost::asio::ip::address_v4(2130706433UL)), port);
+
+
+    boost::asio::deadline_timer timer(*ioserv, boost::posix_time::microseconds(1000000));
+    boost::asio::ip::udp::socket pke(*ioserv);
+    pke.open(udp::v4());
+
+    std::string dummy_string("a");
+  //  boost::asio::buffer dummy_buffer(dummy_string);
+
+    while(!*stop) {
+        timer.wait();
+        pke.send_to(boost::asio::buffer(dummy_string), ep);
+    }
+
+    delete stop;
+}
+
 void nar::USocket::receive_thread(nar::USocket* sock) {
+
+    bool *stop_poke = new bool(false);
+    std::thread poke_sock(nar::USocket::poke_sock, sock->get_port(), stop_poke, sock->_iserv);
+    poke_sock.detach();
+
     char *buff = new char[nar::Packet::PACKET_LEN];
     boost::system::error_code ec;
     udp::endpoint remote_endpoint;
@@ -159,14 +192,15 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
     std::map<unsigned int, nar::Packet*> received_packets; // map from seqnum to packets themselves.
 
     while(true) {
-        std::cout << sock->_stream_id << " recvd " << received_packets.size() << " " << sock->_expected_seqnum << std::endl;
-        if(received_packets.size() > 0) {
-            std::cout << ((received_packets.begin())->second)->get_seqnum() << " " << sock->_expected_seqnum << std::endl;
-        }
         lck.unlock();
         std::size_t len = sock->_socket.receive_from(boost::asio::buffer(buff, nar::Packet::PACKET_LEN), remote_endpoint, 0, ec);
         if(sock->_close_sck) {
+            *stop_poke = true;
             delete sock;
+            delete buff;
+            for(auto& pckent : received_packets) {
+                delete pckent.second;
+            }
             break;
         }
         lck.lock();
@@ -199,7 +233,6 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
 
 
         if (rcvpck->is_syn() && rcvpck->is_ack()) {
-            cout << "synack" << endl;
             sock->_syned = true;
             if(!sock->_exp_sqnm_set) {
                 sock->_expected_seqnum = rcvpck->get_seqnum() + 1;
@@ -209,12 +242,11 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
             sock->_event_cv.notify_all();
             delete rcvpck;
         } else if(rcvpck->is_syn()) {
-            //cout << "syn" << endl;
             if(sock->_syned) {
                 nar::Packet rplpck;
                 rplpck.make_synack(sock->_stream_id, sock->_start_seqnum, rcvpck->get_seqnum());
                 std::string pckstr = rplpck.make_packet();
-                sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
+                sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint, 0, ec);
             } else {
                 sock->_syned = true;
 
@@ -227,7 +259,7 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
                 rplpck.make_synack(sock->_stream_id, sock->_start_seqnum, rcvpck->get_seqnum());
                 rplpck.print();
                 std::string pckstr = rplpck.make_packet();
-                sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
+                sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint, 0, ec);
                 sock->_event_cv.notify_all();
             }
             delete rcvpck;
@@ -242,20 +274,15 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
             nar::Packet rplpck;
             rplpck.make_nat(sock->_stream_id);
             std::string pckstr = rplpck.make_packet();
-            try {
-                sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
-                sock->_nat_flag = true;
-                sock->_event_cv.notify_all();
-            } catch(boost::system::system_error& Exp) {
-
-            }
+            sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint, 0, ec);
+            sock->_nat_flag = true;
+            sock->_event_cv.notify_all();
             delete rcvpck;
         } else if(rcvpck->is_data()) {
             nar::Packet rplpck;
             rplpck.make_ack(sock->_stream_id, rcvpck->get_seqnum());
-            //cout << rcvpck->get_seqnum() << " " << sock->_expected_seqnum << endl;
             std::string pckstr = rplpck.make_packet();
-            sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint);
+            sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint, 0, ec);
             if(rcvpck->get_seqnum() == sock->_expected_seqnum) {
                 sock->_recv_buffer.append(rcvpck->get_payload());
                 sock->_recv_flag = true;
@@ -277,7 +304,6 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
                 }
             }
         } else if(rcvpck->is_ran()) {
-            //cout << "ran received" << endl;
             sock->_ran_packs.push_back(std::make_pair(rcvpck, new udp::endpoint(remote_endpoint)));
             sock->_ran_flag = true;
             sock->_event_cv.notify_all();
@@ -288,8 +314,9 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
 }
 
 void nar::USocket::randezvous_server() {
+    boost::system::error_code ec;
     std::unique_lock<std::mutex> lck(this->_work_mutex);
-    std::map<unsigned int, udp::endpoint* > prev_rands;
+    std::map<unsigned int, nar::USocket::RandezvousEntry> prev_rands;
     while(true) {
         if(this->_ran_flag) {
             for(int i=0; i<this->_ran_packs.size(); i++) {
@@ -305,29 +332,55 @@ void nar::USocket::randezvous_server() {
                     continue;
                 }
 
-                if(prev_rands.find(stream_id) != prev_rands.end() && *ep != *prev_rands[stream_id]) {
-                    nar::Packet first_packet;
-                    nar::Packet second_packet;
+                if(prev_rands.find(stream_id) != prev_rands.end()) {
+                    nar::USocket::RandezvousEntry& rep = prev_rands[stream_id];
+                    if(rep._fep == NULL) {
+                        prev_rands[stream_id] = RandezvousEntry(ep);
+                    } else if(*ep == *(rep._fep)) {
+                        if(rep._sep) {
+                            nar::Packet packet;
+                            packet.make_ran_response(stream_id, *(rep._sep));
+                            std::string pckstr = packet.make_packet();
+                            rep._time = boost::posix_time::microsec_clock::local_time();
+                            this->_socket.send_to(boost::asio::buffer(pckstr), *ep, 0, ec);
+                        }
+                    } else if(rep._sep == NULL) {
+                        nar::Packet first_packet;
+                        nar::Packet second_packet;
+                        first_packet.make_ran_response(stream_id, *(rep._fep));
+                        second_packet.make_ran_response(stream_id, *ep);
 
-                    udp::endpoint* prevep = prev_rands[stream_id];
+                        std::string firstpck = first_packet.make_packet();
+                        std::string secondpck = second_packet.make_packet();
 
-                    first_packet.make_ran_response(stream_id, *ep);
-                    second_packet.make_ran_response(stream_id, *prevep);
+                        this->_socket.send_to(boost::asio::buffer(firstpck), *ep, 0, ec);
+                        this->_socket.send_to(boost::asio::buffer(secondpck), *(rep._fep), 0, ec);
 
-                    std::string firstpck = first_packet.make_packet();
-                    std::string secondpck = second_packet.make_packet();
-
-                    this->_socket.send_to(boost::asio::buffer(firstpck), *prevep);
-                    this->_socket.send_to(boost::asio::buffer(secondpck), *ep);
-
-                    prev_rands.erase(stream_id);
+                        rep.add_second(ep);
+                    } else if(*ep == *(rep._sep)){
+                        nar::Packet packet;
+                        packet.make_ran_response(stream_id, *(rep._fep));
+                        std::string pckstr = packet.make_packet();
+                        rep._time = boost::posix_time::microsec_clock::local_time();
+                        this->_socket.send_to(boost::asio::buffer(pckstr), *ep, 0, ec);
+                    }
                 } else {
-                    prev_rands[stream_id] = ep;
+                    prev_rands[stream_id] = RandezvousEntry(ep);
                 }
             }
             this->_ran_packs.clear();
             this->_ran_flag = false;
         }
+        std::vector<unsigned int> delete_ids;
+        for(auto& entr : prev_rands) {
+            nar::USocket::RandezvousEntry& rep = entr.second;
+            boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::local_time() - rep._time;
+            if(diff.total_milliseconds() > 60000) {
+                delete_ids.push_back(entr.first);
+            }
+        }
+        for(int i=0; i<delete_ids.size(); i++)
+            prev_rands.erase(delete_ids[i]);
         this->_event_cv.wait(lck);
     }
     lck.unlock();
@@ -343,14 +396,11 @@ void nar::USocket::connect() {
         bool *stp_tmr = this->start_timer(1000000);
         if(this->_ran_flag) {
             this->_ran_flag = false;
-            // i have a randezvous response
             if(this->_ran_packs.size() == 0) {
-                //cout << "nar::USocket::connect THIS SHOULD NOT HAPPEN !" << endl;
                 continue; // should not happen
             } else {
                 try {
                     this->_peer_endpoint = this->_ran_packs[this->_ran_packs.size()-1].first->get_endpoint();
-                    //cout << "lexical cast: " << boost::lexical_cast<std::string>(this->_peer_endpoint) << endl;
                 } catch(nar::Exception::Packet::NotEndpoint& exp) {
                     continue;
                 }
@@ -381,12 +431,6 @@ void nar::USocket::connect() {
         this->_event_cv.wait(lck);
     }
 
-    //cout << "randezvous successful." << endl; // debug
-
-
-     /*
-     need syn/ack
-     */
     nar::Packet syn_packet;
     syn_packet.make_syn(this->_stream_id, this->_start_seqnum);
     std::string synpck = syn_packet.make_packet();
@@ -404,25 +448,19 @@ void nar::USocket::connect() {
         this->_event_cv.wait(lck);
     }
 
-
-    //cout << "syn successful, my next: " << this->_next_seqnum << ", remote next: " << this->_expected_seqnum << endl;
-
     lck.unlock();
 }
 
 
 int nar::USocket::recv(char* buf, int len) {
-    std::cout << "recv hola" << std::endl;
     std::unique_lock<std::mutex> lck(this->_work_mutex);
     while(!this->_recv_flag) {
-        std::cout << this->_stream_id << " buffer length: " << _recv_buffer.size() << std::endl;
         this->_event_cv.wait(lck);
     }
     int read_len = this->_recv_buffer.copy(buf, len, 0);
     this->_recv_buffer.erase(0, read_len);
     this->_recv_flag = (this->_recv_buffer.size() > 0);
     lck.unlock();
-    std::cout << "recv bb" << std::endl;
     return read_len;
 }
 
@@ -439,28 +477,20 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
     bool* stp_tmr;
     bool all_generated = false;
     while(true) {
-        //cout << "window_size: " << window_size << endl;
-        //cout << "send loop" << endl;
         if(!all_generated) {
-            //cout << "not all generated " << window_size << " " << used_window << endl;
             for(; used_window < window_size; used_window++) {
                 try {
                     nar::Packet* pck = pckgen[this->_next_seqnum];
                     std::string pckstr = pck->make_packet();
-                    //cout << "send with sqnm: " << this->_next_seqnum << endl;
-                    //exit(0);
                     this->_socket.send_to(boost::asio::buffer(pckstr), this->_peer_endpoint);
                     sent_times[this->_next_seqnum] = boost::posix_time::microsec_clock::universal_time();
-                    //cout<< "debug: " << sent_times[this->_next_seqnum] << endl;
                     this->_acks.erase(this->_next_seqnum);
                     if(used_window == 0) {
                         timer_seqnum = pck->get_seqnum();
                         stp_tmr = start_timer(rtt + 4*devrtt);
                     }
-                   // cout << "in order send seqnum: " << this->_next_seqnum << endl;
                     this->_next_seqnum++;
                 } catch(nar::Exception::USocket::PacketGenerator::NoMorePacket& Exp) {
-                    //cout << "no more packet" << endl;
                     all_generated = true;
                     break;
                 }
@@ -468,17 +498,13 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
         }
 
         if(this->_ack_flag) {
-            //cout << "ack" << endl;
             bool timer_stopped = false;
             for(auto sqnm : this->_acks) {
-                //cout << "ack: " << sqnm << endl;
                 if(sent_times.find(sqnm) != sent_times.end()) {
                     used_window--;
-                    //cout << "ack access " << sqnm << " " << sent_times[sqnm] << endl;
                     if(resend_seqnums.find(sqnm) == resend_seqnums.end()) {
                         boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - sent_times[sqnm];
                         double currtt = diff.total_microseconds();
-                       // cout << "currtt: " << currtt << endl;
                         devrtt = 0.75 * devrtt + 0.25 * std::abs(rtt - currtt);
                         rtt = 0.875 * rtt + 0.125 * currtt;
                     }
@@ -504,7 +530,6 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
                     boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - sent_times[sqnm];
                     unsigned int timer_usec = diff.total_microseconds();
                     if(rtt + 4*devrtt < timer_usec) {
-                        //cout << timer_usec << " <<<<<" << endl;
                         stp_tmr = start_timer(0);
                     } else {
                         stp_tmr = start_timer(rtt + 4*devrtt - timer_usec);
@@ -517,25 +542,16 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
             this->_ack_flag = false;
         }
         if(this->_timer_flag) {
-            //cout << "timer" << endl;
-/*            for(auto sqnm : sent_seqnums) {
-                nar::Packet* pck = pckgen[sqnm];
-                std::string pckstr = pck->make_packet();
-                sent_times[sqnm] = boost::posix_time::microsec_clock::universal_time();
-                this->_socket.send_to(boost::asio::buffer(pckstr), this->_peer_endpoint);
-            }*/
 
             nar::Packet* pck = pckgen[timer_seqnum];
             std::string pckstr = pck->make_packet();
             sent_times[timer_seqnum] = boost::posix_time::microsec_clock::universal_time();
             this->_socket.send_to(boost::asio::buffer(pckstr), this->_peer_endpoint);
             resend_seqnums.insert(timer_seqnum);
-            //cout << "resend: " << timer_seqnum << endl;
             this->_timer_flag = false;
             stp_tmr = start_timer(rtt + 4*devrtt);
             window_size -= 0.5;
             window_size = std::max(window_size, 1.1);
-            //cout << window_size << endl;
         }
         this->_event_cv.wait(lck);
     }
