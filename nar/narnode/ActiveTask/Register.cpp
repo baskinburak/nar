@@ -98,15 +98,18 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     }
 
 
-    nar::MessageTypes::UserRegister::Response resp;////// todo:aaaaaaaaaaaaaaaaaaaaaa
+    nar::MessageTypes::UserRegister::Response resp;
     try {
         request.send_mess(srvsck, resp);
-    } catch(...) {
-
-    } catch(...) {
-
-    } catch(...) {
-
+    } catch(nar::Exception::MessageTypes::BadRequest exp) {
+        std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        return;
+    } catch(nar::Exception::MessageTypes::InternalServerError exp) {
+        std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        return;
+    } catch(nar::Exception::MessageTypes::InternalServerDatabaseError exp) {
+        std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        return;
     }
 
 }

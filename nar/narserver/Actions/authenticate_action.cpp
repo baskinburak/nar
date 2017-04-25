@@ -109,7 +109,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
         result_string = base64_decode(result_string);
     } catch(...) {
         std::cout<<"Server Authentication result string base64 decode"<<std::endl;
-        nar::MessageTypes::UserAuthenticationAnswer::Response ans_resp(302);
+        nar::MessageTypes::UserAuthenticationAnswer::Response ans_resp(505);
         ans_resp.send_mess(skt);
         return;
     }
