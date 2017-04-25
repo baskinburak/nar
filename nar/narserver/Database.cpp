@@ -149,6 +149,7 @@ void nar::Database::insertUser(struct DBStructs::User &us)
         dirId = 1;
     }
     sql::SQLString dir_id = std::to_string(dirId);
+    d.dir_id = dirId;
     insertDirectory(d);
     nar::db::User user = turnUser(us);
     sql::PreparedStatement *prep_stmt;
@@ -173,15 +174,16 @@ void nar::Database::insertDirectory(struct DBStructs::Directory & dir){
     nar::db::Directory directory = turnDirectory(dir);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
-                                            "Dir_size) "
-                                            "VALUES( ?, ?);");
+                                            "Dir_size, Dir_id) "
+                                            "VALUES( ?, ?, ?);");
 ;
     prep_stmt -> setString(1, directory.dir_name);
     prep_stmt -> setBigInt(2, directory.dir_size);
+    prep_stmt -> setBigInt(3, directory.dir_id);
 
     prep_stmt -> execute();
 
-    dir.dir_id = getNextDirectoryId(1);
+    //dir.dir_id = getNextDirectoryId(1);
 
     delete prep_stmt;
     write_end();
