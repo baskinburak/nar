@@ -116,9 +116,9 @@ void nar::Socket::accept(nar::Socket& acc) const {
     }
     if(acc._type == 's') {
         throw nar::Exception::Socket::WrongSocketType("Server socket is given as an argument to a accept call",_type);
-    }    
+    }
     boost::asio::ip::tcp::socket::lowest_layer_type& sock = acc._ssl_sock->lowest_layer();
-    _acceptor->accept(sock);    
+    _acceptor->accept(sock);
     sock.set_option(boost::asio::ip::tcp::no_delay(true));
     acc._ssl_sock->handshake(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>::server);
 }
@@ -127,13 +127,16 @@ void nar::Socket::connect(const std::string& host, const unsigned short port) {
     if(_type == 's') {
         throw nar::Exception::Socket::WrongSocketType("Connect call on a server Socket",_type);
     }
-
-    boost::system::error_code ec = boost::asio::error::host_not_found;
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(host), port);
-    boost::asio::ip::tcp::socket::lowest_layer_type& sock = _ssl_sock->lowest_layer();
-    sock.connect(endpoint, ec);
-    sock.set_option(boost::asio::ip::tcp::no_delay(true));
-    _ssl_sock->handshake(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>::client);
+    try {
+        boost::system::error_code ec = boost::asio::error::host_not_found;
+        boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(host), port);
+        boost::asio::ip::tcp::socket::lowest_layer_type& sock = _ssl_sock->lowest_layer();
+        sock.connect(endpoint, ec);
+        sock.set_option(boost::asio::ip::tcp::no_delay(true));
+        _ssl_sock->handshake(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>::client);
+    } catch ( ... ) {
+        throw nar::Exception::Socket::ConnectionError("Error on a connect call", host, port, _type);
+    }
     if(ec) {
         throw nar::Exception::Socket::ConnectionError("Error on a connect call", host, port, _type);
     }
