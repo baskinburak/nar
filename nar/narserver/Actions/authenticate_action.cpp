@@ -23,7 +23,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
         user = db->getUser(username);
     }
     catch(...) {
-        std::cout<<"Server Authentication Database get User Error"<<std::end;
+        std::cout<<"Server Authentication Database get User Error"<<std::endl;
         nar::MessageTypes::UserAuthenticationInit::Response auth_resp(400);
         auth_resp.send_mess(skt);
         return;

@@ -14,7 +14,14 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
     std::string action = Messaging::get_action(message);
     if(action == std::string("file_push_request")) {
         nar::MessageTypes::FilePush::Request req;
-        req.receive_message(message);
+        try{
+            req.receive_message(message);
+        }
+        catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
+            std::cout<<exp.what()<<std::endl;
+            nar::MessageTypes::UserRegister::Response resp(300);
+            resp.send_mess(skt);
+        }
         push_file_action(s_global,skt,req,user);
     } else if(action == std::string("file_pull_request")) {
         nar::MessageTypes::FilePull::Request req;

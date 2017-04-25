@@ -8,15 +8,11 @@ void nar::ServerAction::register_action(nar::ServerGlobal* s_global, nar::Messag
     int status_code = 200;
     nar::Database* db = s_global->get_db();
     nar::DBStructs::User usr;
-    try {
-        usr.user_name = req.get_username();
-        usr.aes_crypted = req.get_aes_crypted();
-        usr.rsa_pub = req.get_rsa_pub();
-        usr.rsa_pri_crypted = req.get_rsa_pri_crypted();
-    } catch(...) {
-        std::cout<<"User register message is not right"<<std::endl;
-        status_code = 301;
-    }
+    usr.user_name = req.get_username();
+    usr.aes_crypted = req.get_aes_crypted();
+    usr.rsa_pub = req.get_rsa_pub();
+    usr.rsa_pri_crypted = req.get_rsa_pri_crypted();
+
 
 
     try {
