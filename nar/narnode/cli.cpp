@@ -27,6 +27,22 @@ int main(int argc, char* argv[]){
             return 0;
         }
         std::string file_name(argv[2]);
+        boost::filesystem::path file(file_name);
+        try {
+            file = boost::filesystem::canonical(file);
+        } catch (boost::filesystem::filesystem_error er) {
+            std::cout << "Path '" + er.path1().string() + "' does not exist or does not name a file"  << '\n';
+            return 0;
+        }
+        if( !boost::filesystem::exists(dir) ) {
+            std::cout << "Path does not exist" << '\n';
+            return 0;
+        }
+        if( boost::filesystem::is_directory(dir) ) {
+            std::cout << "Path does not name a file" << std::endl;
+            return 0;
+        }
+
         auto unamepwd = get_uname_pw();
         nar::CLITasks::nar_push(file_name, unamepwd.first, unamepwd.second, std::string("/"));
 
