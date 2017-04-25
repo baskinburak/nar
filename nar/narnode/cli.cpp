@@ -34,11 +34,11 @@ int main(int argc, char* argv[]){
             std::cout << "Path '" + er.path1().string() + "' does not exist or does not name a file"  << '\n';
             return 0;
         }
-        if( !boost::filesystem::exists(dir) ) {
+        if( !boost::filesystem::exists(file) ) {
             std::cout << "Path does not exist" << '\n';
             return 0;
         }
-        if( boost::filesystem::is_directory(dir) ) {
+        if( boost::filesystem::is_directory(file) ) {
             std::cout << "Path does not name a file" << std::endl;
             return 0;
         }
