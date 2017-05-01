@@ -12,9 +12,17 @@ void nar::MessageTypes::UserAuthenticationAnswer::Request::send_mess(nar::Socket
 }
 void nar::MessageTypes::UserAuthenticationAnswer::Request::receive_message(std::string& recv_req){
     auto uans_req_recv = nlohmann::json::parse(recv_req);
-    nlohmann::json head = uans_req_recv["header"];
-    this->_result_string = uans_req_recv["payload"]["result_string"];
-    recv_fill(head);
+    try {
+        nlohmann::json head = uans_req_recv["header"];
+        recv_fill(head);
+        this->_result_string = uans_req_recv["payload"]["result_string"];
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("user authentication answer error");
+    }
+    if(this->_result_string.empty()) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("user authentication answer result string cant be empty");
+    }
+
     return;
 }
 nlohmann::json nar::MessageTypes::UserAuthenticationAnswer::Request::test_json() {
@@ -31,8 +39,16 @@ void nar::MessageTypes::UserAuthenticationAnswer::Response::send_mess(nar::Socke
     return;
 }
 void nar::MessageTypes::UserAuthenticationAnswer::Response::receive_message(nlohmann::json uans_resp_recv){
-    nlohmann::json head = uans_resp_recv["header"];
-    recv_fill(head);
+
+    try {
+        nlohmann::json head = uans_resp_recv["header"];
+        recv_fill(head);
+    }
+    catch(nar::Exception::MessageTypes::ResponseRecvFillError exp) {
+        std::cout<<exp.what()<<std::endl;
+        throw nar::Exception::MessageTypes::BadMessageReceive(exp.what().c_str());
+
+    }
     int stat = get_status_code();
     if(stat/100 == 3) {
         throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", _status_code);

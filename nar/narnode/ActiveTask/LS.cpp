@@ -58,7 +58,7 @@ void nar::ActiveTask::LS::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCLs:
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
-    } catch(nar::Exception::MessageTypes::BadMessageResponseReceive exp) {
+    } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
         std::cout<<exp.what()<<std::endl;
         nar::MessageTypes::IPCLs::Response ipc_resp(0,602);
         ipc_resp.send_message_progress(ipc_socket,0);

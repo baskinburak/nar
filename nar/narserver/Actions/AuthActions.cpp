@@ -33,7 +33,14 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         machine_register_action(s_global,skt,req,user);
     } else if(action == std::string("get_dir_info"))  {
         nar::MessageTypes::DirInfo::Request req;
-        req.receive_message(message);
+        try {
+            req.receive_message(message);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
+            std::cout<<exp.what()<<std::endl;
+            nar::MessageTypes::DirInfo::Response resp(300);
+            resp.send_mess(skt);
+        }
+
         dir_info_action(s_global,skt,req,user);
     } else if(action == std::string("mkdir")) {
         nar::MessageTypes::Mkdir::Request req;

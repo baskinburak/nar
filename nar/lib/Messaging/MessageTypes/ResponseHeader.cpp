@@ -19,7 +19,8 @@ nlohmann::json nar::MessageTypes::ResponseHeader::send_head() {
 }
 
 void nar::MessageTypes::ResponseHeader::recv_fill(nlohmann::json & received) {
-	_reply_to = received["reply_to"];
+    _reply_to = received["reply_to"];
     _status_code = received["status_code"];
+
     return;
 }

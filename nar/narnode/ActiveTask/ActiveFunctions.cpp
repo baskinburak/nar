@@ -29,6 +29,9 @@ std::string nar::ActiveTask::user_authenticate(nar::Socket* skt, nar::UserVariab
     } catch(nar::Exception::MessageTypes::InternalServerDatabaseError exp) {
         std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
         throw nar::Exception::Daemon::AuthenticationError("Authentication is not successful");
+    } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
+        std::cout<<exp.what()<<std::endl;
+        throw nar::Exception::Daemon::AuthenticationError("Authentication is not successful");
     }
 
     string& fake_private = init_resp.get_private_key();
@@ -81,6 +84,9 @@ std::string nar::ActiveTask::user_authenticate(nar::Socket* skt, nar::UserVariab
         throw nar::Exception::Daemon::AuthenticationError("Authentication is not successful");
     } catch(nar::Exception::MessageTypes::InternalServerDatabaseError exp) {
         std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        throw nar::Exception::Daemon::AuthenticationError("Authentication is not successful");
+    } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
+        std::cout<<exp.what()<<std::endl;
         throw nar::Exception::Daemon::AuthenticationError("Authentication is not successful");
     }
 

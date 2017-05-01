@@ -174,10 +174,25 @@ namespace nar {
             };
         };
         namespace MessageTypes {
+            class RequestRecvFillError : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    RequestRecvFillError(const char* mess): nar::Exception::ExcpBase(mess){}
+            };
+            class ResponseRecvFillError : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    ResponseRecvFillError(const char* mess): nar::Exception::ExcpBase(mess){}
+            };
             class BadMessageResponseReceive : public nar::Exception::ExcpBase {
-            private:
-            public:
-                BadMessageResponseReceive(const char* mess): nar::Exception::ExcpBase(mess){}
+                private:
+                public:
+                    BadMessageResponseReceive(const char* mess): nar::Exception::ExcpBase(mess){}
+            };
+            class BadMessageRequestReceive : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    BadMessageRequestReceive(const char* mess): nar::Exception::ExcpBase(mess){}
             };
             class BadMessageReceive : public nar::Exception::ExcpBase {
                 private:

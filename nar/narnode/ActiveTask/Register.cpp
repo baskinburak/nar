@@ -126,6 +126,12 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
+    } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
+        std::cout<<exp.what()<<std::endl;
+        nar::MessageTypes::IPCRegister::Response ipc_resp(0,607);
+        ipc_resp.send_message_progress(ipc_socket,0);
+        ipc_resp.send_message_end(ipc_socket);
+        return;
     }
 
 }

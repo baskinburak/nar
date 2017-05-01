@@ -34,9 +34,17 @@ void nar::MessageTypes::DirInfo::Request::send_mess(nar::Socket* skt ,nar::Messa
 }
 void nar::MessageTypes::DirInfo::Request::receive_message(std::string msg){
     nlohmann::json dir_req_recv = nlohmann::json::parse(msg);
-    nlohmann::json head = dir_req_recv["header"];
-    recv_fill(head);
-    dir = dir_req_recv["payload"]["dir_name"];
+
+    try {
+        nlohmann::json head = dir_req_recv["header"];
+        recv_fill(head);
+        dir = dir_req_recv["payload"]["dir_name"];
+    } catch(nar::Exception::MessageTypes::RequestRecvFillError exp) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("Dir info request is badly constructed");
+    }
+    if(dir.empty()) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("dir cant be empty");
+    }
     return;
 }
 
@@ -79,15 +87,22 @@ nlohmann::json nar::MessageTypes::DirInfo::Response::test_json(){
 }
 
 void nar::MessageTypes::DirInfo::Response::receive_message(nlohmann::json dir_resp_recv){
-    nlohmann::json head = dir_resp_recv["header"];
-    recv_fill(head);
+
+    try {
+        nlohmann::json head = dir_resp_recv["header"];
+        recv_fill(head);
+    }
+    catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("problematic header for dir info response receive");
+
+    }
     int stat = get_status_code();
     if(stat/100 == 3) {
         throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", _status_code);
     } else  if(stat/100 == 4) {
-        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database insertion problem", _status_code);
+        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database problem", _status_code);
     } else  if(stat/100 == 5) {
-        throw nar::Exception::MessageTypes::InternalServerError("Some thing went wrong in server", _status_code);
+        throw nar::Exception::MessageTypes::InternalServerError("Some things went wrong in server", _status_code);
     }
     try{
         int size = dir_resp_recv["payload"]["size"];
@@ -100,7 +115,7 @@ void nar::MessageTypes::DirInfo::Response::receive_message(nlohmann::json dir_re
             this->add_element(tchange_time, tentity_id, tentity_name, tentity_size, ttype);
         }
     } catch(...) {
-        throw nar::Exception::MessageTypes::BadMessageResponseReceive("DirInfo message receive has problems");
+        throw nar::Exception::MessageTypes::BadMessageReceive("DirInfo message receive has problems");
     }
 
     return;

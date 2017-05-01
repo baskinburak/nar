@@ -11,7 +11,9 @@ nlohmann::json  nar::MessageTypes::RequestHeader::send_head(){
 }
 
 void nar::MessageTypes::RequestHeader::recv_fill( nlohmann::json & received) {
-	_action = received["action"];
+
+    _action = received["action"];
+
 	return;
 
 }

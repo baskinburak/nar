@@ -26,9 +26,14 @@ void nar::MessageTypes::UserAuthenticationInit::Request::send_mess(nar::Socket* 
 }
 void nar::MessageTypes::UserAuthenticationInit::Request::receive_message(std::string& recv_msg){
     auto keep_req_recv = nlohmann::json::parse(recv_msg);
-    nlohmann::json head = keep_req_recv["header"];
-    this->_username = keep_req_recv["payload"]["username"];
-    recv_fill(head);
+    try {
+        nlohmann::json head = keep_req_recv["header"];
+        recv_fill(head);
+        this->_username = keep_req_recv["payload"]["username"];
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("user authentication init request bad json");
+    }
+
     return;
 }
 nlohmann::json nar::MessageTypes::UserAuthenticationInit::Request::test_json() {
@@ -55,8 +60,16 @@ void nar::MessageTypes::UserAuthenticationInit::Response::send_mess(nar::Socket*
     return;
 }
 void nar::MessageTypes::UserAuthenticationInit::Response::receive_message(nlohmann::json keep_resp_recv){
-    nlohmann::json head = keep_resp_recv["header"];
-    recv_fill(head);
+
+    try {
+        nlohmann::json head = keep_resp_recv["header"];
+        recv_fill(head);
+    }
+    catch(nar::Exception::MessageTypes::ResponseRecvFillError exp) {
+        std::cout<<exp.what()<<std::endl;
+        throw nar::Exception::MessageTypes::BadMessageReceive(exp.what().c_str());
+
+    }
     int stat = get_status_code();
     if(stat/100 == 3) {
         throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", _status_code);
@@ -65,9 +78,16 @@ void nar::MessageTypes::UserAuthenticationInit::Response::receive_message(nlohma
     } else  if(stat/100 == 5) {
         throw nar::Exception::MessageTypes::InternalServerError("Some thing went wrong in server", _status_code);
     }
-    _private_key = keep_resp_recv["payload"]["private_key"];
-    _task_string = keep_resp_recv["payload"]["task_string"];
-    _aes_crypted = keep_resp_recv["payload"]["aes_crypted"];
+    try {
+        this->_private_key = keep_resp_recv["payload"]["private_key"];
+        this->_task_string = keep_resp_recv["payload"]["task_string"];
+        this->_aes_crypted = keep_resp_recv["payload"]["aes_crypted"];
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("user authentication init response bad");
+    }
+    if(this->_private_key.empty() || this->_task_string.empty() || this->_aes_crypted.empty()) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("user authentication items cant be empty");
+    }
     return;
 }
 
