@@ -34,11 +34,19 @@ void nar::Peers::write_end() {
 
 void nar::Peers::insert_keepalive(std::string& mac_id, nar::Socket* skt) {
     write_start();
-    nar::DBStructs::Machine mac = this->_db->getMachine(mac_id);
+    nar::DBStructs::Machine mac;
+
+    try {
+        mac = this->_db->getMachine(mac_id);
+    } catch(...) {
+        write_end();
+        throw;
+    }
+
     nar::DBStructs::Session sess;
     sess.machine_id = mac_id;
     unsigned long sessid = this->_db->insertSession(sess);
-    nar::SockInfo* sck_inf = new nar::SockInfo(skt,mac,sessid);
+    nar::SockInfo* sck_inf = new nar::SockInfo(skt, mac, sessid);
     this->_keepalives[mac_id] = sck_inf;
     this->_macs.push_back(mac_id);
     write_end();
@@ -50,18 +58,12 @@ void nar::Peers::delete_keepalive(std::string& mac_id) {
     if ( ( it = std::find(_macs.begin(), _macs.end(), mac_id) ) != _macs.end() ) {
        this->_macs.erase(it);
     }
-    else {
-       std::cout<<"cant delete"<<std::endl;
-    }
     write_end();
 }
 
 
 nar::SockInfo* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long chunk_size) {
-    std::cout << "before read_start" << std::endl;
-    std::cout << read_count << std::endl;
     read_start();
-    std::cout << "after read_start" << std::endl;
     nar::SockInfo* result = random_policy(user, chunk_size);
     read_end();
     return result;
@@ -72,7 +74,6 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
 
     std::random_device rd; // only used once to initialise (seed) engine
     std::mt19937 rng(rd()); // random-number engine used (Mersenne-Twister in this case)
-    std::cout << "keepalives size: " << _keepalives.size() << std::endl;
     std::uniform_int_distribution<int> uni(0,_keepalives.size()-1); // guaranteed unbiased
     std::set<std::string>::iterator it;
     std::string selected;
@@ -80,16 +81,13 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
     nar::MessageTypes::KeepAliveCheck::Response resp;
 	bool flg = true;
     do {
-	flg = true;
+	    flg = true;
         auto random_integer = uni(rng);
-        std::cout << "keepalives size, randint: " << _keepalives.size()<< " " << random_integer << std::endl;
         selected = _macs[random_integer % _keepalives.size()];
         nar::SockInfo* sckinf = _keepalives[selected];
         nar::Socket* sck = sckinf->get_sck();
         try {
-            std::cout << "try: " << selected << std::endl;
             req.send_mess(sck, resp);
-            std::cout << "OK." << std::endl;
         } catch(...) {
             nar::SockInfo* sckinf = this->_keepalives[selected];
             unsigned long sessid = sckinf->get_sessid();
@@ -101,10 +99,9 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
             if ( ( it = std::find(_macs.begin(), _macs.end(), selected) ) != _macs.end() ) {
                this->_macs.erase(it);
             }
-		flg = false;
+		    flg = false;
        }
     } while((it = user_machines.find(selected)) != user_machines.end() || !flg);
-	std::cout << "last size: " << _keepalives.size() << " " << selected << std::endl;
     return this->_keepalives[selected];
 }
 

@@ -170,7 +170,6 @@ void nar::Database::insertUser(struct DBStructs::User &us)
 
 
 void nar::Database::insertDirectory(struct DBStructs::Directory & dir){
-    write_start();
     nar::db::Directory directory = turnDirectory(dir);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
@@ -186,7 +185,6 @@ void nar::Database::insertDirectory(struct DBStructs::Directory & dir){
     //dir.dir_id = getNextDirectoryId(1);
 
     delete prep_stmt;
-    write_end();
 }
 
 void nar::Database::insertDirectoryTo(struct DBStructs::DirectoryTo & dirTo){
@@ -277,17 +275,16 @@ void nar::Database::insertChunkToMachine(struct DBStructs::ChunkToMachine &chu)
     delete prep_stmt;
 }
 unsigned long nar::Database::insertSession(struct DBStructs::Session &ses) {
-    write_start();
     unsigned long last = getNextSessionId(1);
+    ses.session_id = last;
     nar::db::Session session = turnSession(ses);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Sessions(machine_id) "
-                                                 "VALUES(?);");
+    prep_stmt = _con -> prepareStatement("INSERT INTO Sessions(machine_id, session_id) "
+                                                 "VALUES(?, ?);");
     prep_stmt -> setString(1, session.machine_id);
+    prep_stmt -> setBigInt(2, session.session_id);
     prep_stmt -> execute();
     delete prep_stmt;
-
-    write_end();
     return last;
 }
 
@@ -830,6 +827,7 @@ std::vector<nar::DBStructs::Directory> nar::Database::getDirectoryDir(long long 
 }
 unsigned long  nar::Database::getNextSessionId(long long int N) {
     static long long int next_id = -1;
+    write_start();
     if(next_id == -1) {
         sql::PreparedStatement *prep_stmt;
         long long int keep = 1;
@@ -848,10 +846,12 @@ unsigned long  nar::Database::getNextSessionId(long long int N) {
 
     long long int ret = next_id;
     next_id += N;
+    write_end();
     return ret;
 }
 long long int nar::Database::getNextFileId(long long int N){
     static long long int next_id = -1;
+    write_start();
     if(next_id == -1) {
         sql::PreparedStatement *prep_stmt;
         long long int keep = 1;
@@ -870,10 +870,12 @@ long long int nar::Database::getNextFileId(long long int N){
 
     long long int ret = next_id;
     next_id += N;
+    write_end();
     return ret;
 }
 long long int nar::Database::getNextChunkId(long long int N){
     static long long int next_id = -1;
+    write_start();
     if(next_id == -1) {
         sql::PreparedStatement *prep_stmt;
         long long int keep = 1;
@@ -891,11 +893,13 @@ long long int nar::Database::getNextChunkId(long long int N){
     }
     long long int ret = next_id;
     next_id += N;
+    write_end();
     return ret;
     
 }
 long long int nar::Database::getNextDirectoryId(long long int N){
     static long long int next_id = -1;
+    write_start();
     if(next_id == -1) {
         sql::PreparedStatement *prep_stmt;
         long long int keep = 1;
@@ -914,6 +918,7 @@ long long int nar::Database::getNextDirectoryId(long long int N){
     }
     long long int ret = next_id;
     next_id += N;
+    write_end();
     return ret;
 }
 std::vector<nar::DBStructs::File>  nar::Database::getUserFiles(long long int userId){

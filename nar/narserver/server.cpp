@@ -25,24 +25,42 @@
 
 using namespace nlohmann;
 
-std::map<std::string, bool> activetokens;
 
 
 void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
-    string msg = nar::trim(nar::get_message(*skt));
-    string action = nar::Messaging::get_action(msg);
-    if(action == "user_authentication_init") {
-        nar::MessageTypes::UserAuthenticationInit::Request req;
-        req.receive_message(msg);
-        nar::ServerAction::authenticate_action(s_global, req, skt);
-    } else if(action == "user_register") {
-        nar::MessageTypes::UserRegister::Request req;
-        req.receive_message(msg);
-        nar::ServerAction::register_action(s_global, req, skt);
-    } else if(action == "keepalive") {
-        nar::MessageTypes::KeepAlive::Request req;
-        req.receive_message(msg);
-        nar::ServerAction::keepalive_action(s_global, req, skt);
+    try {
+        string msg = nar::trim(nar::get_message(*skt));
+        string action = nar::Messaging::get_action(msg);
+        if(action == "user_authentication_init") {
+            nar::MessageTypes::UserAuthenticationInit::Request req;
+            req.receive_message(msg);
+            nar::ServerAction::authenticate_action(s_global, req, skt);
+        } else if(action == "user_register") {
+            nar::MessageTypes::UserRegister::Request req;
+            req.receive_message(msg);
+            nar::ServerAction::register_action(s_global, req, skt);
+        } else if(action == "keepalive") {
+            nar::MessageTypes::KeepAlive::Request req;
+            try {
+                req.receive_message(msg);
+            } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+                nar::MessageTypes::KeepAlive::Response resp(301);
+                resp.send_mess(skt);
+                skt->close();
+                return;
+            }
+            nar::ServerAction::keepalive_action(s_global, req, skt);
+        }
+
+    } catch(nar::Exception::Socket::SystemError& exp) {
+        skt->close();
+        return;
+    } catch(nar::Exception::LowLevelMessaging::NoSize& exp) {
+        skt->close();
+        return;
+    } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& exp) {
+        skt->close();
+        return;
     }
 }
 

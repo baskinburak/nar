@@ -9,6 +9,12 @@
 namespace nar {
     namespace MessageTypes {
         namespace KeepAlive {
+            /*
+                Stat Codes for KeepAlive
+                200 -> Success
+                300 -> Machine ID not valid
+                301 -> Message Not Valid [HEADER or PAYLOAD problems]
+            */
             class Response : public ResponseHeader {
                 public:
                     Response() :ResponseHeader(-1, std::string("keepalive")) {}
