@@ -11,27 +11,25 @@
 #include <stdio.h>
 
 void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
-    //while(!nar::DaemonTasks::handshake(sck, globals));
     std::string macid = globals->get_machine_id();
     nar::MessageTypes::KeepAlive::Request req(macid);
-    nar::MessageTypes::KeepAlive::Response resp(200);
-    int tried = 5;
+    nar::MessageTypes::KeepAlive::Response resp;
+    int tried = 1;
 
-    while (tried--) {
+    std::cout << "Trying to open keepalive connection to the server: ";
+    while (true) {
+        std::cout << tried++ << " ";
         try {
-            req.send_mess(sck,resp);
-        }
-        catch (nar::Exception::MessageTypes::ServerSocketAuthenticationError exp) {
-            std::cout << exp.what() << std::endl;
+            req.send_mess(sck, resp);
+            break;
+        } catch (nar::Exception::MessageTypes::ServerSocketAuthenticationError& exp) {
             sleep(1);
-            continue;
+        } catch (nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
+            exit(0);
         }
-        break;
     }
-    if(!tried) {
-        std::cout << "Server may be down" << std::endl;
-        exit(0);
-    }
+    std::cout << "Connected." << std::endl;
     return;
 }
 

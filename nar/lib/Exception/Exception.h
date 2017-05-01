@@ -13,6 +13,14 @@ namespace nar {
                 std::string what() const { return _message; }
         };
 
+        namespace Messaging {
+            class MessageNotValid : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    MessageNotValid(const char* mess): ExcpBase(mess) {}
+            };
+        }
+
         namespace LowLevelMessaging {
             class NoSize : public nar::Exception::ExcpBase {
                 private:
