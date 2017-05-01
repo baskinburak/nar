@@ -133,11 +133,37 @@ std::cout << "File id to pull : " << f_id << std::endl;
 
 void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::DirInfo::Request& req, nar::DBStructs::User& user) {
     nar::Database* db = s_global->get_db();
-    std::string dir_name = req.get_dir();
+    std::string& dir_name = req.get_dir();
     nar::MessageTypes::DirInfo::Response resp(200);
-    struct DBStructs::Directory dir = db->findDirectoryId(user.user_name, dir_name);
-    std::vector<nar::DBStructs::File> files = db->getDirectoryFile(dir.dir_id);
-    std::vector<nar::DBStructs::Directory> dirs = db->getDirectoryDir(dir.dir_id);
+    struct DBStructs::Directory dir;
+    std::vector<nar::DBStructs::File> files;
+    std::vector<nar::DBStructs::Directory> dirs;
+    try {
+        dir = db->findDirectoryId(user.user_name, dir_name);
+    } catch (...) {
+        std::cout<<"Server dir info action findDirectoryId error"<<std::endl;
+        resp.set_status_code(400);
+        resp.send_mess(skt);
+        return;
+    }
+    try {
+        files = db->getDirectoryFile(dir.dir_id);
+    } catch (...) {
+        std::cout<<"Server dir info action getDirectoryFile error"<<std::endl;
+        resp.set_status_code(401);
+        resp.send_mess(skt);
+        return;
+    }
+    try {
+        dirs = db->getDirectoryDir(dir.dir_id);
+    } catch (...) {
+        std::cout<<"Server dir info action getDirectoryDir error"<<std::endl;
+        resp.set_status_code(402);
+        resp.send_mess(skt);
+        return;
+    }
+
+
 
     for (size_t i = 0; i < dirs.size(); i++) {
         struct DBStructs::Directory& tmpDir = dirs[i];

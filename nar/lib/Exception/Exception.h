@@ -174,6 +174,11 @@ namespace nar {
             };
         };
         namespace MessageTypes {
+            class BadMessageResponseReceive : public nar::Exception::ExcpBase {
+            private:
+            public:
+                BadMessageResponseReceive(const char* mess): nar::Exception::ExcpBase(mess){}
+            };
             class BadMessageReceive : public nar::Exception::ExcpBase {
                 private:
                 public:

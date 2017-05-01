@@ -73,3 +73,8 @@ int var3;
 **/
 void f(int naber, int iyidir);
 };
+server a gelen request ten kaynaklı bir error oluyor sa 3xx
+server ın içinde bizim yaptığımız şeylerden birinde patlıyorsa 5xx
+serverın içinde database den patlıyorsa 4xx
+daemon içinde error 6xx
+cli içinde error 7xx

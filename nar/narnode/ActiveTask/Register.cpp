@@ -29,6 +29,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     catch(...) {
         std::cout<<"Daemon register aes cryptor error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,600);
+        ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     }
@@ -39,6 +40,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     } catch(...) {
         std::cout<<"Daemon register base 64 encode error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,601);
+        ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     }
@@ -52,6 +54,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     } catch(...) {
         std::cout<<"Daemon register RSACryptor generate key pair error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,602);
+        ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     }
@@ -62,6 +65,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     catch(...) {
         std::cout<<"Daemon register base 64 encode error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,603);
+        ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     }
@@ -71,6 +75,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     } catch(...) {
         std::cout<<"Daemon register aes cryptor encrypt error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,604);
+        ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     }
@@ -80,6 +85,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     } catch(...) {
         std::cout<<"Daemon register base 64 encode error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,605);
+        ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     }
@@ -93,6 +99,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     } catch(...) {
         std::cout<<"Daemon register can not connect to server error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,606);
+        ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     }
@@ -103,12 +110,21 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
         request.send_mess(srvsck, resp);
     } catch(nar::Exception::MessageTypes::BadRequest exp) {
         std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        nar::MessageTypes::IPCRegister::Response ipc_resp(0,exp.get_status_code());
+        ipc_resp.send_message_progress(ipc_socket,0);
+        ipc_resp.send_message_end(ipc_socket);
         return;
     } catch(nar::Exception::MessageTypes::InternalServerError exp) {
         std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        nar::MessageTypes::IPCRegister::Response ipc_resp(0,exp.get_status_code());
+        ipc_resp.send_message_progress(ipc_socket,0);
+        ipc_resp.send_message_end(ipc_socket);
         return;
     } catch(nar::Exception::MessageTypes::InternalServerDatabaseError exp) {
         std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        nar::MessageTypes::IPCRegister::Response ipc_resp(0,exp.get_status_code());
+        ipc_resp.send_message_progress(ipc_socket,0);
+        ipc_resp.send_message_end(ipc_socket);
         return;
     }
 
@@ -127,11 +143,11 @@ void nar::ActiveTask::Register::run( nar::MessageTypes::IPCRegister::Request* re
     std::string crypted_aes;
     aes_cryptor.encrypt(aes, crypted_aes);
 
-   // std::cout << "first key enc: " << crypted_aes << std::endl;
+    // std::cout << "first key enc: " << crypted_aes << std::endl;
 
     std::string b64_crypted_aes = base64_encode((const unsigned char*) crypted_aes.c_str(), crypted_aes.size());
 
-   // std::cout << "first key enc b64: "<< b64_crypted_aes << std::endl;
+    // std::cout << "first key enc b64: "<< b64_crypted_aes << std::endl;
 
     std::string pri, pub;
     RsaCryptor::generate_key_pair(pub, pri);

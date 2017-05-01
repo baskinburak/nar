@@ -50,6 +50,8 @@ namespace nar {
 					void set_change_time(std::string ct);
 					void set_type(std::string t);
 					Response() : IPCBaseResponse(100, std::string("ls"), 200), _entity_name(std::string("")), _entity_size(std::string("")), _change_time(std::string("")), _type(std::string("")) {}
+					Response(int stat):IPCBaseResponse(0, std::string("ls"), stat) ,_entity_name(std::string("")), _entity_size(std::string("")), _change_time(std::string("")), _type(std::string("")) {}
+					Response(int prog ,int sc):IPCBaseResponse(prog, std::string("ls"), sc) ,_entity_name(std::string("")), _entity_size(std::string("")), _change_time(std::string("")), _type(std::string("")) {}
 
                     Response(std::string en, std::string es, std::string ct, std::string t, long int prog, long int sc) : IPCBaseResponse(prog, std::string("ls"), sc), _entity_name(en), _entity_size(es), _change_time(ct), _type(t) {}
                     nlohmann::json give_myresponsejson();

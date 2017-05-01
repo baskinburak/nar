@@ -81,19 +81,27 @@ nlohmann::json nar::MessageTypes::DirInfo::Response::test_json(){
 void nar::MessageTypes::DirInfo::Response::receive_message(nlohmann::json dir_resp_recv){
     nlohmann::json head = dir_resp_recv["header"];
     recv_fill(head);
-    if(_status_code == 300) {
-        throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
-    } else if(_status_code == 301) {
-        throw nar::Exception::MessageTypes::UserDoesNotExist("This user does not exist for nar system so you can not get dirinfo for it", _status_code);
+    int stat = get_status_code();
+    if(stat/100 == 3) {
+        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", _status_code);
+    } else  if(stat/100 == 4) {
+        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database insertion problem", _status_code);
+    } else  if(stat/100 == 5) {
+        throw nar::Exception::MessageTypes::InternalServerError("Some thing went wrong in server", _status_code);
     }
-    int size = dir_resp_recv["payload"]["size"];
-    for(int i=0;i<size;i++){
-        std::string tchange_time = dir_resp_recv["payload"]["item_list"][i]["change_time"];
-        long long int tentity_id = dir_resp_recv["payload"]["item_list"][i]["entity_id"];
-        std::string tentity_name = dir_resp_recv["payload"]["item_list"][i]["entity_name"];
-        unsigned long long int tentity_size =dir_resp_recv["payload"]["item_list"][i]["entity_size"];
-        bool ttype = dir_resp_recv["payload"]["item_list"][i]["type"];
-        this->add_element(tchange_time, tentity_id, tentity_name, tentity_size, ttype);
+    try{
+        int size = dir_resp_recv["payload"]["size"];
+        for(int i=0;i<size;i++){
+            std::string tchange_time = dir_resp_recv["payload"]["item_list"][i]["change_time"];
+            long long int tentity_id = dir_resp_recv["payload"]["item_list"][i]["entity_id"];
+            std::string tentity_name = dir_resp_recv["payload"]["item_list"][i]["entity_name"];
+            unsigned long long int tentity_size =dir_resp_recv["payload"]["item_list"][i]["entity_size"];
+            bool ttype = dir_resp_recv["payload"]["item_list"][i]["type"];
+            this->add_element(tchange_time, tentity_id, tentity_name, tentity_size, ttype);
+        }
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageResponseReceive("DirInfo message receive has problems");
     }
+
     return;
 }
