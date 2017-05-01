@@ -1,5 +1,6 @@
 #include "clitasks.h"
 
+#include <boost/filesystem.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -26,6 +27,22 @@ int main(int argc, char* argv[]){
             return 0;
         }
         std::string file_name(argv[2]);
+        boost::filesystem::path file(file_name);
+        try {
+            file = boost::filesystem::canonical(file);
+        } catch (boost::filesystem::filesystem_error er) {
+            std::cout << "Path '" + er.path1().string() + "' does not exist or does not name a file"  << '\n';
+            return 0;
+        }
+        if( !boost::filesystem::exists(file) ) {
+            std::cout << "Path does not exist" << '\n';
+            return 0;
+        }
+        if( boost::filesystem::is_directory(file) ) {
+            std::cout << "Path does not name a file" << std::endl;
+            return 0;
+        }
+
         auto unamepwd = get_uname_pw();
         nar::CLITasks::nar_push(file_name, unamepwd.first, unamepwd.second, std::string("/"));
 
@@ -56,7 +73,23 @@ int main(int argc, char* argv[]){
         auto unamepwd = get_uname_pw();
         std::string file_name(argv[2]);
         std::string dir_name(argv[3]);
-        nar::CLITasks::nar_pull(file_name,dir_name, unamepwd.first, unamepwd.second, std::string("/"));
+        boost::filesystem::path dir(dir_name);
+        try {
+            dir = boost::filesystem::canonical(dir);
+        } catch (boost::filesystem::filesystem_error er) {
+            std::cout << "Path '" + er.path1().string() + "' does not exist or does not name a folder"  << '\n';
+            return 0;
+        }
+        if( !boost::filesystem::exists(dir) ) {
+            std::cout << "Path does not exist" << '\n';
+            return 0;
+        }
+        if( !boost::filesystem::is_directory(dir) ) {
+            std::cout << "Path is not a directory" << std::endl;
+            return 0;
+        }
+
+        nar::CLITasks::nar_pull(file_name, dir.string(), unamepwd.first, unamepwd.second, std::string("/"));
 
     } else if(first_arg == std::string("register")) {
         auto unamepwd = get_uname_pw();

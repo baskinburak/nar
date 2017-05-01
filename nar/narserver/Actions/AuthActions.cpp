@@ -118,7 +118,6 @@ std::cout << "File id to pull : " << f_id << std::endl;
 
         nar::MessageTypes::WaitChunkPull::Request chunk_req(r_port, s_id, chunks[i].chunk_id, chunks[i].chunk_size);
         nar::MessageTypes::WaitChunkPull::Response chunk_resp;
-
         std::cout << "Peer req sending "  << std::endl;
         chunk_req.send_mess(peer_sck->get_sck(), chunk_resp);
         std::cout << "Peer req received "  << std::endl;
