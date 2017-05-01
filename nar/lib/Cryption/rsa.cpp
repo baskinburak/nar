@@ -35,7 +35,7 @@ void RsaCryptor::set_pub(std::string& pub) {
     if(pub.size()) {
         CryptoPP::StringSource stringSource(pub, true);
         try {
-            _pri.BERDecode(stringSource);
+            _pub.BERDecode(stringSource);
         }
         catch( CryptoPP::Exception& e ) {
             throw nar::Exception::Cryption::RsaError(std::string("Rsa::set_pub ").append(e.what()) );

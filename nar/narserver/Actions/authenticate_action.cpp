@@ -58,7 +58,6 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
     }
     try {
         rsa.set_pub(rsa_pub);
-        std::cout << "pub set." << std::endl;
         rsa.encrypt(rand_string,task_string);
     } catch(...) {
         std::cout<<"Server Authentication RSA error"<<std::endl;
