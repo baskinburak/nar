@@ -24,6 +24,9 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
             break;
         } catch (nar::Exception::MessageTypes::ServerSocketAuthenticationError& exp) {
             sleep(1);
+        } catch (nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
+            exit(0);
         }
     }
     std::cout << "Connected." << std::endl;

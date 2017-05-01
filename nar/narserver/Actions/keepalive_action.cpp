@@ -20,5 +20,6 @@ void nar::ServerAction::keepalive_action(nar::ServerGlobal* s_global, nar::Messa
     } catch(...) {
         nar::MessageTypes::KeepAlive::Response resp(300);
         resp.send_mess(skt);
+        skt->close();
     }
 }
