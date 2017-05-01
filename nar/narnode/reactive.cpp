@@ -8,6 +8,7 @@
 #include <thread>
 #include <string>
 #include <nar/lib/Messaging/MessageTypes/KeepAliveCheck.h>
+#include <stdio.h>
 
 void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
     //while(!nar::DaemonTasks::handshake(sck, globals));
@@ -70,6 +71,34 @@ void nar::chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int c
     nar::File f( (path+std::to_string(chunk_id) ).c_str(), "r", false);
     cli_sck->send(f,0,f.size());
     cli_sck->close();
+}
+
+bool nar::delete_chunk(unsigned int stream_id, nar::Global* globals, unsigned short rand_port, long long int chunk_id)  {
+	std::string chunkToDelete = std::string("c") + std::to_string(chunk_id);
+	std::cout << "chunk to delete: " << chunkToDelete << std::endl;
+
+	boost::filesystem::path dir(chunkToDelete);
+    try {
+        dir = boost::filesystem::canonical(dir);
+    } catch (boost::filesystem::filesystem_error er) {
+        std::cout << er.what() << '\n';
+        return false;
+    }
+	/*
+	boost::filesystem::path current_path(boost::filesystem::current_path());
+	std::cout << "Current path is : " << current_path << std::endl;
+	std::string full_path = current_path.string() + chunkToDelete;
+	std::cout << "Full path is : " << full_path << std::endl;
+	*/
+	std::cout << "Full path is : " << dir.string() << std::endl;
+	
+	//exists, so delete it!
+	int status;
+	status = boost::filesystem::remove(file);
+	// status == number of files deleted.
+	if (status == 1) {
+		return true;
+	}
 }
 
 void nar::reactive_dispatcher(nar::Global *globals) {
