@@ -52,7 +52,6 @@ void AesCryptor::encrypt(std::string &text, std::string &crypted) {
 
         CryptoPP::StringSource ss1(text, true, new CryptoPP::AuthenticatedEncryptionFilter(enc, new CryptoPP::StringSink(crypted), false, TAG_SIZE));
 
-        //byte_to_string(cipher,text.length());
         std::string bla;
         byte_to_string(iv,bla,256);
 
@@ -60,8 +59,8 @@ void AesCryptor::encrypt(std::string &text, std::string &crypted) {
         std::string test = crypted;
         crypted = bla + crypted;
     }
-    catch (...){
-        throw nar::Exception::Cryption::AesError("Error in Aes encryption");
+    catch (CryptoPP::Exception& e){
+        throw nar::Exception::Cryption::AesError(std::string("Error in Aes encryption").append(e.what()));
     }
     return;
 }
@@ -80,8 +79,8 @@ void AesCryptor::decrypt(std::string& data, std::string& result) {
         CryptoPP::StringSource ss(data.substr(256), true, new CryptoPP::Redirector(df));
         free(iv);
     }
-    catch (...){
-        throw nar::Exception::Cryption::AesError("Error in Aes decryption");
+    catch (CryptoPP::Exception& e){
+        throw nar::Exception::Cryption::AesError(std::string("Error in Aes decryption").append(e.what()));
     }
     return;
 }
@@ -100,8 +99,8 @@ void AesCryptor::generate_key(std::string &key, int length) {
             key.push_back(chars[index_dist(rng)]);
         }
     }
-    catch (...){
-        throw nar::Exception::Cryption::AesError("Error in Aes key-generation");
+    catch (CryptoPP::Exception& e){
+        throw nar::Exception::Cryption::AesError(std::string("Error in Aes key-generation").append(e.what()));
     }
     return;
 }
