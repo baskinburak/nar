@@ -13,8 +13,6 @@ void nar::ServerAction::register_action(nar::ServerGlobal* s_global, nar::Messag
     usr.rsa_pub = req.get_rsa_pub();
     usr.rsa_pri_crypted = req.get_rsa_pri_crypted();
 
-
-
     try {
         db->insertUser(usr);
     } catch (...) {

@@ -43,15 +43,15 @@ nlohmann::json nar::MessageTypes::UserAuthenticationInit::Request::test_json() {
 }
 
 void nar::MessageTypes::UserAuthenticationInit::Response::send_mess(nar::Socket* skt) {
-    if((this->_private_key=="") || (this->_task_string=="") || (this->_aes_crypted =="")) {
-        throw nar::Exception::MessageTypes::BadlyConstructedMessageSend("UserAuthenticationInit can not send in this state");
-    }
-
     nlohmann::json keep_resp_send;
     keep_resp_send["header"] = send_head();
     if(get_status_code() != 200) {
         send_message(skt,keep_resp_send.dump());
         return;
+    }
+
+    if((this->_private_key=="") || (this->_task_string=="") || (this->_aes_crypted =="")) {
+        throw nar::Exception::MessageTypes::BadlyConstructedMessageSend("UserAuthenticationInit can not send in this state");
     }
     keep_resp_send["payload"]["private_key"] = _private_key;
     keep_resp_send["payload"]["task_string"] = _task_string;
