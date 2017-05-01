@@ -215,6 +215,16 @@ namespace nar {
                 public:
                     BadlyConstructedMessageSend(const char* mess): nar::Exception::ExcpBase(mess){}
             };
+            class BadJSONRelatedProblemRequest : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    BadJSONRelatedProblemRequest(const char* mess): nar::Exception::ExcpBase(mess){}
+            };
+            class BadJSONRelatedProblemResponse : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    BadJSONRelatedProblemResponse(const char* mess): nar::Exception::ExcpBase(mess){}
+            };
             class UserDoesNotExist : public nar::Exception::ExcpBase {
                 private:
                     int _status_code;
@@ -229,11 +239,25 @@ namespace nar {
                 InternalServerError(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
                     int get_status_code() const { return _status_code; }
             };
+            class InternalDaemonError : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                InternalDaemonError(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
             class InternalServerDatabaseError : public nar::Exception::ExcpBase {
                 private:
                     int _status_code;
                 public:
                     InternalServerDatabaseError(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+            class InternalCliError : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                InternalCliError(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
                     int get_status_code() const { return _status_code; }
             };
             class BadRequest : public nar::Exception::ExcpBase {

@@ -2,18 +2,26 @@
 
 nlohmann::json nar::MessageTypes::IPCBaseRequest::generate_json() {
     nlohmann::json jsn;
-    jsn["header"]["action"] = this->_action;
-    jsn["header"]["username"] = this->_username;
-    jsn["header"]["password"] = this->_password;
-    jsn["header"]["current_directory"] = this->_current_directory;
+    try{
+        jsn["header"]["action"] = this->_action;
+        jsn["header"]["username"] = this->_username;
+        jsn["header"]["password"] = this->_password;
+        jsn["header"]["current_directory"] = this->_current_directory;
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, we couldn't generate json");
+    }
     return jsn;
 }
 
 void nar::MessageTypes::IPCBaseRequest::populate_object(nlohmann::json& jsn) {
-    this->_action = jsn["header"]["action"];
-    this->_username = jsn["header"]["username"];
-    this->_password = jsn["header"]["password"];
-    this->_current_directory = jsn["header"]["current_directory"];
+    try{
+        this->_action = jsn["header"]["action"];
+        this->_username = jsn["header"]["username"];
+        this->_password = jsn["header"]["password"];
+        this->_current_directory = jsn["header"]["current_directory"];
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, we couldn't populate the object");
+    }
 }
 
 std::string nar::MessageTypes::IPCBaseRequest::get_action() {
@@ -54,30 +62,46 @@ void nar::MessageTypes::IPCBaseRequest::set_password(std::string& pw) {
 
 nlohmann::json nar::MessageTypes::IPCBaseRequest::fillTheHead() {
     nlohmann::json header;
-    header["action"] = _action;
-    header["username"] = this->_username;
-    header["password"] = this->_password;
-    header["current_directory"] = this->_current_directory;
+    try{
+        header["action"] = _action;
+        header["username"] = this->_username;
+        header["password"] = this->_password;
+        header["current_directory"] = this->_current_directory;
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, we couldn't fill the head");
+    }
     return header;
 }
 
 void nar::MessageTypes::IPCBaseRequest::recvThe_action(nlohmann::json &recv){
-    this -> _action = recv["action"];
-    this-> _username = recv["username"];
-    this-> _password = recv["password"];
-    this-> _current_directory = recv["current_directory"];
+    try{
+        this -> _action = recv["action"];
+        this-> _username = recv["username"];
+        this-> _password = recv["password"];
+        this-> _current_directory = recv["current_directory"];
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, we couldn't receive the action");
+    }
     return;
 }
 
 nlohmann::json nar::MessageTypes::IPCBaseRequest::get_myrequestjson() {
     nlohmann::json my_request_json;
-    my_request_json["header"]["reply_to"] = _action;
+    try{
+        my_request_json["header"]["reply_to"] = _action;
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, we couldn't get the request json");
+    }
     return my_request_json;
 }
 
 void nar::MessageTypes::IPCBaseRequest::send_action(nar::Socket* skt) {
     nlohmann::json json_to_sent;
-    json_to_sent["header"]["reply_to"] = _action;
+    try{
+        json_to_sent["header"]["reply_to"] = _action;
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, there is a bad json constructed in send action");
+    }
     send_message(skt, json_to_sent.dump());
     return;
 }
@@ -96,17 +120,15 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
         statcode /= 100;
         switch(statcode) {
             case 3:
-                std::cout << "There is a problem in the request that came to server" << std::endl;
-                break;
+                throw nar::Exception::MessageTypes::InternalServerError("There is problem in the request that came to server", statcode);
             case 4:
-                std::cout << "There is problem in database of the server" << std::endl;
-                break;
+                throw nar::Exception::MessageTypes::InternalServerDatabaseError("There is a problem in database side of the server", statcode);
             case 5:
-                std::cout << "There is problem in the server" << std::endl;
-                break;
+                throw nar::Exception::MessageTypes::InternalServerError("There is a problem in the server", statcode);
             case 6:
-                std::cout << "There are internal daemon errors" << std::endl;
-                break;
+                throw nar::Exception::MessageTypes::InternalDaemonError("There is a problem in the daemon", statcode);
+            case 7:
+                throw nar::Exception::MessageTypes::InternalCliError("There is a problem in the cli", statcode);
             default:
                 flag = true;
         }
