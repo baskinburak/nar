@@ -12,6 +12,7 @@
 #include <map>
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
+#include <stdexcept>
 
 using std::cout;
 using std::endl;
@@ -78,6 +79,7 @@ unsigned short nar::USocket::get_port() const {
 }
 
 nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id), _iserv(&io_serv) {
+    this->_ran_done = false;
     this->_close_sck = false;
     this->_exp_sqnm_set = false;
     this->_server_ip = server_ip;
@@ -304,9 +306,13 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
                 }
             }
         } else if(rcvpck->is_ran()) {
-            sock->_ran_packs.push_back(std::make_pair(rcvpck, new udp::endpoint(remote_endpoint)));
-            sock->_ran_flag = true;
-            sock->_event_cv.notify_all();
+            if(sock->_ran_done) {
+                delete rcvpck;
+            } else {
+                sock->_ran_packs.push_back(std::make_pair(rcvpck, new udp::endpoint(remote_endpoint)));
+                sock->_ran_flag = true;
+                sock->_event_cv.notify_all();
+            }
         } else {
             delete rcvpck;
         }
@@ -379,20 +385,31 @@ void nar::USocket::randezvous_server() {
                 delete_ids.push_back(entr.first);
             }
         }
-        for(int i=0; i<delete_ids.size(); i++)
+        for(int i=0; i<delete_ids.size(); i++) {
+            if(prev_rands[delete_ids[i]]._fep != NULL) {
+                delete prev_rands[delete_ids[i]]._fep;
+            }
+            if(prev_rands[delete_ids[i]]._sep != NULL) {
+                delete prev_rands[delete_ids[i]]._sep;
+            }
             prev_rands.erase(delete_ids[i]);
+        }
         this->_event_cv.wait(lck);
     }
     lck.unlock();
 }
 
 void nar::USocket::connect() {
+    boost::system::error_code ec;
     std::unique_lock<std::mutex> lck(this->_work_mutex);
     nar::Packet ran_packet;
     ran_packet.make_ran_request(this->_stream_id);
     std::string ranpck = ran_packet.make_packet();
     while(true) {
-        this->_socket.send_to(boost::asio::buffer(ranpck), this->_server_endpoint);
+        this->_socket.send_to(boost::asio::buffer(ranpck), this->_server_endpoint, 0, ec);
+        if(ec) {
+            continue;
+        }
         bool *stp_tmr = this->start_timer(1000000);
         if(this->_ran_flag) {
             this->_ran_flag = false;
@@ -413,13 +430,24 @@ void nar::USocket::connect() {
         this->_event_cv.wait(lck);
     }
 
+    this->_ran_done = true;
+    for(int i=0; i < this->_ran_packs.size(); i++) {
+        pair<nar::Packet*, udp::endpoint*>& pr = this->_ran_packs[i];
+        delete pr.first;
+        delete pr.second;
+    }
+    this->_ran_packs.clear();
+
 
     nar::Packet nat_packet;
     nat_packet.make_nat(this->_stream_id);
     std::string natpck = nat_packet.make_packet();
 
     while(true) {
-        this->_socket.send_to(boost::asio::buffer(natpck), this->_peer_endpoint);
+        this->_socket.send_to(boost::asio::buffer(natpck), this->_peer_endpoint, 0, ec);
+        if(ec) {
+            continue;
+        }
         bool *stp_tmr = this->start_timer(1000000);
         if(this->_nat_flag) {
             this->_nat_flag = false;
@@ -436,7 +464,10 @@ void nar::USocket::connect() {
     std::string synpck = syn_packet.make_packet();
 
     while(true) {
-        this->_socket.send_to(boost::asio::buffer(synpck), this->_peer_endpoint);
+        this->_socket.send_to(boost::asio::buffer(synpck), this->_peer_endpoint, 0, ec);
+        if(ec) {
+            continue;
+        }
         bool *stp_tmr = this->start_timer(1000000);
         if(this->_synack_flag) {
             this->_synack_flag = false;
@@ -457,14 +488,20 @@ int nar::USocket::recv(char* buf, int len) {
     while(!this->_recv_flag) {
         this->_event_cv.wait(lck);
     }
-    int read_len = this->_recv_buffer.copy(buf, len, 0);
-    this->_recv_buffer.erase(0, read_len);
+    int read_len;
+    try {
+        read_len = this->_recv_buffer.copy(buf, len, 0);
+        this->_recv_buffer.erase(0, read_len);
+    } catch(std::out_of_range& exp) {
+        read_len = 0;
+    }
     this->_recv_flag = (this->_recv_buffer.size() > 0);
     lck.unlock();
     return read_len;
 }
 
 bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len) {
+    boost::system::error_code ec;
     nar::USocket::PacketGenerator pckgen(file, this->_next_seqnum, this->_stream_id, start, len);
     std::unique_lock<std::mutex> lck(this->_work_mutex);
     double window_size = 256; // packets
@@ -473,7 +510,7 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
     double devrtt = 0; // microseconds
     std::set<unsigned int> resend_seqnums;
     std::map<unsigned int, boost::posix_time::ptime> sent_times;
-    unsigned long timer_seqnum;
+    unsigned int timer_seqnum;
     bool* stp_tmr;
     bool all_generated = false;
     while(true) {
@@ -482,11 +519,13 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
                 try {
                     nar::Packet* pck = pckgen[this->_next_seqnum];
                     std::string pckstr = pck->make_packet();
-                    this->_socket.send_to(boost::asio::buffer(pckstr), this->_peer_endpoint);
+                    do {
+                        this->_socket.send_to(boost::asio::buffer(pckstr), this->_peer_endpoint, 0, ec);
+                    } while(ec);
                     sent_times[this->_next_seqnum] = boost::posix_time::microsec_clock::universal_time();
                     this->_acks.erase(this->_next_seqnum);
                     if(used_window == 0) {
-                        timer_seqnum = pck->get_seqnum();
+                        timer_seqnum = this->_next_seqnum;
                         stp_tmr = start_timer(rtt + 4*devrtt);
                     }
                     this->_next_seqnum++;
@@ -528,7 +567,7 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
                 if(it != sent_times.end()) {
                     unsigned int sqnm = it->first;
                     boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - sent_times[sqnm];
-                    unsigned int timer_usec = diff.total_microseconds();
+                    unsigned long timer_usec = diff.total_microseconds();
                     if(rtt + 4*devrtt < timer_usec) {
                         stp_tmr = start_timer(0);
                     } else {
@@ -542,11 +581,12 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
             this->_ack_flag = false;
         }
         if(this->_timer_flag) {
-
             nar::Packet* pck = pckgen[timer_seqnum];
             std::string pckstr = pck->make_packet();
             sent_times[timer_seqnum] = boost::posix_time::microsec_clock::universal_time();
-            this->_socket.send_to(boost::asio::buffer(pckstr), this->_peer_endpoint);
+            do {
+                this->_socket.send_to(boost::asio::buffer(pckstr), this->_peer_endpoint, 0, ec);
+            } while(ec);
             resend_seqnums.insert(timer_seqnum);
             this->_timer_flag = false;
             stp_tmr = start_timer(rtt + 4*devrtt);

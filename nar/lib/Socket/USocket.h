@@ -119,6 +119,9 @@ namespace nar {
             bool _ran_flag;
             bool _synack_flag;
 
+
+            bool _ran_done;
+
             std::set<unsigned int> _acks;
 
             std::vector<pair<nar::Packet*, udp::endpoint*> > _ran_packs;

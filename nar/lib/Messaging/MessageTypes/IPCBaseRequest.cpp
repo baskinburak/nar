@@ -85,27 +85,30 @@ void nar::MessageTypes::IPCBaseRequest::send_action(nar::Socket* skt) {
 void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
     bool isError = true;
     while(true){
+        bool flag = false;
         std::string tmp = get_message(*skt);
         nlohmann::json received = nlohmann::json::parse(tmp);
         std::cout << tmp << std::endl;
         if(received["header"]["reply_to"] == std::string("END")){
             break;
         }
-        switch(stat_code) {
-            case stat_code / 100 == 3:
+        int statcode = received["header"]["status_code"];
+        statcode /= 100;
+        switch(statcode) {
+            case 3:
                 std::cout << "There is a problem in the request that came to server" << std::endl;
                 break;
-            case stat_code / 100 == 4:
+            case 4:
                 std::cout << "There is problem in database of the server" << std::endl;
                 break;
-            case stat_code / 100 == 5:
+            case 5:
                 std::cout << "There is problem in the server" << std::endl;
-                break
-            case stat_code / 100 == 6:
+                break;
+            case 6:
                 std::cout << "There are internal daemon errors" << std::endl;
-                break
+                break;
             default:
-                flag = false;
+                flag = true;
         }
         if(flag) {
             break;

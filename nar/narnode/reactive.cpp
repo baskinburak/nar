@@ -94,7 +94,7 @@ bool nar::delete_chunk(unsigned int stream_id, nar::Global* globals, unsigned sh
 	
 	//exists, so delete it!
 	int status;
-	status = boost::filesystem::remove(file);
+	status = boost::filesystem::remove(dir);
 	// status == number of files deleted.
 	if (status == 1) {
 		return true;

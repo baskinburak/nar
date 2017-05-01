@@ -122,7 +122,7 @@ std::string nar::get_message(nar::Socket& skt) {
     while(len > 0) {
         int rec = skt.recv(buf, std::min(len, std::min(len, 1024)));
         data.append(buf, rec);
-        len-=rec;
+        len -= rec;
     }
 
     skt.send(codes+2, 1);
@@ -211,7 +211,7 @@ std::string nar::trim(std::string inp) {
     return inp.substr(first, (last-first+1));
 }
 
-void nar::isChunkExists(std::string& file_name) {
+bool nar::isChunkExists(std::string& file_name) {
 	bool isexists = true;
 	boost::filesystem::path dir(file_name);
     try {

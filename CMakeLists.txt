@@ -46,6 +46,12 @@ file(GLOB NAR_MESSAGING_SOURCES
 )
 add_library(narmessaging SHARED ${NAR_MESSAGING_SOURCES})
 
+file(GLOB NAR_CRYPTION_SOURCES
+    nar/lib/Cryption/aes.cpp
+    nar/lib/Cryption/rsa.cpp
+)
+add_library(narcrypto SHARED ${NAR_CRYPTION_SOURCES})
+
 
 set(SERVER_SOURCES
     nar/narserver/Database.cpp
@@ -54,8 +60,6 @@ set(SERVER_SOURCES
     nar/narserver/Actions/authenticate_action.cpp
     nar/narserver/Actions/register_action.cpp
     nar/narnode/utility.cpp
-    nar/lib/Cryption/aes.cpp
-    nar/lib/Cryption/rsa.cpp
     nar/narnode/uservars.cpp
     nar/narnode/File/File.cpp
     nar/narserver/Actions/AuthActions.cpp
@@ -63,10 +67,6 @@ set(SERVER_SOURCES
     nar/narserver/sockinfo.cpp
     nar/narserver/Actions/keepalive_action.cpp
 )
-
-set(NAR_LIBRARIES narmessaging.so libnaripcmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn ${OPENSSL_LIB} crypto)
-set(SERVER_LIBRARIES narmessaging.so libnarsocket.so pthread cryptopp z mysqlcppconn ${OPENSSL_LIB} crypto)
-
 
 
 set(CLI_SOURCES
@@ -83,8 +83,6 @@ set(DAEMON_SOURCES
     nar/narnode/uservars.cpp
     nar/narnode/global.cpp
     nar/narnode/File/File.cpp
-    nar/lib/Cryption/aes.cpp
-    nar/lib/Cryption/rsa.cpp
     nar/narnode/reactive.cpp
     nar/narnode/ActiveTask/ActiveFunctions.cpp
     nar/narnode/ActiveTask/Push.cpp
@@ -96,36 +94,19 @@ set(DAEMON_SOURCES
     nar/narnode/ActiveTask/Status.cpp
 )
 
-#set(REACT_TEST_SOURCES
-#    nar/narnode/utility.cpp
-#    nar/narnode/uservars.cpp
-#    nar/narnode/global.cpp
-#    nar/narnode/File/File.cpp
-#    nar/lib/Messaging/MessageTypes/IPCLs.cpp
-#    nar/lib/Messaging/MessageTypes/IPCBaseRequest.cpp
-#    nar/lib/Messaging/MessageTypes/IPCBaseResponse.cpp
-#    nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
-#   nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
-#    nar/lib/Messaging/MessageTypes/KeepAlive.cpp
-#    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
-#    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
-#    nar/lib/Messaging/messaging_utility.cpp
-#    nar/narnode/reacTest.cpp
-#)
+set(DAEMON_LIBRARIES narcrypto.so narmessaging.so libnaripcmessaging.so libnarsocket.so pthread cryptopp z ${OPENSSL_LIB} crypto)
+set(SERVER_LIBRARIES narcrypto.so narmessaging.so libnarsocket.so pthread cryptopp mysqlcppconn ${OPENSSL_LIB} crypto)
+set(CLI_LIBRARIES libnaripcmessaging.so libnarsocket.so pthread cryptopp ${OPENSSL_LIB} crypto)
+
 
 add_executable(narcli ${CLI_SOURCES})
-target_link_libraries(narcli ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
+target_link_libraries(narcli ${CLI_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
 add_dependencies(narcli narsocket naripcmessaging narmessaging)
 
 add_executable(narserver ${SERVER_SOURCES})
 target_link_libraries(narserver ${SERVER_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_RANDOM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
-add_dependencies(narserver narsocket narmessaging)
+add_dependencies(narserver narcrypto narsocket narmessaging)
 
 add_executable(nardaemon ${DAEMON_SOURCES})
-target_link_libraries(nardaemon ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY} ${Boost_RANDOM_LIBRARY})
-add_dependencies(nardaemon narsocket naripcmessaging narmessaging)
-
-
-#add_executable(narreact ${REACT_TEST_SOURCES})
-#target_link_libraries(narreact ${NAR_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY} ${Boost_RANDOM_LIBRARY})
-#add_dependencies(narreact narsocket)
+target_link_libraries(nardaemon ${DAEMON_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY} ${Boost_RANDOM_LIBRARY})
+add_dependencies(nardaemon narcrypto narsocket naripcmessaging narmessaging)

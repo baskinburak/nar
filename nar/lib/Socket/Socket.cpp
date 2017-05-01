@@ -128,16 +128,12 @@ void nar::Socket::connect(const std::string& host, const unsigned short port) {
         throw nar::Exception::Socket::WrongSocketType("Connect call on a server Socket",_type);
     }
     try {
-        boost::system::error_code ec = boost::asio::error::host_not_found;
         boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(host), port);
         boost::asio::ip::tcp::socket::lowest_layer_type& sock = _ssl_sock->lowest_layer();
-        sock.connect(endpoint, ec);
+        sock.connect(endpoint);
         sock.set_option(boost::asio::ip::tcp::no_delay(true));
         _ssl_sock->handshake(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>::client);
     } catch ( ... ) {
-        throw nar::Exception::Socket::ConnectionError("Error on a connect call", host, port, _type);
-    }
-    if(ec) {
         throw nar::Exception::Socket::ConnectionError("Error on a connect call", host, port, _type);
     }
 }
