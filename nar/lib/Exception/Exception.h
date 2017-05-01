@@ -10,6 +10,7 @@ namespace nar {
                 std::string _message;
             public:
                 ExcpBase(const char* mess): _message(mess) {}
+                ExcpBase(std::string&  mess): _message(mess) {}
                 std::string what() const { return _message; }
         };
 
@@ -104,10 +105,12 @@ namespace nar {
             class AesError : public nar::Exception::ExcpBase {
                 public:
                     AesError(const char* mess): ExcpBase(mess) {}
+                    AesError(std::string& mess): ExcpBase(mess) {}
             };
             class RsaError : public nar::Exception::ExcpBase {
                 public:
                     RsaError(const char* mess): ExcpBase(mess) {}
+                    RsaError(std::string& mess): ExcpBase(mess) {}
             };
 
 
