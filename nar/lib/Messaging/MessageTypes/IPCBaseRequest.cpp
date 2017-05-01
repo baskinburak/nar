@@ -120,15 +120,15 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
         statcode /= 100;
         switch(statcode) {
             case 3:
-                throw nar::Exception::MessageTypes::InternalServerError("There is problem in the request that came to server", _status_code);
+                throw nar::Exception::MessageTypes::InternalServerError("There is problem in the request that came to server", statcode);
             case 4:
-                throw nar::Exception::MessageTypes::InternalServerDatabaseError("There is a problem in database side of the server", _status_code);
+                throw nar::Exception::MessageTypes::InternalServerDatabaseError("There is a problem in database side of the server", statcode);
             case 5:
-                throw nar::Exception::MessageTypes::InternalServerError("There is a problem in the server", _status_code);
+                throw nar::Exception::MessageTypes::InternalServerError("There is a problem in the server", statcode);
             case 6:
-                throw nar::Exception::MessageTypes::InternalDaemonError("There is a problem in the daemon", _status_code);
+                throw nar::Exception::MessageTypes::InternalDaemonError("There is a problem in the daemon", statcode);
             case 7:
-                throw nar::Exception::MessageTypes::InternalCliError("There is a problem in the cli", _status_code);
+                throw nar::Exception::MessageTypes::InternalCliError("There is a problem in the cli", statcode);
             default:
                 flag = true;
         }
