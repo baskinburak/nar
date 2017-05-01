@@ -5,6 +5,7 @@
 #include <nar/lib/Messaging/MessageTypes/UserRegister.h>
 
 void nar::ServerAction::register_action(nar::ServerGlobal* s_global, nar::MessageTypes::UserRegister::Request& req, nar::Socket* skt) {
+    int status_code = 200;
     nar::Database* db = s_global->get_db();
     nar::DBStructs::User usr;
     usr.user_name = req.get_username();
@@ -12,8 +13,17 @@ void nar::ServerAction::register_action(nar::ServerGlobal* s_global, nar::Messag
     usr.rsa_pub = req.get_rsa_pub();
     usr.rsa_pri_crypted = req.get_rsa_pri_crypted();
 
-    db->insertUser(usr);
 
-    nar::MessageTypes::UserRegister::Response resp(200);
+
+    try {
+        db->insertUser(usr);
+    } catch (...) {
+        std::cout<<"User insert Error to database"<<std::endl;
+        status_code = 400;
+    }
+
+
+
+    nar::MessageTypes::UserRegister::Response resp(status_code);
     resp.send_mess(skt);
 }

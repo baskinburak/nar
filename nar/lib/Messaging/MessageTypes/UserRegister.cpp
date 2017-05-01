@@ -39,6 +39,9 @@ void nar::MessageTypes::UserRegister::Request::receive_message(std::string& recv
     this->_aes_crypted = usrreg_req_recv["payload"]["aes_crypted"];
     this->_rsa_pub = usrreg_req_recv["payload"]["rsa_pub"];
     this->_rsa_pri_crypted = usrreg_req_recv["payload"]["rsa_pri_crypted"];
+    if((this->_username=="")||(this->_aes_crypted=="")||(this->_rsa_pub=="")||(this->_rsa_pri_crypted=="")){
+        throw nar::Exception::MessageTypes::BadMessageReceive("user register message receive can not have empty items");
+    }
     return;
 }
 void nar::MessageTypes::UserRegister::Response::send_mess(nar::Socket* skt) {
@@ -49,10 +52,16 @@ void nar::MessageTypes::UserRegister::Response::send_mess(nar::Socket* skt) {
 }
 
 void nar::MessageTypes::UserRegister::Response::receive_message(nlohmann::json usrreg_resp_recv){
+
     nlohmann::json head = usrreg_resp_recv["header"];
     recv_fill(head);
-    if(_status_code == 300) {
-        throw nar::Exception::MessageTypes::UserNameAlreadyExist("User name already exists", _status_code);
+    int stat = get_status_code();
+    if(stat/100 == 3) {
+        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", _status_code);
+    } else  if(stat/100 == 4) {
+        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database insertion problem", _status_code);
+    } else  if(stat/100 == 5) {
+        throw nar::Exception::MessageTypes::InternalServerError("Some thing went wrong in server", _status_code);
     }
     return;
 }

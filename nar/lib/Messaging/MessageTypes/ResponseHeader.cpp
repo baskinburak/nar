@@ -1,5 +1,8 @@
 #include "ResponseHeader.h"
 
+void nar::MessageTypes::ResponseHeader::set_status_code(int status_code) {
+    this->_status_code =status_code;
+};
 int nar::MessageTypes::ResponseHeader::get_status_code() {
     return _status_code;
 }

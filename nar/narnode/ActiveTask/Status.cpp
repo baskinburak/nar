@@ -15,7 +15,13 @@ using std::string;
 
 void nar::ActiveTask::Status::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCStatus::Request* req) {
     nar::Socket* server_sck = this->_globals->establish_server_connection();
-    nar::ActiveTask::user_authenticate(server_sck, this->_vars);
+
+    try {
+        nar::ActiveTask::user_authenticate(server_sck, this->_vars);
+    } catch (nar::Exception::Daemon::AuthenticationError exp) {
+        std::cout<<exp.what()<<std::endl;
+        return;
+    }
     
     nar::MessageTypes::IPCStatus::Response status_resp(100,200);
     cout<<"received by daemon status"<<endl;

@@ -17,7 +17,12 @@ void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPC
     if(dest_dir.empty()) {
         dest_dir = _vars->get_current_directory();
     }
-    nar::ActiveTask::user_authenticate(server_sck, this->_vars);
+    try {
+        nar::ActiveTask::user_authenticate(server_sck, this->_vars);
+    } catch (nar::Exception::Daemon::AuthenticationError exp) {
+        std::cout<<exp.what()<<std::endl;
+        return;
+    }
     nar::MessageTypes::Mkdir::Request mkdir_req(dir_name,dest_dir);
     nar::MessageTypes::Mkdir::Response mdkir_resp;
     try{

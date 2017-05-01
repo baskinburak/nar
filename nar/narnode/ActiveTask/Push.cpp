@@ -19,8 +19,9 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     std::string file_aes;
     try {
         file_aes = nar::ActiveTask::user_authenticate(server_sck, this->_vars);
-    } catch(nar::Exception::ExcpBase& excp) {
-        throw;
+    } catch (nar::Exception::Daemon::AuthenticationError exp) {
+        std::cout<<exp.what()<<std::endl;
+        return;
     }
 
     string aes = file_aes;

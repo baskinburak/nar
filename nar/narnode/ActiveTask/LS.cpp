@@ -23,7 +23,12 @@ void nar::ActiveTask::LS::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCLs:
     }
     nar::MessageTypes::DirInfo::Request dir_req(desired_dir);
     nar::MessageTypes::DirInfo::Response dir_resp;
-    nar::ActiveTask::user_authenticate(server_sck, this->_vars);
+    try {
+        nar::ActiveTask::user_authenticate(server_sck, this->_vars);
+    } catch (nar::Exception::Daemon::AuthenticationError exp) {
+        std::cout<<exp.what()<<std::endl;
+        return;
+    }
 
     dir_req.send_mess(server_sck, dir_resp);
     std::vector<struct nar::MessageTypes::DirInfo::Response::DirListElement> items = dir_resp.get_elements();

@@ -32,7 +32,11 @@ namespace nar {
                      * @param: aes, std::string, aes key information
                      * @tested: Yes
                     */
-                    Response(int statcode = -1, std::string aes = std::string("")) : ResponseHeader(statcode, std::string("get_aes_key")), _aes(aes) {}
+                    Response() {
+                        ResponseHeader(-1,std::string("get_aes_key"));
+                        _aes = "";
+                    }
+                    Response(int statcode, std::string aes ) : ResponseHeader(statcode, std::string("get_aes_key")), _aes(aes) {}
                     /*
                      * for getting aes key
                      *

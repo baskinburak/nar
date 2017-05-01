@@ -41,6 +41,12 @@ namespace nar {
             };
         };
 
+        namespace Daemon {
+            class AuthenticationError : public nar::Exception::ExcpBase {
+            public:
+                AuthenticationError(const char* mess): ExcpBase(mess){}
+            };
+        }
         namespace Socket {
             class UnknownType : public nar::Exception::ExcpBase {
                 private:
@@ -168,6 +174,16 @@ namespace nar {
             };
         };
         namespace MessageTypes {
+            class BadMessageReceive : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    BadMessageReceive(const char* mess): nar::Exception::ExcpBase(mess){}
+            };
+            class BadlyConstructedMessageSend : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    BadlyConstructedMessageSend(const char* mess): nar::Exception::ExcpBase(mess){}
+            };
             class UserDoesNotExist : public nar::Exception::ExcpBase {
                 private:
                     int _status_code;
@@ -175,7 +191,27 @@ namespace nar {
                     UserDoesNotExist(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
                     int get_status_code() const { return _status_code; }
             };
-
+            class InternalServerError : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                InternalServerError(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+            class InternalServerDatabaseError : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    InternalServerDatabaseError(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
+            class BadRequest : public nar::Exception::ExcpBase {
+                private:
+                    int _status_code;
+                public:
+                    BadRequest(const char* mess, int status_code ): nar::Exception::ExcpBase(mess), _status_code(status_code) {}
+                    int get_status_code() const { return _status_code; }
+            };
             class ServerSocketAuthenticationError : public nar::Exception::ExcpBase {
                 private:
                     int _status_code;

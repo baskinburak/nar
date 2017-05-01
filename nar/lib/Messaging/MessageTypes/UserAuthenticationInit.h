@@ -16,7 +16,8 @@ namespace nar {
                     std::string _task_string;
                     std::string _aes_crypted;
                 public:
-                    Response() : ResponseHeader(-1, std::string("user_authentication_init")){}
+                    Response();
+                    Response(int statcode);
                     Response(int statcode,std::string aes_crypted, std::string private_key, std::string task_string) : ResponseHeader(statcode, std::string("user_authentication_init")), _private_key(private_key), _task_string(task_string), _aes_crypted(aes_crypted) {}
                     std::string& get_private_key();
                     std::string& get_task_string();

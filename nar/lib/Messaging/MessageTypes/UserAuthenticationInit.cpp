@@ -1,5 +1,19 @@
 #include "UserAuthenticationInit.h"
 
+
+nar::MessageTypes::UserAuthenticationInit::Response::Response() {
+    ResponseHeader(-1, std::string("user_authentication_init"));
+    this->_private_key = "";
+    this->_task_string = "";
+    this->_aes_crypted = "";
+}
+nar::MessageTypes::UserAuthenticationInit::Response::Response(int status_code) {
+    ResponseHeader(status_code, std::string("user_authentication_init"));
+    this->_private_key = "";
+    this->_task_string = "";
+    this->_aes_crypted = "";
+}
+
 void nar::MessageTypes::UserAuthenticationInit::Request::send_mess(nar::Socket* skt, nar::MessageTypes::UserAuthenticationInit::Response & resp) {
     nlohmann::json keep_req_send;
     keep_req_send["header"] = send_head();
@@ -24,8 +38,16 @@ nlohmann::json nar::MessageTypes::UserAuthenticationInit::Request::test_json() {
 }
 
 void nar::MessageTypes::UserAuthenticationInit::Response::send_mess(nar::Socket* skt) {
+    if((this->_private_key=="") || (this->_task_string=="") || (this->_aes_crypted =="")) {
+        throw nar::Exception::MessageTypes::BadlyConstructedMessageSend("UserAuthenticationInit can not send in this state");
+    }
+
     nlohmann::json keep_resp_send;
     keep_resp_send["header"] = send_head();
+    if(get_status_code() != 200) {
+        send_message(skt,keep_resp_send.dump());
+        return;
+    }
     keep_resp_send["payload"]["private_key"] = _private_key;
     keep_resp_send["payload"]["task_string"] = _task_string;
     keep_resp_send["payload"]["aes_crypted"] = _aes_crypted;
@@ -35,8 +57,13 @@ void nar::MessageTypes::UserAuthenticationInit::Response::send_mess(nar::Socket*
 void nar::MessageTypes::UserAuthenticationInit::Response::receive_message(nlohmann::json keep_resp_recv){
     nlohmann::json head = keep_resp_recv["header"];
     recv_fill(head);
-    if(_status_code == 300) {
-        throw nar::Exception::MessageTypes::UserDoesNotExist("This user does not exist for nar system so you can not get aes key for it", _status_code);
+    int stat = get_status_code();
+    if(stat/100 == 3) {
+        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", _status_code);
+    } else  if(stat/100 == 4) {
+        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database insertion problem", _status_code);
+    } else  if(stat/100 == 5) {
+        throw nar::Exception::MessageTypes::InternalServerError("Some thing went wrong in server", _status_code);
     }
     _private_key = keep_resp_recv["payload"]["private_key"];
     _task_string = keep_resp_recv["payload"]["task_string"];
