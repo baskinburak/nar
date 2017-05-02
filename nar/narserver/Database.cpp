@@ -181,9 +181,6 @@ void nar::Database::insertDirectory(struct DBStructs::Directory & dir){
     prep_stmt -> setBigInt(3, directory.dir_id);
 
     prep_stmt -> execute();
-
-    //dir.dir_id = getNextDirectoryId(1);
-
     delete prep_stmt;
 }
 
@@ -221,10 +218,11 @@ void nar::Database::insertFile(struct DBStructs::File &fi)
 {
     nar::db::File file = turnFile(fi);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Files( File_name, File_size) "
-                                            "VALUES( ?, ?);");
-    prep_stmt -> setString(1, file.file_name);
-    prep_stmt -> setString(2, file.file_size);
+    prep_stmt = _con -> prepareStatement("INSERT INTO Files(File_id File_name, File_size) "
+                                            "VALUES(?, ?, ?);");
+    prep_stmt -> setBigInt(1, file.file_id);
+    prep_stmt -> setString(2, file.file_name);
+    prep_stmt -> setString(3, file.file_size);
 
     prep_stmt -> execute();
 
