@@ -43,6 +43,7 @@ file(GLOB NAR_MESSAGING_SOURCES
     nar/lib/Messaging/MessageTypes/DirInfo.cpp
     nar/lib/Messaging/MessageTypes/Mkdir.cpp
     nar/lib/Messaging/MessageTypes/DeleteFile.cpp
+    nar/lib/Messaging/MessageTypes/DeleteMachineChunk.cpp
 )
 add_library(narmessaging SHARED ${NAR_MESSAGING_SOURCES})
 

@@ -24,13 +24,13 @@ namespace nar {
 
             class Request : public RequestHeader {
             private:
-                unsigned long int _chunk_id;
+                std::string _chunk_id;
             public:
                 Request(): RequestHeader(std::string("delete_machine_chunk")) {}
                 Request(std::string chunk_id): RequestHeader(std::string("delete_machine_chunk")), _chunk_id(chunk_id) {}
                 void send_mess(nar::Socket* skt, nar::MessageTypes::DeleteMachineChunk::Response & resp);
                 void receive_message(std::string& msg);
-                unsigned long int get_chunk_id();
+                std::string& get_chunk_id();
                 nlohmann::json test_json();
             };
         }

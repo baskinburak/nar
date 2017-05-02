@@ -8,7 +8,7 @@ void nar::MessageTypes::DeleteMachineChunk::Request::send_mess(nar::Socket* skt,
     send_message(skt,del_mac_chu_send.dump());
     std::string temp = get_message(skt);
     nlohmann::json del_mac_chu_recv = nlohmann::json::parse(temp);
-    resp.receive_message(del_mac_chu_);
+    resp.receive_message(del_mac_chu_recv);
     return;
 }
 void nar::MessageTypes::DeleteMachineChunk::Request::receive_message(std::string& msg){
@@ -20,8 +20,8 @@ void nar::MessageTypes::DeleteMachineChunk::Request::receive_message(std::string
     } catch (...) {
         throw nar::Exception::MessageTypes::BadMessageReceive("delete machine chunk request message receive is problematic");
     }
-    if(this->_chunk_id<0) {
-        throw nar::Exception::MessageTypes::BadMessageReceive("chunk_id can not be negative");
+    if(this->_chunk_id.empty()) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("chunk_id can not be empty");
     }
 
 
@@ -51,7 +51,7 @@ void nar::MessageTypes::DeleteMachineChunk::Response::receive_message(nlohmann::
 
     int stat = get_status_code();
     if(stat/100 == 6) {
-        throw nar::Exception::MessageTypes::InternalDaemonError("Daemon could not delete the chunk");
+        throw nar::Exception::MessageTypes::InternalDaemonError("Daemon could not delete the chunk",stat);
     }
     return;
 }
@@ -62,7 +62,7 @@ nlohmann::json nar::MessageTypes::DeleteMachineChunk::Response::test_json() {
     return keep_resp_test;
 }
 
-unsigned long int nar::MessageTypes::DeleteMachineChunk::Request::get_chunk_id() {
-    return this->_chunk_id
+std::string& nar::MessageTypes::DeleteMachineChunk::Request::get_chunk_id() {
+    return this->_chunk_id;
 }
 

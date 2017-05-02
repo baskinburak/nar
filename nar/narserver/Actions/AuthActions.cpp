@@ -7,6 +7,7 @@
 #include <nar/lib/Messaging/messaging_utility.h>
 #include <nar/lib/Messaging/MessageTypes/WaitChunkPush.h>
 #include <nar/lib/Messaging/MessageTypes/WaitChunkPull.h>
+#include <nar/lib/Messaging/MessageTypes/DeleteMachineChunk.h>
 
 
 void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar::Socket* skt, nar::DBStructs::User& user) {
@@ -128,6 +129,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
 
     for(int i=0;i<chunks.size();i++) {
         std::vector<struct DBStructs::Machine> chunk_machines;
+
         try {
             chunk_machines= db->getMachines(chunks[i].chunk_id);
         } catch(...) {
@@ -190,15 +192,77 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
 
 
             } else {
-                nar::MessageTypes::DeleteMachineChunk::Request del_req(chunks[i].chunk_id);
+                nar::MessageTypes::DeleteMachineChunk::Request del_req(std::to_string(chunks[i].chunk_id));
+                nar::MessageTypes::DeleteMachineChunk::Response del_resp(200);
+                try {
+                    del_req.send_mess(peer_sck->get_sck(),del_resp);
+                } catch (nar::Exception::MessageTypes::InternalDaemonError exp) {
+                    std::cout<<exp.what()<<std::endl;
+                    struct nar::DBStructs::Machine t_mac;
+                    try {
+                        t_mac =  db->getMachine(chunk_machines[j].machine_id);
+                    } catch(...) {
+                        std::cout<<"Server delete file getMachine error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                        nar::MessageTypes::DeleteFile::Response resp(405);
+                        try {
+                            resp.send_mess(skt);
+                        }catch(...) {
+                            std::cout<<"send_mess_bomb"<<std::endl;
+                            return;
+                        }
+                        return;
+                    }
+                    std::string cur_value = t_mac.delete_list;
+                    t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                    try {
+                        db->updateMachineDeleteList(t_mac);
+                    } catch (...) {
+                        std::cout<<"Server delete file updateMachineDeleteList error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                        nar::MessageTypes::DeleteFile::Response resp(406);
+                        try {
+                            resp.send_mess(skt);
+                        }catch(...) {
+                            std::cout<<"send_mess_bomb"<<std::endl;
+                            return;
+                        }
+                        return;
+                    }
+                }
+
+
             }
+
+
+
 
 
 
         }
 
     }
-
+    struct nar::DBStructs::File m_file;
+    m_file.file_id = file_id;
+    try {
+        db->deleteFile(m_file);
+    } catch (...) {
+        std::cout<<"File could not be deleted from Database"<<std::endl;
+        nar::MessageTypes::DeleteFile::Response resp(407);
+        try {
+            resp.send_mess(skt);
+        }catch(...) {
+            std::cout<<"send_mess_bomb"<<std::endl;
+            return;
+        }
+        return;
+    }
+    nar::MessageTypes::DeleteFile::Response resp(200);
+    try {
+        resp.send_mess(skt);
+    }catch(...) {
+        std::cout<<"send_mess_bomb"<<std::endl;
+        return;
+    }
+    return;
 }
 
 
