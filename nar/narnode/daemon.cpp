@@ -46,7 +46,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         nar::ActiveTask::Register register_task(globals, &uservars);
         register_task.run(sck, &ipc_register);
     } else if(action == string("config")) {
-
+        std::cout << "Config not implemented yet! See u soon!" << std::endl;
     } else if(action == string("status")) {
         nar::MessageTypes::IPCStatus::Request ipc_status;
         ipc_status.populate_object(msg);

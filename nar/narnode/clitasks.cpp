@@ -218,7 +218,6 @@ void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::s
         }
         else {
             dir_path += names[i]+ std::string("/");
-
         }
     }
     std::cout<<"file_name "<<file_name<<std::endl;

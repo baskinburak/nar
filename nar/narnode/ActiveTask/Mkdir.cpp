@@ -7,7 +7,7 @@ using std::endl;
 using std::string;
 /*
  * @author : Fatih
- * @todo : try catch  at send messages
+ * @todo : try catch  at send message(done by Dogu)
 */
 
 void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCMkdir::Request* req) {
@@ -27,11 +27,24 @@ void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPC
     nar::MessageTypes::Mkdir::Response mdkir_resp;
     try{
         mkdir_req.send_mess(server_sck,mdkir_resp);
-    }
-    catch(...){
+    } catch(nar::Exception::ExcpBase e) {
+        std::cout << e.what() << std::endl;
+        std::cout << "In Mkdir, there is an error related to nar!" << std::endl;
+        return;
+    } catch(...){
+        std::cout << "In Mkdir, there is an error not based on nar!" << std::endl;
         return;
     }
     nar::MessageTypes::IPCMkdir::Response resp;
-    resp.send_message_end(ipc_socket);
-
+    try{
+        resp.send_message_end(ipc_socket);
+    } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow exp) {
+        std::cout << exp.what() << std::endl;
+    } catch(nar::Exception::LowLevelMessaging::FormatError exp) {
+        std::cout << exp.what() << std::endl;
+    } catch(nar::Exception::LowLevelMessaging::ServerSizeIntOverflow exp) {
+        std::cout << exp.what() << std::endl;
+    } catch(...) {
+        std::cout << "In Mkdir, There is a problem in send message of utility!" << std::endl;
+    }
 }
