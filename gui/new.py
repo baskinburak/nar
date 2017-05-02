@@ -2,7 +2,7 @@ import easygui as g
 import sys
 from subprocess import Popen, PIPE
 
-pathToCli = "/home/utku/nar/build/./narcli"
+pathToCli = "/home/fatih/bitirme/nar/build/narcli"
 
 class User(object):
 	def __init__(self,username,password):
