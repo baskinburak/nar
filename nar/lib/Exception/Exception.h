@@ -219,6 +219,7 @@ namespace nar {
                 private:
                 public:
                     BadJSONRelatedProblemRequest(const char* mess): nar::Exception::ExcpBase(mess){}
+                    BadJSONRelatedProblemRequest(std::string& mess): nar::Exception::ExcpBase(mess){}
             };
             class BadJSONRelatedProblemResponse : public nar::Exception::ExcpBase {
                 private:

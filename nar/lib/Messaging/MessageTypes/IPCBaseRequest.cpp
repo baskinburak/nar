@@ -2,14 +2,10 @@
 
 nlohmann::json nar::MessageTypes::IPCBaseRequest::generate_json() {
     nlohmann::json jsn;
-    try{
         jsn["header"]["action"] = this->_action;
         jsn["header"]["username"] = this->_username;
         jsn["header"]["password"] = this->_password;
         jsn["header"]["current_directory"] = this->_current_directory;
-    } catch(...) {
-        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, we couldn't generate json");
-    }
     return jsn;
 }
 
@@ -20,7 +16,7 @@ void nar::MessageTypes::IPCBaseRequest::populate_object(nlohmann::json& jsn) {
         this->_password = jsn["header"]["password"];
         this->_current_directory = jsn["header"]["current_directory"];
     } catch(...) {
-        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, we couldn't populate the object");
+        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest(std::string("in IPCBaseRequest, we couldn't populate the object \n").append(jsn.dump()).c_str() );
     }
 }
 
@@ -62,20 +58,16 @@ void nar::MessageTypes::IPCBaseRequest::set_password(std::string& pw) {
 
 nlohmann::json nar::MessageTypes::IPCBaseRequest::fillTheHead() {
     nlohmann::json header;
-    try{
         header["action"] = _action;
         header["username"] = this->_username;
         header["password"] = this->_password;
         header["current_directory"] = this->_current_directory;
-    } catch(...) {
-        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, we couldn't fill the head");
-    }
     return header;
 }
 
 void nar::MessageTypes::IPCBaseRequest::recvThe_action(nlohmann::json &recv){
     try{
-        this -> _action = recv["action"];
+        this-> _action = recv["action"];
         this-> _username = recv["username"];
         this-> _password = recv["password"];
         this-> _current_directory = recv["current_directory"];
@@ -87,22 +79,19 @@ void nar::MessageTypes::IPCBaseRequest::recvThe_action(nlohmann::json &recv){
 
 nlohmann::json nar::MessageTypes::IPCBaseRequest::get_myrequestjson() {
     nlohmann::json my_request_json;
-    try{
         my_request_json["header"]["reply_to"] = _action;
-    } catch(...) {
-        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, we couldn't get the request json");
-    }
     return my_request_json;
 }
 
 void nar::MessageTypes::IPCBaseRequest::send_action(nar::Socket* skt) {
     nlohmann::json json_to_sent;
-    try{
-        json_to_sent["header"]["reply_to"] = _action;
-    } catch(...) {
-        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest("in IPCBaseRequest, there is a bad json constructed in send action");
+    json_to_sent["header"]["reply_to"] = _action;
+    try {
+        send_message(skt, json_to_sent.dump());
     }
-    send_message(skt, json_to_sent.dump());
+    catch (nar::Exception::ExcpBase& e) {
+        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest(std::string( "in IPCBaseRequest:: " ).append(e.what()));
+    }
     return;
 }
 
@@ -110,25 +99,37 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
     bool isError = true;
     while(true){
         bool flag = false;
-        std::string tmp = get_message(*skt);
-        nlohmann::json received = nlohmann::json::parse(tmp);
-        std::cout << tmp << std::endl;
-        if(received["header"]["reply_to"] == std::string("END")){
-            break;
+        try {
+            std::string tmp = get_message(*skt);
+            nlohmann::json received = nlohmann::json::parse(tmp);
         }
-        int statcode = received["header"]["status_code"];
+        catch( nar::Exception::ExcpBase& e ) {
+            std::cout << std::string("IpcBaseRequest::Printloop: ").append(e.what()) << std::endl;
+            return;
+        }
+        std::cout << tmp << std::endl;
+        int statcode;
+        try {
+            if(received["header"]["reply_to"] == std::string("END")){
+                break;
+            statcode = received["header"]["status_code"];
+        }
+        catch ( ... ) {
+            std::cout << "Malformed Json in IpcBaseRequest" << std::endl;
+        }
+
         statcode /= 100;
         switch(statcode) {
             case 3:
-                throw nar::Exception::MessageTypes::InternalServerError("There is problem in the request that came to server", statcode);
+                std::cout << "There is problem in the request that came to server" << std::endl;
             case 4:
-                throw nar::Exception::MessageTypes::InternalServerDatabaseError("There is a problem in database side of the server", statcode);
+                std::cout << "There is a problem in database side of the server" << std::endl;
             case 5:
-                throw nar::Exception::MessageTypes::InternalServerError("There is a problem in the server", statcode);
+                std::cout << "There is a problem in the server" << std::endl;
             case 6:
-                throw nar::Exception::MessageTypes::InternalDaemonError("There is a problem in the daemon", statcode);
+                std::cout << "There is a problem in the daemon" << std::endl;
             case 7:
-                throw nar::Exception::MessageTypes::InternalCliError("There is a problem in the cli", statcode);
+                std::cout << "There is a problem in the cli" << std::endl;
             default:
                 flag = true;
         }

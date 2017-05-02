@@ -88,7 +88,7 @@ int main(int argc, char* argv[]){
             std::cout << "Path is not a directory" << std::endl;
             return 0;
         }
-
+        
         nar::CLITasks::nar_pull(file_name, dir.string(), unamepwd.first, unamepwd.second, std::string("/"));
 
     } else if(first_arg == std::string("register")) {
