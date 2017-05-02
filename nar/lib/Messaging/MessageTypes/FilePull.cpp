@@ -56,6 +56,10 @@ unsigned short nar::MessageTypes::FilePull::Response::get_rendezvous_port() {
     return this->_rendezvous_port;
 }
 
+void nar::MessageTypes::FilePull::Response::set_rendezvous_port(unsigned short p) {
+    _rendezvous_port = p;
+}
+
 
 void nar::MessageTypes::FilePull::Response::send_mess(nar::Socket* skt){
     int status = get_status_code();

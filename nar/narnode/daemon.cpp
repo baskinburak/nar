@@ -22,7 +22,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     std::string action;
     nar::UserVariables uservars;
     try {
-        msg = = nar::trim(nar::get_message(*sck));
+        msg =  nar::trim(nar::get_message(*sck));
         action = nar::Messaging::get_action(msg);
         uservars = nar::Messaging::get_user_variables(msg);
     }

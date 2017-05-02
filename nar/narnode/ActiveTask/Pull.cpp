@@ -12,6 +12,8 @@ using std::cout;
 using std::endl;
 
 
+// TO_DO: Last part should handled for file::encrypt,decompress etc..
+
 void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPull::Request* req) {
     nar::Socket* server_sck = this->_globals->establish_server_connection();
     std::string file_aes;
@@ -21,11 +23,11 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         std::cout<<exp.what()<<std::endl;
         return;
     }
-
+    string file_name,system_dir,nar_dir_name;
     try {
-        string file_name = req->get_file_name();
-        string system_dir = req->get_dir_path(); // to be changed
-        string nar_dir_name =  req->get_current_directory();
+        file_name = req->get_file_name();
+        system_dir = req->get_dir_path(); // to be changed
+        nar_dir_name =  req->get_current_directory();
     }
     catch (...) {
         std::cout << "Malformed Json, exiting pull" << std::endl;
@@ -46,7 +48,6 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     std::sort(elements.begin(), elements.end());
 
     std::cout << "After pull req" << std::endl;
-
 
     boost::filesystem::path tpath(system_dir);
     tpath /= file_name;

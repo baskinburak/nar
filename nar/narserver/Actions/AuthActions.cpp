@@ -25,8 +25,25 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         push_file_action(s_global,skt,req,user);
     } else if(action == std::string("file_pull_request")) {
         nar::MessageTypes::FilePull::Request req;
-        req.receive_message(message);
-        pull_file_action(s_global,skt,req,user);
+        try {
+            req.receive_message(message);
+        }
+        catch( ... ) {
+            std::cout<<"Malformed Pull request received, ignored."<<std::endl;
+            nar::MessageTypes::FilePull::Response resp(300,-1);
+            try {
+                resp.send_mess(skt);
+            } catch ( ... ) { }
+        }
+        try {
+            pull_file_action(s_global,skt,req,user);
+        }
+        catch( nar::Exception::PullFileDoesNotExist& er) {              // Wanted file does not exist
+            nar::MessageTypes::FilePull::Response resp(300,-1);         // STATUS CODE?
+            try {
+                resp.send_mess(skt);
+            } catch ( ... ) { }
+        }
     } else if(action == std::string("machine_register")) {
         nar::MessageTypes::MachineRegister::Request req;
         req.receive_message(message);
@@ -57,6 +74,7 @@ long long int findFileId(std::string& file_name,std::string& dir_name,std::strin
      if(dir.dir_id == -1)
      {
          std::cout<<"No such User directory pair"<<std::endl;
+         throw nar::Exception::PullFileDoesNotExist("File does not exist");
      } else {
          std::vector<nar::DBStructs::File> files = db->getDirectoryFile(dir.dir_id);
          for(int i= 0;i<files.size();i++){
@@ -95,7 +113,7 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
     return;
 }
 
-
+// @throws: PullFileDoesNotExist
 void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::FilePull::Request& req, nar::DBStructs::User&  user) {
     std::string file_name = req.get_file_name();
     std::string dir_name = req.get_dir_name();
@@ -105,14 +123,18 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     nar::Database* db = s_global->get_db();
     long long int f_id = findFileId(file_name,dir_name,user.user_name, db);
 
-std::cout << "File id to pull : " << f_id << std::endl;
+    std::cout << "File id to pull : " << f_id << std::endl;
 
     std::vector<struct DBStructs::Chunk> chunks = db->getChunks(f_id);
+    unsigned short r_port;
+    nar::MessageTypes::FilePull::Response resp(200, -1);
 
-    unsigned short r_port = s_global->get_randezvous_port();
-
-
-    nar::MessageTypes::FilePull::Response resp(200, r_port);
+    try {
+        r_port = s_global->get_randezvous_port();
+    }
+    catch ( nar::Exception::NoAvailablePort& e ) {
+        resp.set_status_code(200);                              // STATUS CODE?
+    }
 
     for(int i=0; i < chunks.size(); ++i) {
         std::vector<struct DBStructs::Machine> machines = db->getMachines(chunks[i].chunk_id);

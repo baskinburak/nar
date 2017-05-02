@@ -99,9 +99,11 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
     bool isError = true;
     while(true){
         bool flag = false;
+        std::string tmp;
+        nlohmann::json received;
         try {
-            std::string tmp = get_message(*skt);
-            nlohmann::json received = nlohmann::json::parse(tmp);
+            tmp = get_message(*skt);
+            received = nlohmann::json::parse(tmp);
         }
         catch( nar::Exception::ExcpBase& e ) {
             std::cout << std::string("IpcBaseRequest::Printloop: ").append(e.what()) << std::endl;
@@ -110,7 +112,7 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
         std::cout << tmp << std::endl;
         int statcode;
         try {
-            if(received["header"]["reply_to"] == std::string("END")){
+            if(received["header"]["reply_to"] == std::string("END"))
                 break;
             statcode = received["header"]["status_code"];
         }

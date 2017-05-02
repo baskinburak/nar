@@ -11,6 +11,7 @@ namespace nar {
             std::string _username;
             std::string _pass_aes;
         public:
+            UserVariables() {} 
             UserVariables(std::string current_directory, std::string username, std::string password);
             std::string& get_current_directory();
             std::string& get_username();

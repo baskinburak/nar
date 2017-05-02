@@ -39,9 +39,8 @@ void nar::CLITasks::nar_pull(std::string file_name,std::string dir_name, std::st
     std::cout << "File name: " << file_name << std::endl;
 
     nar::MessageTypes::IPCPull::Request req(file_name,dir_name, username, password, curdir);
-
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
     try {
-        boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
         ctx.load_verify_file("/root/.nar/ipcserver.crt");
     }
     catch (...) {
