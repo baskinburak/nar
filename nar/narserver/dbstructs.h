@@ -45,6 +45,7 @@ namespace nar {
             long long int machine_diskSpace;
             long long int change_time;
             long long int user_id;
+            std::string delete_list;
         };
 
         struct UserToFile{

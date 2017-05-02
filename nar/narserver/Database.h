@@ -102,7 +102,7 @@ namespace nar {
             void updateMachineQuota(struct DBStructs::Machine & machine);
             void updateMachineDiskSpace(struct DBStructs::Machine & machine);
             void updateMachineUserId(struct DBStructs::Machine & machine);
-
+            void updateMachineDeleteList(struct DBStructs::Machine & machine);
 
             void deleteUser(struct DBStructs::User & user);
             void deleteChunk(struct DBStructs::Chunk & chunk);

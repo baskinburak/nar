@@ -39,6 +39,7 @@ namespace nar {
             sql::SQLString  machine_quota;
             sql::SQLString machine_diskSpace;
             sql::SQLString change_time;
+            sql::SQLString delete_list;
         };
 
         struct UserToFile{
