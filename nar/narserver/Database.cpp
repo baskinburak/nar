@@ -204,10 +204,11 @@ void nar::Database::insertChunk(struct DBStructs::Chunk &ch)
 {
     nar::db::Chunk chunk = turnChunk(ch);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Chunks( File_id, Chunk_size) "
-                                            "VALUES( ?, ?);");
-    prep_stmt -> setBigInt(1, chunk.file_id);
-    prep_stmt -> setString(2, chunk.chunk_size);
+    prep_stmt = _con -> prepareStatement("INSERT INTO Chunks(Chunk_id, File_id, Chunk_size) "
+                                            "VALUES(?, ?, ?);");
+    prep_stmt -> setBigInt(1, chunk.chunk_id);
+    prep_stmt -> setBigInt(2, chunk.file_id);
+    prep_stmt -> setString(3, chunk.chunk_size);
 
     prep_stmt -> execute();
 
