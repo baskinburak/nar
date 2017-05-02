@@ -73,7 +73,7 @@ void nar::ActiveTask::LS::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCLs:
         std::string entity_size = std::to_string(items[i].entity_size);
         std::string change_time = items[i].change_time;
         std::string type;
-        if( items[i].type ) {
+        if( !items[i].type ) {
             type = std::string(" file");
         } else {
             type = std::string(" directory");
