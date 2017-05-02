@@ -62,6 +62,7 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         std::cout << elements[i].chunk_size << std::endl;
         usck->send(*encrypted, start, elements[i].chunk_size);
         start += elements[i].chunk_size;
+        usck->close();
     }
 
     std::cout << "push 4<<" << std::endl;

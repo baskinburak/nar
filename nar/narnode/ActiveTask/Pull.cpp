@@ -65,6 +65,7 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
             tempfile1->write(buf,len);
             total_read += len;
         }
+        cli_sck->close();
 
     }
     delete tempfile1;
