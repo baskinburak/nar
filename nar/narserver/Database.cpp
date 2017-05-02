@@ -219,7 +219,7 @@ void nar::Database::insertFile(struct DBStructs::File &fi)
 {
     nar::db::File file = turnFile(fi);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Files(File_id File_name, File_size) "
+    prep_stmt = _con -> prepareStatement("INSERT INTO Files(File_id ,File_name, File_size) "
                                             "VALUES(?, ?, ?);");
     prep_stmt -> setBigInt(1, file.file_id);
     prep_stmt -> setString(2, file.file_name);
