@@ -28,8 +28,7 @@ void nar::CLITasks::nar_ls(std::string dir_name, std::string username, std::stri
     try {
         req.send_action(&cli_skt);
         req.print_loop(&cli_skt);
-    }
-    catch( ... ) {
+    } catch( ... ) {
         std::cout << "Connection lost with daemon" << '\n';
     }
     return;

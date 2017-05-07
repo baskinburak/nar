@@ -40,8 +40,25 @@ void nar::MessageTypes::IPCLs::Request::print_loop(nar::Socket* skt) {
 		std::string items = std::string("");
         std::string tmp = get_message(*skt);
         nlohmann::json received = nlohmann::json::parse(tmp);
+
+        int stat = received["payload"]["status_code"];
         if(received["header"]["reply_to"] == std::string("END")){
             break;
+        } else if (stat != 200) {
+            if(stat/100 == 3) {
+                std::cout<<"Your request was not complete or was wrong --- stat"<< stat<<std::endl;
+                break;
+            } else  if(stat/100 == 4) {
+                std::cout<<"Database problem --- stat"<< stat<<std::endl;
+                break;
+            } else  if(stat/100 == 5) {
+
+                std::cout<<"Some things went wrong in server --- stat"<< stat<<std::endl;
+                break;
+            } else  if(stat/100 == 6) {
+                std::cout<<"Some things went wrong in daemon --- stat"<< stat<<std::endl;
+                break;
+            }
         }
 		else if(received["header"]["reply_to"] == std::string("ls")) {
 			ename =	received["payload"]["entity_name"];
@@ -101,9 +118,16 @@ void nar::MessageTypes::IPCLs::Response::set_type(std::string t) {
 }
 void nar::MessageTypes::IPCLs::Response::send_message_progress(nar::Socket* skt, int p) {
     nlohmann::json json_to_sent;
+
     json_to_sent["header"]["reply_to"] = get_reply_to();
     json_to_sent["payload"]["progress"] = get_progress();
     json_to_sent["payload"]["status_code"] = get_status_code();
+    int stat = get_status_code();
+    if(stat != 200) {
+        send_message(skt, json_to_sent.dump());
+        return;
+    }
+
     json_to_sent["payload"]["entity_name"] = get_entity_name();
     json_to_sent["payload"]["entity_size"] = get_entity_size();
     json_to_sent["payload"]["change_time"] = get_change_time();

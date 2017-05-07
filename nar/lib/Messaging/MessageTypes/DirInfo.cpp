@@ -97,11 +97,11 @@ void nar::MessageTypes::DirInfo::Response::receive_message(nlohmann::json dir_re
     }
     int stat = get_status_code();
     if(stat/100 == 3) {
-        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", _status_code);
+        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", stat);
     } else  if(stat/100 == 4) {
-        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database problem", _status_code);
+        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database problem", stat);
     } else  if(stat/100 == 5) {
-        throw nar::Exception::MessageTypes::InternalServerError("Some things went wrong in server", _status_code);
+        throw nar::Exception::MessageTypes::InternalServerError("Some things went wrong in server", stat);
     }
     try{
         int size = dir_resp_recv["payload"]["size"];

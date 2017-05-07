@@ -82,6 +82,7 @@ nar::db::Machine nar::Database::turnMachine(nar::DBStructs::Machine & machine){
     mk.machine_id = machine.machine_id;
     mk.machine_quota = std::to_string(machine.machine_quota);
     mk.machine_diskSpace = std::to_string(machine.machine_diskSpace);
+    mk.delete_list = machine.delete_list;
     return mk;
 }
 nar::db::Directory nar::Database::turnDirectory(nar::DBStructs::Directory & directory){
@@ -363,7 +364,7 @@ nar::DBStructs::Machine nar::Database::getMachine(std::string machine_id)
 {
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT Machine_id, Machine_quota, Machine_diskSpace, User_id, "
+    prep_stmt = _con -> prepareStatement("SELECT Machine_id, Machine_quota, Machine_diskSpace, User_id, Delete_list "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "FROM Machines "
                                         "WHERE Machines.Machine_id = ?;");
@@ -383,6 +384,7 @@ nar::DBStructs::Machine nar::Database::getMachine(std::string machine_id)
         a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
         a.change_time = res->getUInt64("Time");
         a.user_id = std::stoll(res->getString("User_id").asStdString());
+        a.delete_list = res->getString("Delete_list").asStdString();
 
     }
     delete res;
@@ -591,12 +593,13 @@ void nar::Database::updateMachine(struct DBStructs::Machine & ma){
     nar::db::Machine machine = turnMachine(ma);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Machines "
-                                        "SET Machines.Machine_quota = ? , Machines.Machine_diskSpace = ? , Machines.User_id = ? "
+                                        "SET Machines.Machine_quota = ? , Machines.Machine_diskSpace = ? , Machines.User_id = ? , Machine.Delete_list = ? "
                                         "WHERE Machines.Machine_id= ?;");
     prep_stmt->setBigInt(1,machine.machine_quota);
     prep_stmt->setBigInt(2,machine.machine_diskSpace);
-    prep_stmt->setString(3,machine.machine_id);
-    prep_stmt->setBigInt(4,machine.user_id);
+    prep_stmt->setBigInt(3,machine.user_id);
+    prep_stmt->setString(4,machine.delete_list);
+    prep_stmt->setString(5,machine.machine_id);
     prep_stmt->execute();
     delete prep_stmt;
 }
@@ -629,6 +632,17 @@ void nar::Database::updateMachineUserId(struct DBStructs::Machine & ma){
                                         "SET Machines.User_id = ? "
                                         "WHERE Machines.Machine_id= ?;");
     prep_stmt->setBigInt(1,machine.user_id);
+    prep_stmt->setString(2,machine.machine_id);
+    prep_stmt->execute();
+    delete prep_stmt;
+}
+void nar::Database::updateMachineDeleteList(struct DBStructs::Machine &ma) {
+    nar::db::Machine machine = turnMachine(ma);
+    sql::PreparedStatement  *prep_stmt;
+    prep_stmt = _con->prepareStatement("UPDATE Machines "
+                                                     "SET Machines.Delete_list = ? "
+                                                     "WHERE Machines.Machine_id= ?;");
+    prep_stmt->setString(1,machine.delete_list);
     prep_stmt->setString(2,machine.machine_id);
     prep_stmt->execute();
     delete prep_stmt;

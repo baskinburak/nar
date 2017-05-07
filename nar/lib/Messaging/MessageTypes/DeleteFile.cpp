@@ -15,11 +15,16 @@ void nar::MessageTypes::DeleteFile::Request::send_mess(nar::Socket* skt, nar::Me
     return;
 }
 void nar::MessageTypes::DeleteFile::Request::receive_message(std::string& msg){
-    auto keep_req_recv = nlohmann::json::parse(msg);
-    nlohmann::json head = keep_req_recv["header"];
-    recv_fill(head);
-    this->_file_name = keep_req_recv["payload"]["file_name"];
-    this->_dest_dir = keep_req_recv["payload"]["dest_dir"];
+    try {
+        auto keep_req_recv = nlohmann::json::parse(msg);
+        nlohmann::json head = keep_req_recv["header"];
+        recv_fill(head);
+        this->_file_name = keep_req_recv["payload"]["file_name"];
+        this->_dest_dir = keep_req_recv["payload"]["dest_dir"];
+    } catch (...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("Delete file request bad receive");
+    }
+
     return;
 }
 nlohmann::json nar::MessageTypes::DeleteFile::Request::test_json() {
@@ -35,11 +40,20 @@ void nar::MessageTypes::DeleteFile::Response::send_mess(nar::Socket* skt) {
     return;
 }
 void nar::MessageTypes::DeleteFile::Response::receive_message(nlohmann::json& keep_resp_recv){
-    nlohmann::json head = keep_resp_recv["header"];
-    recv_fill(head);
+    try {
+        nlohmann::json head = keep_resp_recv["header"];
+        recv_fill(head);
+    } catch (...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("Delete file response bad receive");
+    }
 
-    if(_status_code == 300) {
-        throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
+    int stat = get_status_code();
+    if(stat/100 == 3) {
+        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", stat);
+    } else  if(stat/100 == 4) {
+        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database problem", stat);
+    } else  if(stat/100 == 5) {
+        throw nar::Exception::MessageTypes::InternalServerError("Some things went wrong in server", stat);
     }
     return;
 }

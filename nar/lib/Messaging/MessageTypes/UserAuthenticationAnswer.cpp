@@ -51,11 +51,11 @@ void nar::MessageTypes::UserAuthenticationAnswer::Response::receive_message(nloh
     }
     int stat = get_status_code();
     if(stat/100 == 3) {
-        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", _status_code);
+        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", stat);
     } else  if(stat/100 == 4) {
-        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database insertion problem", _status_code);
+        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database insertion problem", stat);
     } else  if(stat/100 == 5) {
-        throw nar::Exception::MessageTypes::InternalServerError("Some thing went wrong in server", _status_code);
+        throw nar::Exception::MessageTypes::InternalServerError("Some thing went wrong in server", stat);
     }
     return;
 }

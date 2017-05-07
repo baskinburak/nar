@@ -7,6 +7,7 @@
 #include <nar/lib/Messaging/messaging_utility.h>
 #include <nar/lib/Messaging/MessageTypes/WaitChunkPush.h>
 #include <nar/lib/Messaging/MessageTypes/WaitChunkPull.h>
+#include <nar/lib/Messaging/MessageTypes/DeleteMachineChunk.h>
 
 
 void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar::Socket* skt, nar::DBStructs::User& user) {
@@ -64,9 +65,20 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         req.receive_message(message);
         mkdir_action(s_global,skt,req,user);
     } else if(action == std::string("delete_file")) {
-        std::cout << message << std::endl;
+        nar::MessageTypes::DeleteFile::Request req;
+        try {
+            req.receive_message(message);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
+            std::cout<<exp.what()<<std::endl;
+            nar::MessageTypes::DirInfo::Response resp(300);
+            resp.send_mess(skt);
+        }
+
+        delete_file_action(s_global,skt,req,user);
     }
 }
+
+
 long long int findFileId(std::string& file_name,std::string& dir_name,std::string& uname, nar::Database *db)
 {// returns -1 in any case of problem
      long long int file_id = -1;
@@ -85,7 +97,191 @@ long long int findFileId(std::string& file_name,std::string& dir_name,std::strin
     }
     return file_id;
 }
+void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::DeleteFile::Request& req, nar::DBStructs::User& user) {
+    nar::Database* db = s_global->get_db();
+    std::string u_name = user.user_name;
+    std::string& d_name = req.get_dest_dir();
+    std::string& f_name = req.get_file_name();
+    long long int file_id;
+    try{
+        file_id = findFileId(f_name, d_name, u_name, db);
+    } catch(...) {
+        std::cout<<"some error with findFileId in server"<<std::endl;
+        nar::MessageTypes::DeleteFile::Response resp(400);
+        try {
+            resp.send_mess(skt);
+        }catch(...) {
+            std::cout<<"send_mess_bomb"<<std::endl;
+            return;
+        }
 
+
+        return;
+    }
+
+    if(file_id == -1) {
+        std::cout<<"There is no such file"<<std::endl;
+        nar::MessageTypes::DeleteFile::Response resp(300);
+        try {
+            resp.send_mess(skt);
+        }catch(...) {
+            std::cout<<"send_mess_bomb"<<std::endl;
+            return;
+        }
+        return;
+    }
+    std::vector<struct DBStructs::Chunk> chunks;
+    try{
+        chunks  = db->getChunks(file_id);
+    } catch(...) {
+        std::cout<<"Server delete file getchunk error------fileid "<<std::endl;
+        nar::MessageTypes::DeleteFile::Response resp(401);
+        try {
+            resp.send_mess(skt);
+        }catch(...) {
+            std::cout<<"send_mess_bomb"<<std::endl;
+            return;
+        }
+        return;
+    }
+
+    for(int i=0;i<chunks.size();i++) {
+        std::vector<struct DBStructs::Machine> chunk_machines;
+
+        try {
+            chunk_machines= db->getMachines(chunks[i].chunk_id);
+        } catch(...) {
+            std::cout<<"Server delete file getmachines error----chunkid "<<chunks[i].chunk_id<<std::endl;
+            nar::MessageTypes::DeleteFile::Response resp(402);
+            try {
+                resp.send_mess(skt);
+            }catch(...) {
+                std::cout<<"send_mess_bomb"<<std::endl;
+                return;
+            }
+            return;
+        }
+        for(int j=0;j<chunk_machines.size();j++) {
+            nar::SockInfo* peer_sck;
+            try {
+                peer_sck = s_global->peers->get_peer(chunk_machines[j].machine_id );
+            } catch(...) {
+                std::cout<<"Server delete file get_peer error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                nar::MessageTypes::DeleteFile::Response resp(500);
+                try {
+                    resp.send_mess(skt);
+                }catch(...) {
+                    std::cout<<"send_mess_bomb"<<std::endl;
+                    return;
+                }
+                return;
+            }
+            if(peer_sck ==NULL) {
+                struct nar::DBStructs::Machine t_mac;
+                try {
+                    t_mac =  db->getMachine(chunk_machines[j].machine_id);
+                } catch(...) {
+                    std::cout<<"Server delete file getMachine error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                    nar::MessageTypes::DeleteFile::Response resp(403);
+                    try {
+                        resp.send_mess(skt);
+                    }catch(...) {
+                        std::cout<<"send_mess_bomb"<<std::endl;
+                        return;
+                    }
+                    return;
+                }
+                std::string cur_value = t_mac.delete_list;
+                t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                try {
+                    db->updateMachineDeleteList(t_mac);
+                } catch (...) {
+                    std::cout<<"Server delete file updateMachineDeleteList error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                    nar::MessageTypes::DeleteFile::Response resp(404);
+                    try {
+                        resp.send_mess(skt);
+                    }catch(...) {
+                        std::cout<<"send_mess_bomb"<<std::endl;
+                        return;
+                    }
+                    return;
+                }
+
+
+
+            } else {
+                nar::MessageTypes::DeleteMachineChunk::Request del_req(std::to_string(chunks[i].chunk_id));
+                nar::MessageTypes::DeleteMachineChunk::Response del_resp(200);
+                try {
+                    del_req.send_mess(peer_sck->get_sck(),del_resp);
+                } catch (nar::Exception::MessageTypes::InternalDaemonError exp) {
+                    std::cout<<exp.what()<<std::endl;
+                    struct nar::DBStructs::Machine t_mac;
+                    try {
+                        t_mac =  db->getMachine(chunk_machines[j].machine_id);
+                    } catch(...) {
+                        std::cout<<"Server delete file getMachine error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                        nar::MessageTypes::DeleteFile::Response resp(405);
+                        try {
+                            resp.send_mess(skt);
+                        }catch(...) {
+                            std::cout<<"send_mess_bomb"<<std::endl;
+                            return;
+                        }
+                        return;
+                    }
+                    std::string cur_value = t_mac.delete_list;
+                    t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                    try {
+                        db->updateMachineDeleteList(t_mac);
+                    } catch (...) {
+                        std::cout<<"Server delete file updateMachineDeleteList error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                        nar::MessageTypes::DeleteFile::Response resp(406);
+                        try {
+                            resp.send_mess(skt);
+                        }catch(...) {
+                            std::cout<<"send_mess_bomb"<<std::endl;
+                            return;
+                        }
+                        return;
+                    }
+                }
+
+
+            }
+
+
+
+
+
+
+        }
+
+    }
+    struct nar::DBStructs::File m_file;
+    m_file.file_id = file_id;
+    try {
+        db->deleteFile(m_file);
+    } catch (...) {
+        std::cout<<"File could not be deleted from Database"<<std::endl;
+        nar::MessageTypes::DeleteFile::Response resp(407);
+        try {
+            resp.send_mess(skt);
+        }catch(...) {
+            std::cout<<"send_mess_bomb"<<std::endl;
+            return;
+        }
+        return;
+    }
+    nar::MessageTypes::DeleteFile::Response resp(200);
+    try {
+        resp.send_mess(skt);
+    }catch(...) {
+        std::cout<<"send_mess_bomb"<<std::endl;
+        return;
+    }
+    return;
+}
 
 
 void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::Mkdir::Request& req, nar::DBStructs::User& user) {
