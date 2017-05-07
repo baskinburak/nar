@@ -41,10 +41,12 @@ void nar::MessageTypes::IPCLs::Request::print_loop(nar::Socket* skt) {
         std::string tmp = get_message(*skt);
         nlohmann::json received = nlohmann::json::parse(tmp);
 
-        int stat = received["payload"]["status_code"];
+        
         if(received["header"]["reply_to"] == std::string("END")){
             break;
-        } else if (stat != 200) {
+        } 
+        int stat = received["payload"]["status_code"];
+        if (stat != 200) {
             if(stat/100 == 3) {
                 std::cout<<"Your request was not complete or was wrong --- stat"<< stat<<std::endl;
                 break;
