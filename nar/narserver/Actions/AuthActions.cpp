@@ -39,7 +39,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         try {
             pull_file_action(s_global,skt,req,user);
         }
-        catch( nar::Exception::PullFileDoesNotExist& er) {              // Wanted file does not exist
+        catch( nar::Exception::MessageTypes::PullFileDoesNotExist& er) {              // Wanted file does not exist
             nar::MessageTypes::FilePull::Response resp(300,-1);         // STATUS CODE?
             try {
                 resp.send_mess(skt);
@@ -86,7 +86,7 @@ long long int findFileId(std::string& file_name,std::string& dir_name,std::strin
      if(dir.dir_id == -1)
      {
          std::cout<<"No such User directory pair"<<std::endl;
-         throw nar::Exception::PullFileDoesNotExist("File does not exist");
+         throw nar::Exception::MessageTypes::PullFileDoesNotExist("File does not exist",300);
      } else {
          std::vector<nar::DBStructs::File> files = db->getDirectoryFile(dir.dir_id);
          for(int i= 0;i<files.size();i++){
@@ -328,7 +328,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     try {
         r_port = s_global->get_randezvous_port();
     }
-    catch ( nar::Exception::NoAvailablePort& e ) {
+    catch ( nar::Exception::USocket::NoAvailablePort& e ) {
         resp.set_status_code(200);                              // STATUS CODE?
     }
 
