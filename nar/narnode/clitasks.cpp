@@ -70,11 +70,17 @@ void nar::CLITasks::nar_pull(std::string file_name,std::string dir_name, std::st
 
 void nar::CLITasks::nar_push(std::string file_name, std::string username, std::string password, std::string curdir) {
 
-	auto co = boost::filesystem::current_path();
-	std::string curdirstr = co.string();
+    std::string curdirstr;
 
-	curdirstr += "/"+file_name;
-	std::cout << "File name: " << file_name << std::endl;
+    if(file_name[0] != '/') {
+	    auto co = boost::filesystem::current_path();
+	    curdirstr = co.string();
+	    curdirstr += "/"+file_name;
+    } else {
+        curdirstr = file_name;
+    }
+
+	std::cout << "Pushing file: " << curdirstr << std::endl;
 
     MessageTypes::IPCPush::Request req(curdirstr, username, password, curdir);
 

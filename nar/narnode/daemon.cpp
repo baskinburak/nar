@@ -35,17 +35,17 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         return;
     }
     if(action == string("ls")) {
-        cout << "<daemon ls" << endl;
         nar::MessageTypes::IPCLs::Request ipc_ls;
         ipc_ls.populate_object(msg);
         nar::ActiveTask::LS ls_task(globals, &uservars);
         ls_task.run(sck, &ipc_ls);
-        cout << ipc_ls.get_action() << " " << ipc_ls.get_username() << " " << ipc_ls.get_password() << " " << ipc_ls.get_current_directory() << " " << ipc_ls.get_dir_name() << endl;
-        cout<<"daemon ls>"<<endl;
-
     } else if(action == string("push")) {
         nar::MessageTypes::IPCPush::Request ipc_push;
-        ipc_push.populate_object(msg);
+        try {
+            ipc_push.populate_object(msg);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "Bad message received from UI, Request Type: push" << std::endl;
+        }
         nar::ActiveTask::Push push_task(globals, &uservars);
         push_task.run(sck, &ipc_push);
     } else if(action == string("pull")) {

@@ -21,9 +21,13 @@ nlohmann::json nar::MessageTypes::IPCPush::Request::generate_json() {
     return jsn;	
 }
 void nar::MessageTypes::IPCPush::Request::populate_object(std::string& jsn_str) {
-	auto jsn = nlohmann::json::parse(jsn_str);
-    IPCBaseRequest::populate_object(jsn);
-    this->_file_path = jsn["payload"]["file_path"];
+    try {
+    	auto jsn = nlohmann::json::parse(jsn_str);
+        IPCBaseRequest::populate_object(jsn);
+        this->_file_path = jsn["payload"]["file_path"];
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("IPCPush bad message received");
+    }
 }
 
 void nar::MessageTypes::IPCPush::Request::send_action(nar::Socket* skt) {

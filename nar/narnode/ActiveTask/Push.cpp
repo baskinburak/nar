@@ -19,8 +19,8 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     std::string file_aes;
     try {
         file_aes = nar::ActiveTask::user_authenticate(server_sck, this->_vars);
-    } catch (nar::Exception::Daemon::AuthenticationError exp) {
-        std::cout<<exp.what()<<std::endl;
+    } catch (nar::Exception::Daemon::AuthenticationError& exp) {
+        std::cout << exp.what() << std::endl;
         return;
     }
 
@@ -43,17 +43,14 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     }
     std::reverse(file_name.begin(), file_name.end());
 
-    std::cout << "push 1<<" << std::endl;
 
     nar::MessageTypes::FilePush::Request push_req(file_name, pushdir, file_size);
     nar::MessageTypes::FilePush::Response push_resp;
     push_req.send_mess(server_sck, push_resp);
     
-    std::cout << "push 2<<" << std::endl;
     std::vector<nar::MessageTypes::FilePush::Response::PeerListElement> elements = push_resp.get_elements();
 
 
-    std::cout << "push 3<<" << std::endl;
     unsigned long start = 0;
     for(int i=0; i<elements.size(); i++) {
         boost::asio::io_service& ioserv = this->_globals->get_ioserv();
@@ -64,8 +61,6 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         start += elements[i].chunk_size;
         usck->close();
     }
-
-    std::cout << "push 4<<" << std::endl;
 
     nar::MessageTypes::IPCPush::Response ipcpush_resp(3,5);
 
