@@ -38,7 +38,8 @@ void nar::Peers::insert_keepalive(std::string& mac_id, nar::Socket* skt) {
 
     try {
         mac = this->_db->getMachine(mac_id);
-    } catch(...) {
+    } catch(sql::SQLException exp) {
+        std::cout << exp.what() << std::endl;
         write_end();
         throw;
     }

@@ -464,7 +464,8 @@ void nar::USocket::connect() {
     std::string synpck = syn_packet.make_packet();
 
     while(true) {
-        this->_socket.send_to(boost::asio::buffer(synpck), this->_peer_endpoint, 0, ec);
+        for(int i=0; i<100; i++)
+            this->_socket.send_to(boost::asio::buffer(synpck), this->_peer_endpoint, 0, ec);
         if(ec) {
             continue;
         }
@@ -475,6 +476,9 @@ void nar::USocket::connect() {
             break;
         } else if(this->_timer_flag) {
             this->_timer_flag = false;
+        } else if(this->_syned) {
+            stop_timer(stp_tmr);
+            break;
         }
         this->_event_cv.wait(lck);
     }

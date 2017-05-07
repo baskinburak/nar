@@ -24,6 +24,7 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
             req.send_mess(sck, resp);
             break;
         } catch (nar::Exception::MessageTypes::ServerSocketAuthenticationError& exp) {
+            std::cout << "err" << std::endl;
             sleep(1);
         } catch (nar::Exception::MessageTypes::BadMessageReceive& exp) {
             std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
@@ -38,14 +39,18 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
 
 
 void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long long int chunk_size, unsigned short rand_port, long long int chunk_id) {
+    std::cout << "before const" << std::endl;
     nar::USocket* cli_sck = new nar::USocket(globals->get_ioserv(), globals->get_server_ip(), rand_port, stream_id);
+    std::cout << "before connect" << std::endl;
     //std::cout << "HERE THREAD, chunk size: "<< chunk_size << std::endl;
     cli_sck->connect();
-    //std::cout << "Ready To Read" << std::endl;
+    std::cout << "Ready To Read " << chunk_id << " " << chunk_size << std::endl;
 
 
     boost::filesystem::path path(globals->get_file_folder());
     path /= std::string("c") + std::to_string(chunk_id);
+    std::cout << path.string() << "<<<<<<<<" << std::endl;
+    
     nar::File recvfile(path.string(), "w", false);
 
     int total_read = 0;
