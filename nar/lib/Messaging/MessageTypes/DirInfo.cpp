@@ -33,13 +33,12 @@ void nar::MessageTypes::DirInfo::Request::send_mess(nar::Socket* skt ,nar::Messa
     return;
 }
 void nar::MessageTypes::DirInfo::Request::receive_message(std::string msg){
-    nlohmann::json dir_req_recv = nlohmann::json::parse(msg);
-
     try {
+        nlohmann::json dir_req_recv = nlohmann::json::parse(msg);
         nlohmann::json head = dir_req_recv["header"];
         recv_fill(head);
         dir = dir_req_recv["payload"]["dir_name"];
-    } catch(nar::Exception::MessageTypes::RequestRecvFillError exp) {
+    } catch( ... ) {
         throw nar::Exception::MessageTypes::BadMessageReceive("Dir info request is badly constructed");
     }
     if(dir.empty()) {

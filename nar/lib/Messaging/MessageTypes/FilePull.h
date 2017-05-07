@@ -86,6 +86,7 @@ namespace nar {
                      * @tested: Yes
                     */
                     unsigned short get_rendezvous_port();
+                    void set_rendezvous_port(unsigned short );
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json pull_req_recv);
                     nlohmann::json test_json();

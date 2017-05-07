@@ -39,24 +39,29 @@ void nar::CLITasks::nar_pull(std::string file_name,std::string dir_name, std::st
     std::cout << "File name: " << file_name << std::endl;
 
     nar::MessageTypes::IPCPull::Request req(file_name,dir_name, username, password, curdir);
-
-    std::cout << "HERE"<< std::endl;
-
-
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/root/.nar/ipcserver.crt");
-
+    try {
+        ctx.load_verify_file("/root/.nar/ipcserver.crt");
+    }
+    catch (...) {
+        std::cout << "SSL related error, check permissions of ipcserver.crt" << std::endl;
+        return;
+    }
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
     try {
         cli_skt.connect(std::string("127.0.0.1"), 17700);
     }
     catch(nar::Exception::Socket::ConnectionError er) {
+        std::cout << "IPC communication failed for '127.0.0.1::17700'" << std::endl;
         return;
     }
     try {
         req.send_action(&cli_skt);
         req.print_loop(&cli_skt);
+    }
+    catch(nar::Exception::ExcpBase& e ) {
+        std::cout << "ipcPullMessage::send: " <<  e.what() << std::endl;
     }
     catch( ... ) {
         std::cout << "Connection lost with daemon" << '\n';

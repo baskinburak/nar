@@ -18,11 +18,24 @@ using std::cout;
 using std::endl;
 
 void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
-    std::string msg = nar::trim(nar::get_message(*sck));
-    std::string action = nar::Messaging::get_action(msg);
-    nar::UserVariables uservars = nar::Messaging::get_user_variables(msg);
+    std::string msg;
+    std::string action;
+    nar::UserVariables uservars;
+    try {
+        msg =  nar::trim(nar::get_message(*sck));
+        action = nar::Messaging::get_action(msg);
+        uservars = nar::Messaging::get_user_variables(msg);
+    }
+    catch ( nar::Exception::MessageTypes::BadMessageReceive& e ) {
+        std::cout << std::string("nar_daemon::handle_ipc_req: ").append(e.what()) << std::endl;
+        return;
+    }
+    catch (...) {
+        std::cout << std::string("Undefined error in nar daemon handle ipc req") << std::endl;
+        return;
+    }
     if(action == string("ls")) {
-        cout<<"<daemon ls"<<endl;
+        cout << "<daemon ls" << endl;
         nar::MessageTypes::IPCLs::Request ipc_ls;
         ipc_ls.populate_object(msg);
         nar::ActiveTask::LS ls_task(globals, &uservars);
