@@ -94,8 +94,7 @@ nar::UserVariables nar::Messaging::get_user_variables(string& msg) {
         nar::UserVariables uservars(cd, uname, ps);
         return uservars;
     }
-    catch( std::invalid_argument& e)
-        {
-            throw nar::Exception::MessageTypes::BadMessageReceive("Message Not a Json");
-        }
+    catch( std::invalid_argument& e) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("Message Not a Json");
+    }
 }
