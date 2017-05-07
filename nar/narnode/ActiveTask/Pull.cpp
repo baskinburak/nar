@@ -44,6 +44,7 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         return;
     }
     unsigned short rand_port = pull_resp.get_rendezvous_port();
+    std::cout << "resp: " << rand_port << std::endl;
     std::vector<struct nar::MessageTypes::FilePull::Response::PeerListElement> elements = pull_resp.get_elements();
     std::sort(elements.begin(), elements.end());
 
@@ -68,6 +69,7 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     try {
         for(int i=0;i<elements.size();i++) {
             unsigned long stream_id = elements[i].stream_id;
+            std::cout << "rand_port: " << rand_port << endl;
             nar::USocket* cli_sck = new nar::USocket(this->_globals->get_ioserv(), this->_globals->get_server_ip(), rand_port, stream_id);
             cli_sck->connect();
             long int total_read = 0;
