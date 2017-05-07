@@ -65,4 +65,3 @@ nlohmann::json nar::MessageTypes::DeleteMachineChunk::Response::test_json() {
 std::string& nar::MessageTypes::DeleteMachineChunk::Request::get_chunk_id() {
     return this->_chunk_id;
 }
-
