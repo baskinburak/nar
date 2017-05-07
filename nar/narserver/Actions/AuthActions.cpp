@@ -327,7 +327,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
 
     try {
         r_port = s_global->get_randezvous_port();
-        resp.set_randezvous_port(r_port);
+        resp.set_rendezvous_port(r_port);
     }
     catch ( nar::Exception::USocket::NoAvailablePort& e ) {
         resp.set_status_code(200);                              // STATUS CODE?
