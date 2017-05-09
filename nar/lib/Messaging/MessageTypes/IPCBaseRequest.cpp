@@ -2,10 +2,10 @@
 
 nlohmann::json nar::MessageTypes::IPCBaseRequest::generate_json() {
     nlohmann::json jsn;
-        jsn["header"]["action"] = this->_action;
-        jsn["header"]["username"] = this->_username;
-        jsn["header"]["password"] = this->_password;
-        jsn["header"]["current_directory"] = this->_current_directory;
+    jsn["header"]["action"] = this->_action;
+    jsn["header"]["username"] = this->_username;
+    jsn["header"]["password"] = this->_password;
+    jsn["header"]["current_directory"] = this->_current_directory;
     return jsn;
 }
 
@@ -98,18 +98,21 @@ void nar::MessageTypes::IPCBaseRequest::send_action(nar::Socket* skt) {
 void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
     bool isError = true;
     while(true){
-        bool flag = false;
         std::string tmp;
         nlohmann::json received;
         try {
             tmp = get_message(*skt);
+        } catch(nar::Exception::Socket::SystemError& Exp) {
+            throw;
+        } catch(...) {
+            throw nar::Exception::LowLevelMessaging::Error("Low level messaging error in print_loop.");
+        }
+
+        try {
             received = nlohmann::json::parse(tmp);
+        } catch(...) {
+            throw nar::Exception::MessageTypes::BadMessageReceive("Message not JSON received in print_loop");
         }
-        catch( nar::Exception::ExcpBase& e ) {
-            std::cout << std::string("IpcBaseRequest::Printloop: ").append(e.what()) << std::endl;
-            return;
-        }
-        std::cout << tmp << std::endl;
         int statcode;
         try {
             if(received["header"]["reply_to"] == std::string("END"))
@@ -117,27 +120,29 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
             statcode = received["header"]["status_code"];
         }
         catch ( ... ) {
-            std::cout << "Malformed Json in IpcBaseRequest" << std::endl;
+            throw nar::Exception::MessageTypes::BadMessageReceive("Bad message received in print_loop");
         }
 
         statcode /= 100;
         switch(statcode) {
             case 3:
                 std::cout << "There is problem in the request that came to server" << std::endl;
+                break;
             case 4:
                 std::cout << "There is a problem in database side of the server" << std::endl;
+                break;
             case 5:
                 std::cout << "There is a problem in the server" << std::endl;
+                break;
             case 6:
                 std::cout << "There is a problem in the daemon" << std::endl;
+                break;
             case 7:
                 std::cout << "There is a problem in the cli" << std::endl;
+                break;
             default:
-                flag = true;
-        }
-        if(flag) {
-            break;
+                std::cout << "Unknown statcode" << std::endl;
+                break;
         }
     }
-    return;
 }

@@ -31,8 +31,19 @@ void nar::MessageTypes::IPCPush::Request::populate_object(std::string& jsn_str) 
 }
 
 void nar::MessageTypes::IPCPush::Request::send_action(nar::Socket* skt) {
-    nlohmann::json json_to_sent = this->generate_json();
-    send_message(skt, json_to_sent.dump());
+    nlohmann::json json_to_sent;
+    try {    
+        json_to_sent = this->generate_json();
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadlyConstructedMessageSend("Bad message in IPCPush::Request");
+    }
+    try {
+        send_message(skt, json_to_sent.dump());
+    } catch(nar::Exception::Socket::SystemError& Exp) {
+        throw;
+    } catch(...) {
+        throw nar::Exception::LowLevelMessaging::Error("Low level messaging error in IPCPush::send_action.");
+    }
     return;
 }
 

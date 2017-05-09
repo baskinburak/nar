@@ -23,6 +23,12 @@ namespace nar {
         }
 
         namespace LowLevelMessaging {
+            class Error : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    Error(const char* mess): ExcpBase(mess) {}
+            };
+
             class NoSize : public nar::Exception::ExcpBase {
                 private:
                 public:

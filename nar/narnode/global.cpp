@@ -194,8 +194,9 @@ void nar::Global::write_config() {
 
 nar::Socket* nar::Global::establish_server_connection() {
     read_start();
+    nar::Socket *serverSck;
     try {
-        nar::Socket *serverSck = new nar::Socket(this->_ioserv, this->_srv_ctx, 'c');
+        serverSck = new nar::Socket(this->_ioserv, this->_srv_ctx, 'c');
 	    serverSck->connect(this->get_server_ip(),this->get_server_port());
     } catch(...) {
         read_end();

@@ -10,17 +10,19 @@
 #include <nar/lib/Messaging/MessageTypes/IPCMkdir.h>
 #include <nar/lib/Messaging/MessageTypes/IPCDeleteFile.h>
 
+#define NARIPC_CRT_DIR "/root/.nar/ipcserver.crt"
+#define NARDAEMON_PORT 17700
 
 void nar::CLITasks::nar_ls(std::string dir_name, std::string username, std::string password, std::string curdir) {
     nar::MessageTypes::IPCLs::Request req(dir_name, username, password, curdir);
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/root/.nar/ipcserver.crt");
+    ctx.load_verify_file(NARIPC_CRT_DIR);
 
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
     try {
-        cli_skt.connect(std::string("127.0.0.1"), 17700);
+        cli_skt.connect(std::string("127.0.0.1"), NARDAEMON_PORT);
     }
     catch(nar::Exception::Socket::ConnectionError er) {
         return;
@@ -40,7 +42,7 @@ void nar::CLITasks::nar_pull(std::string file_name,std::string dir_name, std::st
     nar::MessageTypes::IPCPull::Request req(file_name,dir_name, username, password, curdir);
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
     try {
-        ctx.load_verify_file("/root/.nar/ipcserver.crt");
+        ctx.load_verify_file(NARIPC_CRT_DIR);
     }
     catch (...) {
         std::cout << "SSL related error, check permissions of ipcserver.crt" << std::endl;
@@ -49,7 +51,7 @@ void nar::CLITasks::nar_pull(std::string file_name,std::string dir_name, std::st
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
     try {
-        cli_skt.connect(std::string("127.0.0.1"), 17700);
+        cli_skt.connect(std::string("127.0.0.1"), NARDAEMON_PORT);
     }
     catch(nar::Exception::Socket::ConnectionError er) {
         std::cout << "IPC communication failed for '127.0.0.1::17700'" << std::endl;
@@ -80,29 +82,61 @@ void nar::CLITasks::nar_push(std::string file_name, std::string username, std::s
         curdirstr = file_name;
     }
 
-	std::cout << "Pushing file: " << curdirstr << std::endl;
+	std::cout << "Pushing file in path: " << curdirstr << std::endl;
 
     MessageTypes::IPCPush::Request req(curdirstr, username, password, curdir);
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/root/.nar/ipcserver.crt");
+
+    try {
+        ctx.load_verify_file(NARIPC_CRT_DIR);
+    } catch(boost::system::system_error& exp) {
+        std::cout << "Could not load IPC certificate from " << NARIPC_CRT_DIR << std::endl;
+        return;
+    }
 
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
     try {
-        cli_skt.connect(std::string("127.0.0.1"), 17700);
+        cli_skt.connect(std::string("127.0.0.1"), NARDAEMON_PORT);
     }
-    catch(nar::Exception::Socket::ConnectionError er) {
+    catch(nar::Exception::Socket::ConnectionError& exp) {
+        std::cout << "Cannot connect to the daemon with port " << NARDAEMON_PORT << std::endl;
         return;
     }
+
     try {
         req.send_action(&cli_skt);
+    } catch(nar::Exception::MessageTypes::BadlyConstructedMessageSend& Exp ) {
+        std::cout << "Badly constructed message tried to be sent" << std::endl;
+        return;
+    } catch(nar::Exception::Socket::SystemError& Exp) {
+        std::cout << "Connection lost with daemon" << std::endl;
+        return;
+    } catch(nar::Exception::LowLevelMessaging::Error& Exp) {
+        std::cout << "Low Level Messaging error." << std::endl;
+        return;
+    } catch(...) {
+        std::cout << "Unknown error in send_action" << std::endl;
+        return;
+    }
+
+    try {
         req.print_loop(&cli_skt);
+    } catch(nar::Exception::Socket::SystemError& Exp) {
+        std::cout << "Connection lost with daemon in print_loop." << std::endl;
+        return;
+    } catch(nar::Exception::LowLevelMessaging::Error& Exp) {
+        std::cout << "Low Level Messaging error in print_loop." << std::endl;
+        return;
+    } catch(nar::Exception::MessageTypes::BadMessageReceive& Exp) {
+        std::cout << "Bad message received in print_loop" << std::endl;
+        return;
+    } catch(...) {
+        std::cout << "Unknown error in print_loop" << std::endl;
+        return;
     }
-    catch( ... ) {
-        std::cout << "Connection lost with daemon" << '\n';
-    }
-    return;
+
 }
 
 void nar::CLITasks::nar_register(std::string username, std::string password) {
@@ -114,7 +148,7 @@ void nar::CLITasks::nar_register(std::string username, std::string password) {
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
     try {
-        cli_skt.connect(std::string("127.0.0.1"), 17700);
+        cli_skt.connect(std::string("127.0.0.1"), NARDAEMON_PORT);
     }
     catch(nar::Exception::Socket::ConnectionError er) {
         return;
@@ -140,7 +174,7 @@ void nar::CLITasks::nar_status() {
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
     try {
-        cli_skt.connect(std::string("127.0.0.1"), 17700);
+        cli_skt.connect(std::string("127.0.0.1"), NARDAEMON_PORT);
     }
     catch(nar::Exception::Socket::ConnectionError er) {
         return;
@@ -167,7 +201,7 @@ void nar::CLITasks::nar_delete_file(std::string file_name, std::string username,
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
     try {
-        cli_skt.connect(std::string("127.0.0.1"), 17700);
+        cli_skt.connect(std::string("127.0.0.1"), NARDAEMON_PORT);
     }
     catch(nar::Exception::Socket::ConnectionError er) {
         return;
@@ -239,7 +273,7 @@ void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::s
     nar::Socket cli_skt(io_serv, ctx, 'c');
 
     try {
-        cli_skt.connect(std::string("127.0.0.1"), 17700);
+        cli_skt.connect(std::string("127.0.0.1"), NARDAEMON_PORT);
     }
     catch(nar::Exception::Socket::ConnectionError er) {
         return;
