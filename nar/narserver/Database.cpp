@@ -62,6 +62,7 @@ nar::db::Chunk nar::Database::turnChunk(nar::DBStructs::Chunk & chunk){
     ck.chunk_id = std::to_string(chunk.chunk_id);
     ck.file_id = std::to_string(chunk.file_id);
     ck.chunk_size = std::to_string(chunk.chunk_size);
+    ck.hashed = chunk.hashed;
     return ck;
 }
 nar::db::UserToFile nar::Database::turnUserToFile(nar::DBStructs::UserToFile & userToFile){
@@ -205,11 +206,12 @@ void nar::Database::insertChunk(struct DBStructs::Chunk &ch)
 {
     nar::db::Chunk chunk = turnChunk(ch);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Chunks(Chunk_id, File_id, Chunk_size) "
-                                            "VALUES(?, ?, ?);");
+    prep_stmt = _con -> prepareStatement("INSERT INTO Chunks(Chunk_id, File_id, Chunk_size, Hashed) "
+                                            "VALUES(?, ?, ?, ?);");
     prep_stmt -> setBigInt(1, chunk.chunk_id);
     prep_stmt -> setBigInt(2, chunk.file_id);
-    prep_stmt -> setString(3, chunk.chunk_size);
+    prep_stmt -> setBigInt(3, chunk.chunk_size);
+    prep_stmt -> setString(4, chunk.hashed);
 
     prep_stmt -> execute();
 
@@ -426,7 +428,7 @@ nar::DBStructs::Chunk nar::Database::getChunk(long long int chunkId)
     sql::SQLString chunk_id = std::to_string(chunkId);
     sql::PreparedStatement *prep_stmt;
     sql::ResultSet  *res;
-    prep_stmt = _con -> prepareStatement("SELECT Chunk_id,File_id,Chunk_size, "
+    prep_stmt = _con -> prepareStatement("SELECT Chunk_id, File_id, Chunk_size, Hashed, "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "FROM Chunks "
                                         "WHERE Chunks.Chunk_id = ?;");
@@ -445,6 +447,7 @@ nar::DBStructs::Chunk nar::Database::getChunk(long long int chunkId)
         a.chunk_size = std::stoll(res->getString("Chunk_size").asStdString());
 
         a.change_time = res->getUInt64("Time");
+        a.hashed = res->getString("Hashed").asStdString();
 
     }
     delete res;
@@ -519,11 +522,13 @@ void nar::Database::updateChunk(struct DBStructs::Chunk & ch) {
     nar::db::Chunk chunk = turnChunk(ch);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Chunks "
-                                        "SET Chunks.File_id= ?,Chunks.Chunk_size = ? "
+                                        "SET Chunks.File_id= ?,Chunks.Chunk_size = ?, Chunks.Hashed = ? "
                                         "WHERE Chunks.Chunk_id= ?;");
     prep_stmt->setBigInt(1,chunk.file_id);
     prep_stmt->setBigInt(2,chunk.chunk_size);
-    prep_stmt->setBigInt(3,chunk.chunk_id);
+    prep_stmt->setString(3,chunk.hashed);
+    prep_stmt->setBigInt(4,chunk.chunk_id);
+
     prep_stmt->execute();
     delete prep_stmt;
 }
@@ -545,9 +550,20 @@ void nar::Database::updateChunkSize(struct DBStructs::Chunk & ch) {
     nar::db::Chunk chunk = turnChunk(ch);
     sql::PreparedStatement  *prep_stmt;
     prep_stmt = _con->prepareStatement("UPDATE Chunks "
-                                        "SET Chunks.Chunk_size = ?"
+                                        "SET Chunks.Chunk_size = ? "
                                         "WHERE Chunks.Chunk_id= ?;");
     prep_stmt->setBigInt(1,chunk.chunk_size);
+    prep_stmt->setBigInt(2,chunk.chunk_id);
+    prep_stmt->execute();
+    delete prep_stmt;
+}
+void nar::Database::updateChunkHashed(struct DBStructs::Chunk &ch) {
+    nar::db::Chunk chunk = turnChunk(ch);
+    sql::PreparedStatement  *prep_stmt;
+    prep_stmt = _con->prepareStatement("UPDATE Chunks "
+                                                     "SET Chunks.Hashed = ? "
+                                                     "WHERE Chunks.Chunk_id= ?;");
+    prep_stmt->setString(1,chunk.hashed);
     prep_stmt->setBigInt(2,chunk.chunk_id);
     prep_stmt->execute();
     delete prep_stmt;
@@ -967,7 +983,7 @@ std::vector<nar::DBStructs::Chunk>  nar::Database::getChunks(long long int fileI
     std::vector<nar::DBStructs::Chunk> output;
     sql::PreparedStatement  *prep_stmt;
     sql::ResultSet *res;
-    prep_stmt = _con->prepareStatement("SELECT Chunk_id, File_id, Chunk_size, "
+    prep_stmt = _con->prepareStatement("SELECT Chunk_id, File_id, Chunk_size, Hashed,  "
                                         "UNIX_TIMESTAMP(Change_time) As Time "
                                         "From Chunks "
                                         "Where Chunks.File_id = ?;");
@@ -980,6 +996,7 @@ std::vector<nar::DBStructs::Chunk>  nar::Database::getChunks(long long int fileI
         a.chunk_size = std::stoll(res->getString("Chunk_size").asStdString());
 
         a.change_time = res->getUInt64("Time");
+        a.hashed = res->getString("Hashed").asStdString();
         output.push_back(a);
 
     }
