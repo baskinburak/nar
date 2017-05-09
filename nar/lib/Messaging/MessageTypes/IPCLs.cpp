@@ -73,7 +73,7 @@ void nar::MessageTypes::IPCLs::Request::print_loop(nar::Socket* skt) {
             timeinfo = localtime(&holder);
             change_time = std::string(masctime(timeinfo)) + std::string(" ");
 
-			items += (std::string(">>>")+ename + std::string(" ") + esize + std::string(" ") + change_time + std::string(" ") + type + std::string("\n")) ;
+			items += (std::string("> ")+ename + std::string(" ") + esize + std::string(" ") + change_time + std::string(" ") + type + std::string("\n")) ;
 			v_items.push_back(items);
 		}
     }
