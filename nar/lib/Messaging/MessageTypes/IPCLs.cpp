@@ -35,7 +35,7 @@ void nar::MessageTypes::IPCLs::Request::send_action(nar::Socket* skt) {
 
 void nar::MessageTypes::IPCLs::Request::print_loop(nar::Socket* skt) {
 	std::vector<std::string> v_items;
-	std::string ename=std::string(""), esize=std::string(""), ctime=std::string(""), type=std::string("");
+	std::string ename=std::string(""), esize=std::string(""), type=std::string("");
     while(true){
 		std::string items = std::string("");
         std::string tmp = get_message(*skt);
@@ -65,19 +65,25 @@ void nar::MessageTypes::IPCLs::Request::print_loop(nar::Socket* skt) {
 		else if(received["header"]["reply_to"] == std::string("ls")) {
 			ename =	received["payload"]["entity_name"];
 			esize = received["payload"]["entity_size"];
-			ctime = received["payload"]["change_time"];
 			type = received["payload"]["type"];
-			items += (std::string(">>>")+ename + std::string(" ") + esize + std::string(" ") + ctime + std::string(" ") + type + std::string("\n")) ;
+
+            std::string change_time = received["payload"]["change_time"];
+            time_t holder = std::stoll(change_time);
+            struct tm * timeinfo;
+            timeinfo = localtime(&holder);
+            change_time = std::string(masctime(timeinfo)) + std::string(" ");
+
+			items += (std::string(">>>")+ename + std::string(" ") + esize + std::string(" ") + change_time + std::string(" ") + type + std::string("\n")) ;
 			v_items.push_back(items);
 		}
     }
 	for(int i=0;i<v_items.size();i++) {
-		std::cout << v_items[i];	
+		std::cout << v_items[i];
 	}
     return;
 }
 
-/*
+
 char* nar::MessageTypes::IPCLs::Request::masctime(const struct tm *timeptr)
 {
 	static const char wday_name[][4] = {
@@ -91,7 +97,7 @@ char* nar::MessageTypes::IPCLs::Request::masctime(const struct tm *timeptr)
 	sprintf(result, "%.3s%2d %.2d:%.2d", mon_name[timeptr->tm_mon], timeptr->tm_mday, timeptr->tm_hour, timeptr->tm_min);
 	return result;
 }
-*/
+
 
 std::string nar::MessageTypes::IPCLs::Response::get_entity_name() {
 	return this -> _entity_name;
@@ -146,7 +152,6 @@ nlohmann::json nar::MessageTypes::IPCLs::Response::give_myresponsejson() {
 	resp_json["payload"]["entity_name"] = get_entity_name();
 	resp_json["payload"]["entity_size"] = get_entity_size();
 	resp_json["payload"]["change_time"] = get_change_time();
-	resp_json["payload"]["type"] = get_type(); 
+	resp_json["payload"]["type"] = get_type();
     return resp_json;
 }
-
