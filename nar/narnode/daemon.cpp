@@ -29,11 +29,11 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     catch ( nar::Exception::MessageTypes::BadMessageReceive& e ) {
         std::cout << std::string("nar_daemon::handle_ipc_req: ").append(e.what()) << std::endl;
         return;
-    }
-    catch (...) {
+    } catch (...) {
         std::cout << std::string("Undefined error in nar daemon handle ipc req") << std::endl;
         return;
     }
+
     if(action == string("ls")) {
         nar::MessageTypes::IPCLs::Request ipc_ls;
         ipc_ls.populate_object(msg);
@@ -45,9 +45,15 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
             ipc_push.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
             std::cout << "Bad message received from UI, Request Type: push" << std::endl;
+            return;
         }
         nar::ActiveTask::Push push_task(globals, &uservars);
-        push_task.run(sck, &ipc_push);
+        try {
+            push_task.run(sck, &ipc_push);
+        } catch(...) {
+            std::cout << "push_task.run unhandled error." << std::endl;
+            return;
+        }
     } else if(action == string("pull")) {
         nar::MessageTypes::IPCPull::Request ipc_pull;
         ipc_pull.populate_object(msg);

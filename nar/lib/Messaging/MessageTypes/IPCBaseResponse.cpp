@@ -39,26 +39,27 @@ nlohmann::json nar::MessageTypes::IPCBaseResponse::give_myresponsejson() {
     return my_response_json;
 }
 
+void nar::MessageTypes::IPCBaseResponse::send_message(nar::Socket* skt) {
+    nlohmann::json json_to_sent;
+    json_to_sent["header"]["reply_to"] = this -> _reply_to;
+    json_to_sent["payload"]["status_code"] = this -> _status_code;
+    json_to_sent["payload"]["progress"] = this -> _progress;
+    nar::send_message(skt, json_to_sent.dump());
+    return;
+}
+
 void nar::MessageTypes::IPCBaseResponse::send_message_progress(nar::Socket* skt, int p) {
     nlohmann::json json_to_sent;
-    try{
-        json_to_sent["header"]["reply_to"] = this -> _reply_to;
-        json_to_sent["payload"]["status_code"] = this -> _status_code;
-        json_to_sent["payload"]["progress"] = p;
-    } catch(...){
-        throw nar::Exception::MessageTypes::BadJSONRelatedProblemResponse("in IPCBaseResponse, there is a problem related to json in send message progress");
-    }
-    send_message(skt, json_to_sent.dump());
+    json_to_sent["header"]["reply_to"] = this -> _reply_to;
+    json_to_sent["payload"]["status_code"] = this -> _status_code;
+    json_to_sent["payload"]["progress"] = p;
+    nar::send_message(skt, json_to_sent.dump());
     return;
 }
 
 void nar::MessageTypes::IPCBaseResponse::send_message_end(nar::Socket* skt) {
     nlohmann::json json_to_sent;
-    try{
-        json_to_sent["header"]["reply_to"] = "END";
-    } catch(...){
-        throw nar::Exception::MessageTypes::BadJSONRelatedProblemResponse("in IPCBaseResponse, there is a problem related to json in send message end");
-    }
-    send_message(skt, json_to_sent.dump());
+    json_to_sent["header"]["reply_to"] = "END";
+    nar::send_message(skt, json_to_sent.dump());
     return;
 }

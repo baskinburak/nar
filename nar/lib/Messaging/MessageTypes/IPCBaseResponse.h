@@ -67,6 +67,10 @@ namespace nar {
                  * @tested: No
                 */
                 void set_status_code(long int sc);
+
+                IPCBaseResponse()
+                    { }
+
                 /*
                  * Constructor
                  *
@@ -138,6 +142,7 @@ namespace nar {
                  * @tested: No
                 */
                 void send_message_progress(nar::Socket* skt, int progress);
+                void send_message(nar::Socket* skt);
                 /*
                  * sends "END" message
                  *

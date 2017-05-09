@@ -29,7 +29,7 @@ void nar::MessageTypes::IPCLs::Request::populate_object(std::string& jsn_str) {
 
 void nar::MessageTypes::IPCLs::Request::send_action(nar::Socket* skt) {
     nlohmann::json json_to_sent = this->generate_json();
-    send_message(skt, json_to_sent.dump());
+    nar::send_message(skt, json_to_sent.dump());
     return;
 }
 
@@ -132,7 +132,7 @@ void nar::MessageTypes::IPCLs::Response::send_message_progress(nar::Socket* skt,
     json_to_sent["payload"]["status_code"] = get_status_code();
     int stat = get_status_code();
     if(stat != 200) {
-        send_message(skt, json_to_sent.dump());
+        nar::send_message(skt, json_to_sent.dump());
         return;
     }
 
@@ -140,7 +140,7 @@ void nar::MessageTypes::IPCLs::Response::send_message_progress(nar::Socket* skt,
     json_to_sent["payload"]["entity_size"] = get_entity_size();
     json_to_sent["payload"]["change_time"] = get_change_time();
     json_to_sent["payload"]["type"] = get_type();
-    send_message(skt, json_to_sent.dump());
+    nar::send_message(skt, json_to_sent.dump());
     return;
 }
 
