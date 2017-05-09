@@ -7,6 +7,7 @@
 #include <nar/narnode/utility.h>
 #include <nar/lib/nlohJson/json.hpp>
 #include <vector>
+#include <ctime>
 
 #include <vector>
 
@@ -31,6 +32,8 @@ namespace nar {
                     void populate_object(std::string& jsn);
 					//char* masctime(const struct tm *timeptr);
 					void print_loop(nar::Socket* skt);
+                    char* masctime(const struct tm *timeptr);
+
             };
 
             class Response : public IPCBaseResponse {
