@@ -12,10 +12,20 @@
 #include <nar/lib/Messaging/messaging_utility.h>
 #include <nar/narnode/reactive.h>
 #include <nar/narnode/ActiveTask/ActiveTask.h>
+#include <boost/asio/signal_set.hpp>
 
 using std::string;
 using std::cout;
 using std::endl;
+
+void clean_up(nar::Global* globals, nar::UserVariables* _var) {
+    nar::Socket* server_sck = globals->establish_server_connection();
+    nar::MessageTypes::DaemonShutdown::Request req(globals->get_machine_id());
+    req.send_mess(server_sck);
+    std::cout << "Bize ayrilan surenin sonuna geldik :)" << std::endl;
+    return;
+}
+
 
 void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     std::string msg;
@@ -33,6 +43,11 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         std::cout << std::string("Undefined error in nar daemon handle ipc req") << std::endl;
         return;
     }
+
+    boost::asio::signal_set _signals(globals->get_ioserv());
+    _signals.add(SIGINT);
+    _signals.add(SIGTERM);
+    _signals.async_wait(boost::bind(clean_up, globals, &uservars));
 
     if(action == string("ls")) {
         nar::MessageTypes::IPCLs::Request ipc_ls;
