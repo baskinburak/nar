@@ -12,15 +12,13 @@ string nar::Messaging::get_action(string & msg) {
         auto jsn = json::parse(msg);
         std::string tmp = jsn["header"]["action"];
         return tmp;
+    } catch( std::invalid_argument& e) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("Message Not a Json");
+    } catch ( std::domain_error& e) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("Message Field missing or has incorrect type");
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("Bad message received. Dont know reason");
     }
-    catch( std::invalid_argument& e)
-        {
-            throw nar::Exception::MessageTypes::BadMessageReceive("Message Not a Json");
-        }
-    catch ( std::domain_error& e)
-        {
-            throw nar::Exception::MessageTypes::BadMessageReceive("Message Field missing or has incorrect type");
-        }
 
 }
 
@@ -94,7 +92,7 @@ nar::UserVariables nar::Messaging::get_user_variables(string& msg) {
         nar::UserVariables uservars(cd, uname, ps);
         return uservars;
     }
-    catch( std::invalid_argument& e) {
-        throw nar::Exception::MessageTypes::BadMessageReceive("Message Not a Json");
+    catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("Message does not contain user variables");
     }
 }

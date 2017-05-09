@@ -4,9 +4,35 @@ void nar::MessageTypes::UserAuthenticationAnswer::Request::send_mess(nar::Socket
     nlohmann::json uans_req_send;
     uans_req_send["header"] = send_head();
     uans_req_send["payload"]["result_string"] = this->_result_string;
-    send_message(skt,uans_req_send.dump());
-    std::string temp = get_message(skt);
-    nlohmann::json uans_req_recv = nlohmann::json::parse(temp);
+
+    try {    
+        send_message(skt,uans_req_send.dump());
+    } catch(nar::Exception::LowLevelMessaging::NoSize& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::NoSize error");
+    } catch( nar::Exception::LowLevelMessaging::FormatError& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::FormatError");
+    } catch(nar::Exception::LowLevelMessaging::ServerSizeIntOverflow& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::ServerSizeIntOverflow");
+    }
+    
+    std::string temp;
+
+    try {
+        temp = get_message(skt);
+    } catch(nar::Exception::LowLevelMessaging::NoSize& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::NoSize error");
+    } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::SizeIntOverflow error");
+    }
+
+    nlohmann::json uans_req_recv;
+
+    try {
+        uans_req_recv = nlohmann::json::parse(temp);
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("UserAuthenticationAnswer::Request::send_mess");
+    }
+
     resp.receive_message(uans_req_recv);
     return;
 }
@@ -19,6 +45,7 @@ void nar::MessageTypes::UserAuthenticationAnswer::Request::receive_message(std::
     } catch(...) {
         throw nar::Exception::MessageTypes::BadMessageReceive("user authentication answer error");
     }
+
     if(this->_result_string.empty()) {
         throw nar::Exception::MessageTypes::BadMessageReceive("user authentication answer result string cant be empty");
     }
@@ -39,24 +66,23 @@ void nar::MessageTypes::UserAuthenticationAnswer::Response::send_mess(nar::Socke
     return;
 }
 void nar::MessageTypes::UserAuthenticationAnswer::Response::receive_message(nlohmann::json uans_resp_recv){
-
     try {
         nlohmann::json head = uans_resp_recv["header"];
         recv_fill(head);
-    }
-    catch(nar::Exception::MessageTypes::ResponseRecvFillError exp) {
-        std::cout<<exp.what()<<std::endl;
-        throw nar::Exception::MessageTypes::BadMessageReceive(exp.what().c_str());
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("UserAuthenticationAnswer::Response::receive_message");
 
     }
+
     int stat = get_status_code();
-    if(stat/100 == 3) {
-        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", stat);
-    } else  if(stat/100 == 4) {
-        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database insertion problem", stat);
-    } else  if(stat/100 == 5) {
-        throw nar::Exception::MessageTypes::InternalServerError("Some thing went wrong in server", stat);
+
+    if(stat == 703) {
+        throw nar::Exception::Authentication::WrongTaskString("UserAuthenticationAnswer::Response::receive_message");
+    } else if(stat == 200) {
+    } else {
+        throw nar::Exception::MessageTypes::BadMessageReceive("UserAuthenticationInit::Response::receive_message UnknownStatCode");
     }
+
     return;
 }
 

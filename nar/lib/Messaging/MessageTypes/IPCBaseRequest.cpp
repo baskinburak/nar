@@ -92,8 +92,7 @@ void nar::MessageTypes::IPCBaseRequest::send_action(nar::Socket* skt) {
 }
 
 void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
-    bool isError = true;
-    while(true){
+    while(true) {
         std::string tmp;
         nlohmann::json received;
         try {
@@ -124,31 +123,18 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
             std::cout << "SUCCESS" << std::endl;
         } else if(statcode == 601) {
             std::cout << "Cannot connect to the server." << std::endl;
+        } else if(statcode == 602) {
+            std::cout << "Low level messaging error with server." << std::endl;
+        } else if(statcode == 603) {
+            std::cout << "Server sent bad message. Are you connected to a legit server?" << std::endl << "Check your config file." << std::endl;
+        } else if(statcode == 702) {
+            std::cout << "Cannot authenticate your user" << std::endl;
+        } else if(statcode == 900){
+            std::cout << "Unknown error." << std::endl;
         } else {
-            std::cout << "Unprinted error." << std::endl;
+            std::cout << "Non-handled error." << std::endl;
         }
 
-
-        /*statcode /= 100;
-        switch(statcode) {
-            case 3:
-                std::cout << "There is problem in the request that came to server" << std::endl;
-                break;
-            case 4:
-                std::cout << "There is a problem in database side of the server" << std::endl;
-                break;
-            case 5:
-                std::cout << "There is a problem in the server" << std::endl;
-                break;
-            case 6:
-                std::cout << "There is a problem in the daemon" << std::endl;
-                break;
-            case 7:
-                std::cout << "There is a problem in the cli" << std::endl;
-                break;
-            default:
-                std::cout << "Unknown statcode" << std::endl;
-                break;
-        }*/
     }
+    skt->close();
 }

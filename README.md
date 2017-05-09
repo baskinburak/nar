@@ -84,3 +84,10 @@ void f(int naber, int iyidir);
 * //5xx//: Algorithmic error
 * //6xx//: Connection errors
     * 601: Cannot connect to the server [Daemon to server]
+    * 602: Low level messaging error [send_message and get_message in utilities]
+    * 603: Server sent bad message [Bad request or bad response]
+* //7xx//: Normal workflow errors [Errors like not able to authenticate]
+    * 701: No such username [Server sends to daemon]
+    * 702: Cannot authenticate user [Daemon sends to CLI]
+    * 703: Wrong decrypted task string [Server sends to daemon]
+* //900//: Unknown error

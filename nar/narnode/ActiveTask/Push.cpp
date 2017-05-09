@@ -14,6 +14,17 @@ using std::string;
 using std::cout;
 using std::endl;
 
+void nar::ActiveTask::Push::send_error_response(nar::Socket* ipc_socket, int statcode) { 
+    nar::MessageTypes::IPCPush::Response resp(statcode);
+    try {
+        resp.send_message(ipc_socket);
+        resp.send_message_end(ipc_socket);
+    } catch(...) {
+        std::cout << "CLI seems down." << std::endl;
+    }
+    ipc_socket->close();
+}
+
 void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPush::Request* req) {
     nar::Socket* server_sck;
 
@@ -21,16 +32,7 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         server_sck = this->_globals->establish_server_connection();
     } catch(...) {
         std::cout << "Cannot establish server connection." << std::endl;
-
-        nar::MessageTypes::IPCPush::Response resp(601);
-        nar::MessageTypes::IPCBaseResponse end_resp;
-
-        try {
-            resp.send_message(ipc_socket);
-            end_resp.send_message_end(ipc_socket);
-        } catch(...) {
-            std::cout << "CLI seems down." << std::endl;
-        }
+        this->send_error_response(ipc_socket, 601);
         return;
     }
 
@@ -41,8 +43,30 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
 
     try {
         file_aes = nar::ActiveTask::user_authenticate(server_sck, this->_vars);
-    } catch (nar::Exception::Daemon::AuthenticationError& exp) {
-        std::cout << exp.what() << std::endl;
+    } catch (nar::Exception::Socket::SystemError& Exp) {
+        std::cout << "Server connection broken." << std::endl;
+        server_sck->close();
+        this->send_error_response(ipc_socket, 601);
+        return;
+    } catch(nar::Exception::LowLevelMessaging::Error& Exp) {
+        std::cout << "LowLevelMessaging error with server." << std::endl;
+        server_sck->close();
+        this->send_error_response(ipc_socket, 602);
+        return;
+    } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+        std::cout << "Server sent bad message." << std::endl;
+        server_sck->close();
+        this->send_error_response(ipc_socket, 603);
+        return;
+    } catch(nar::Exception::Daemon::AuthenticationError& exp) {
+        std::cout << "Cannot authenticate " << this->_vars->get_username() << std::endl;
+        server_sck->close();
+        this->send_error_response(ipc_socket, 702);
+        return;
+    } catch(...) {
+        std::cout << "Unhandled error in authentication." << std::endl;
+        server_sck->close();
+        this->send_error_response(ipc_socket, 900);
         return;
     }
 

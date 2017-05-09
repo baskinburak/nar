@@ -56,6 +56,20 @@ namespace nar {
             };
         };
 
+        namespace Authentication {
+            class NoSuchUsername: public nar::Exception::ExcpBase {
+                private:
+                public:
+                    NoSuchUsername(const char* mess): ExcpBase(mess) {}
+            };
+
+            class WrongTaskString: public nar::Exception::ExcpBase {
+                private:
+                public:
+                    WrongTaskString(const char* mess): ExcpBase(mess) {}
+            };
+        };
+
         namespace Daemon {
             class AuthenticationError : public nar::Exception::ExcpBase {
             public:
@@ -191,6 +205,13 @@ namespace nar {
             };
         };
         namespace MessageTypes {
+            class UnknownStatCode : public nar::Exception::ExcpBase {
+                private:
+                    int _statcode;
+                public:
+                    UnknownStatCode(const char* mess, int statcode): nar::Exception::ExcpBase(mess), _statcode(statcode) {}
+                    int get_statcode() { return _statcode; }
+            };
             class RequestRecvFillError : public nar::Exception::ExcpBase {
                 private:
                 public:

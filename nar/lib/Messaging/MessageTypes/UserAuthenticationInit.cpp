@@ -18,9 +18,34 @@ void nar::MessageTypes::UserAuthenticationInit::Request::send_mess(nar::Socket* 
     nlohmann::json keep_req_send;
     keep_req_send["header"] = send_head();
     keep_req_send["payload"]["username"] = this->_username;
-    send_message(skt,keep_req_send.dump());
-    std::string temp = get_message(skt);
-    nlohmann::json keep_req_recv = nlohmann::json::parse(temp);
+    try {
+        send_message(skt,keep_req_send.dump());
+    } catch(nar::Exception::LowLevelMessaging::NoSize& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::NoSize error");
+    } catch( nar::Exception::LowLevelMessaging::FormatError& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::FormatError");
+    } catch(nar::Exception::LowLevelMessaging::ServerSizeIntOverflow& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::ServerSizeIntOverflow");
+    }
+
+    std::string temp;
+
+    try {
+        temp = get_message(skt);
+    } catch(nar::Exception::LowLevelMessaging::NoSize& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::NoSize error");
+    } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("LowLevelMessaging::SizeIntOverflow error");
+    }
+
+    nlohmann::json keep_req_recv;
+
+    try {
+        keep_req_recv = nlohmann::json::parse(temp);
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("UserAuthenticationInit::Request::send_mess");
+    }
+
     resp.receive_message(keep_req_recv);
     return;
 }
@@ -60,33 +85,30 @@ void nar::MessageTypes::UserAuthenticationInit::Response::send_mess(nar::Socket*
     return;
 }
 void nar::MessageTypes::UserAuthenticationInit::Response::receive_message(nlohmann::json keep_resp_recv){
-
     try {
         nlohmann::json head = keep_resp_recv["header"];
         recv_fill(head);
-    }
-    catch(nar::Exception::MessageTypes::ResponseRecvFillError exp) {
-        std::cout<<exp.what()<<std::endl;
-        throw nar::Exception::MessageTypes::BadMessageReceive(exp.what().c_str());
-
-    }
-    int stat = get_status_code();
-    if(stat/100 == 3) {
-        throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", stat);
-    } else  if(stat/100 == 4) {
-        throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database insertion problem", stat);
-    } else  if(stat/100 == 5) {
-        throw nar::Exception::MessageTypes::InternalServerError("Some thing went wrong in server", stat);
-    }
-    try {
-        this->_private_key = keep_resp_recv["payload"]["private_key"];
-        this->_task_string = keep_resp_recv["payload"]["task_string"];
-        this->_aes_crypted = keep_resp_recv["payload"]["aes_crypted"];
     } catch(...) {
-        throw nar::Exception::MessageTypes::BadMessageReceive("user authentication init response bad");
+        throw nar::Exception::MessageTypes::BadMessageReceive("UserAuthenticationInit::Response::receive_message bad message received");
     }
-    if(this->_private_key.empty() || this->_task_string.empty() || this->_aes_crypted.empty()) {
-        throw nar::Exception::MessageTypes::BadMessageReceive("user authentication items cant be empty");
+
+    int stat = get_status_code();
+
+    if(stat == 701) {
+        throw nar::Exception::Authentication::NoSuchUsername("UserAuthenticationInit::Response::receive_message");
+    } else if(stat == 200) {
+        try {
+            this->_private_key = keep_resp_recv["payload"]["private_key"];
+            this->_task_string = keep_resp_recv["payload"]["task_string"];
+            this->_aes_crypted = keep_resp_recv["payload"]["aes_crypted"];
+        } catch(...) {
+            throw nar::Exception::MessageTypes::BadMessageReceive("user authentication init response bad");
+        }
+        if(this->_private_key.empty() || this->_task_string.empty() || this->_aes_crypted.empty()) {
+            throw nar::Exception::MessageTypes::BadMessageReceive("user authentication items cant be empty");
+        }
+    } else {
+        throw nar::Exception::MessageTypes::BadMessageReceive("UserAuthenticationInit::Response::receive_message unknown statcode");
     }
     return;
 }

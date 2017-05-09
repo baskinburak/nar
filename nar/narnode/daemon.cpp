@@ -21,18 +21,42 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     std::string msg;
     std::string action;
     nar::UserVariables uservars;
+
     try {
-        msg =  nar::trim(nar::get_message(*sck));
+        msg = nar::trim(nar::get_message(*sck));
+    } catch(nar::Exception::Socket::SystemError& exp) {
+        std::cout << "handle_ipc_request: Connection to UI is broken." << std::endl;
+        sck->close();
+        return;
+    } catch(nar::Exception::LowLevelMessaging::NoSize& exp) {
+        std::cout << "handle_ipc_request: Low level messaging error: NoSize" << std::endl;
+        sck->close();
+        return;
+    } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& exp) {
+        std::cout << "handle_ipc_request: Low level messaging error: SizeIntOverflow" << std::endl;
+        sck->close();
+        return;
+    } catch(...) {
+        std::cout << "handle_ipc_request: Unhandled error" << std::endl;
+        sck->close();
+        return;
+    }
+
+    try {
         action = nar::Messaging::get_action(msg);
+    } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+        std::cout << "handle_ipc_request: Bad message received, no action" << std::endl;
+    }
+
+
+    try {
         uservars = nar::Messaging::get_user_variables(msg);
-    }
-    catch ( nar::Exception::MessageTypes::BadMessageReceive& e ) {
-        std::cout << std::string("nar_daemon::handle_ipc_req: ").append(e.what()) << std::endl;
-        return;
-    } catch (...) {
-        std::cout << std::string("Undefined error in nar daemon handle ipc req") << std::endl;
+    } catch ( nar::Exception::MessageTypes::BadMessageReceive& e ) {
+        std::cout << "handle_ipc_request: Bad message received, no uservars" << std::endl;
         return;
     }
+
+
 
     if(action == string("ls")) {
         nar::MessageTypes::IPCLs::Request ipc_ls;
@@ -44,14 +68,14 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             ipc_push.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "Bad message received from UI, Request Type: push" << std::endl;
+            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: push" << std::endl;
             return;
         }
         nar::ActiveTask::Push push_task(globals, &uservars);
         try {
             push_task.run(sck, &ipc_push);
         } catch(...) {
-            std::cout << "push_task.run unhandled error." << std::endl;
+            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
             return;
         }
     } else if(action == string("pull")) {

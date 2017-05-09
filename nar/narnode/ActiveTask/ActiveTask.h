@@ -37,6 +37,7 @@ namespace nar {
 
         class Push : public IActiveTask {
             private:
+                void send_error_response(nar::Socket* ipc_sck, int statcode);
             public:
                 Push(nar::Global* globals, nar::UserVariables* variables): IActiveTask(globals,variables) {}
                 void run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPush::Request* req);
