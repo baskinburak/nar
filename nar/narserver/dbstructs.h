@@ -67,6 +67,7 @@ namespace nar {
             long long int file_id;
             long long int chunk_size;
             long long int change_time;
+            std::string hashed;
         };
 
         struct ChunkToMachine {

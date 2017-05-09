@@ -94,6 +94,7 @@ namespace nar {
             void updateDirectorySize(struct DBStructs::Directory & directory);
             void updateChunkFile(struct DBStructs::Chunk & chunk);
             void updateChunkSize(struct DBStructs::Chunk & chunk);
+            void updateChunkHashed(struct DBStructs::Chunk & chunk);
             void updateChunk(struct DBStructs::Chunk & chunk);
             void updateFile(struct DBStructs::File & file);
             void updateFileName(struct DBStructs::File & file);

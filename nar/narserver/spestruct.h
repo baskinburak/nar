@@ -59,6 +59,7 @@ namespace nar {
             sql::SQLString chunk_id;
             sql::SQLString file_id;
             sql::SQLString chunk_size;
+            sql::SQLString hashed;
         };
 
         struct ChunkToMachine {
