@@ -11,6 +11,11 @@
 #include <nar/lib/Messaging/MessageTypes/DeleteMachineChunk.h>
 #include <stdio.h>
 
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+#include <crypto++/md5.h>
+#include <cryptopp/filters.h>
+#include <cryptopp/hex.h>
+
 void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
     std::string macid = globals->get_machine_id();
     nar::MessageTypes::KeepAlive::Request req(macid);
@@ -50,20 +55,33 @@ void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long
     boost::filesystem::path path(globals->get_file_folder());
     path /= std::string("c") + std::to_string(chunk_id);
     std::cout << path.string() << "<<<<<<<<" << std::endl;
-    
+
     nar::File recvfile(path.string(), "w", false);
 
     int total_read = 0;
     char buf[1024];
+
+    byte digest[ CryptoPP::Weak::MD5::DIGESTSIZE ];
+    CryptoPP::Weak::MD5 hash;
+
     while(total_read < chunk_size) {
         //std::cout << stream_id << " before" << std::endl;
          int len = cli_sck->recv(buf, 1024);
         //std::cout << stream_id << " after " << len << std::endl;
+         hash.Update((const byte*) buf, len);
          recvfile.write(buf, len);
          total_read += len;
     }
     recvfile.close();
     cli_sck->close();
+
+    CryptoPP::HexEncoder encoder;
+	std::string hash_string;               // Hash of the received chunk
+
+	encoder.Attach( new CryptoPP::StringSink( hash_string ) );
+	encoder.Put( digest, sizeof(digest) );
+	encoder.MessageEnd();
+
     return;
 }
 
@@ -74,7 +92,8 @@ void nar::chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int c
     boost::filesystem::path path(globals->get_file_folder());
     path /= std::string("c");
     nar::File f( (path.string()+std::to_string(chunk_id) ).c_str(), "r", false);
-    cli_sck->send(f,0,f.size());
+    std::string hash;
+    cli_sck->send(f,0,f.size(), hash);
     cli_sck->close();
 }
 

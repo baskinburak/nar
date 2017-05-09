@@ -47,7 +47,7 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     nar::MessageTypes::FilePush::Request push_req(file_name, pushdir, file_size);
     nar::MessageTypes::FilePush::Response push_resp;
     push_req.send_mess(server_sck, push_resp);
-    
+
     std::vector<nar::MessageTypes::FilePush::Response::PeerListElement> elements = push_resp.get_elements();
 
 
@@ -57,7 +57,8 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         nar::USocket* usck = new nar::USocket(ioserv, this->_globals->get_server_ip(), push_resp.get_randezvous_port(), elements[i].stream_id);
         usck->connect();
         std::cout << elements[i].chunk_size << std::endl;
-        usck->send(*encrypted, start, elements[i].chunk_size);
+        std::string hash;                                   // hash
+        usck->send(*encrypted, start, elements[i].chunk_size, hash);
         start += elements[i].chunk_size;
         usck->close();
     }

@@ -92,7 +92,7 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
 
     nar::File * decrypted = tempfile1->decrypt(file_aes);
 
-    string  dust= tpath.native();
+    string dust= tpath.native();
     nar::File * decompressed = decrypted->decompress(dust);
 
 

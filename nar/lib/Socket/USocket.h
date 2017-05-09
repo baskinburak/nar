@@ -11,6 +11,10 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <atomic>
 
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+#include <crypto++/md5.h>
+#include <cryptopp/filters.h>
+
 using boost::asio::ip::udp;
 using std::pair;
 
@@ -70,11 +74,12 @@ namespace nar {
                     unsigned long _last_notaccessed_file_location;
                     unsigned long _end_file_location;
                     std::map<unsigned int, nar::Packet*> _packets;
+                    CryptoPP::Weak::MD5 hash;
                 public:
                     PacketGenerator(nar::File& file, unsigned int start_seqnum, unsigned int stream_id, unsigned long start, unsigned long len);
                     nar::Packet* operator[](unsigned int sqnm);
                     void remove(unsigned int sqnm);
-
+                    std::string getHash();
             };
 
             class RandezvousEntry {
@@ -142,7 +147,7 @@ namespace nar {
             void randezvous_server();
             void connect();
             int recv(char* buf, int len);
-            bool send(nar::File& file, unsigned long start, unsigned long len);
+            bool send(nar::File& file, unsigned long start, unsigned long len, std::string& hash );
             unsigned short get_port() const;
             void close();
     };
