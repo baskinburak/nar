@@ -15,8 +15,30 @@ using std::cout;
 using std::endl;
 
 void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCPush::Request* req) {
-    nar::Socket* server_sck = this->_globals->establish_server_connection();
+    nar::Socket* server_sck;
+
+    try {
+        server_sck = this->_globals->establish_server_connection();
+    } catch(...) {
+        std::cout << "Cannot establish server connection." << std::endl;
+
+        nar::MessageTypes::IPCPush::Response resp(601);
+        nar::MessageTypes::IPCBaseResponse end_resp;
+
+        try {
+            resp.send_message(ipc_socket);
+            end_resp.send_message_end(ipc_socket);
+        } catch(...) {
+            std::cout << "CLI seems down." << std::endl;
+        }
+        return;
+    }
+
+    
+
     std::string file_aes;
+
+
     try {
         file_aes = nar::ActiveTask::user_authenticate(server_sck, this->_vars);
     } catch (nar::Exception::Daemon::AuthenticationError& exp) {

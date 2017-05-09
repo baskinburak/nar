@@ -107,7 +107,13 @@ void nar::reactive_dispatcher(nar::Global *globals) {
     keep_alive(server_socket, globals);
 
     for(;;) {
-        std::string message = nar::get_message( *server_socket);
+        std::string message;
+        try {
+            message = nar::get_message( *server_socket);
+        } catch(...) {
+            sleep(1);
+            continue;
+        }
         std::string action = Messaging::get_action(message);
         std::cout << "Action::    " <<  std::endl << action << std::endl;
         if(action == std::string("wait_chunk_push_request")) {

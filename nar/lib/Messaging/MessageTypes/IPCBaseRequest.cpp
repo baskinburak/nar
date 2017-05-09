@@ -10,14 +10,10 @@ nlohmann::json nar::MessageTypes::IPCBaseRequest::generate_json() {
 }
 
 void nar::MessageTypes::IPCBaseRequest::populate_object(nlohmann::json& jsn) {
-    try{
-        this->_action = jsn["header"]["action"];
-        this->_username = jsn["header"]["username"];
-        this->_password = jsn["header"]["password"];
-        this->_current_directory = jsn["header"]["current_directory"];
-    } catch(...) {
-        throw nar::Exception::MessageTypes::BadJSONRelatedProblemRequest(std::string("in IPCBaseRequest, we couldn't populate the object \n").append(jsn.dump()).c_str() );
-    }
+    this->_action = jsn["header"]["action"];
+    this->_username = jsn["header"]["username"];
+    this->_password = jsn["header"]["password"];
+    this->_current_directory = jsn["header"]["current_directory"];
 }
 
 std::string nar::MessageTypes::IPCBaseRequest::get_action() {
@@ -117,13 +113,23 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
         try {
             if(received["header"]["reply_to"] == std::string("END"))
                 break;
-            statcode = received["header"]["status_code"];
+            statcode = received["payload"]["status_code"];
         }
         catch ( ... ) {
             throw nar::Exception::MessageTypes::BadMessageReceive("Bad message received in print_loop");
         }
 
-        statcode /= 100;
+
+        if(statcode == 200) {
+            std::cout << "SUCCESS" << std::endl;
+        } else if(statcode == 601) {
+            std::cout << "Cannot connect to the server." << std::endl;
+        } else {
+            std::cout << "Unprinted error." << std::endl;
+        }
+
+
+        /*statcode /= 100;
         switch(statcode) {
             case 3:
                 std::cout << "There is problem in the request that came to server" << std::endl;
@@ -143,6 +149,6 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
             default:
                 std::cout << "Unknown statcode" << std::endl;
                 break;
-        }
+        }*/
     }
 }

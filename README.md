@@ -73,8 +73,14 @@ int var3;
 **/
 void f(int naber, int iyidir);
 };
-server a gelen request ten kaynaklı bir error oluyor sa 3xx
-server ın içinde bizim yaptığımız şeylerden birinde patlıyorsa 5xx
-serverın içinde database den patlıyorsa 4xx
-daemon içinde error 6xx
-cli içinde error 7xx
+
+
+## Error Codes for Messaging
+**If your error is not here, add it yourself**
+* //3xx//: Request related error
+    * 301: Format error [NOT JSON, non existing key etc.]
+    * 302: Domain error [At least one of the fields does not have required domain]
+* //4xx//: Database related error
+* //5xx//: Algorithmic error
+* //6xx//: Connection errors
+    * 601: Cannot connect to the server [Daemon to server]
