@@ -14,6 +14,11 @@
 #include <boost/lexical_cast.hpp>
 #include <stdexcept>
 
+#include <crypto++/md5.h>
+#include <cryptopp/filters.h>
+#include <cryptopp/hex.h>
+
+
 using std::cout;
 using std::endl;
 using boost::asio::ip::udp;
@@ -36,6 +41,7 @@ nar::Packet* nar::USocket::PacketGenerator::operator[](unsigned int sqnm) {
         unsigned long len = std::min((unsigned long) this->_pack_data_size, this->_end_file_location - this->_last_notaccessed_file_location);
         char buf[len];
         int rsize = this->_file.read(buf,  this->_last_notaccessed_file_location, len);
+        this->hash.Update((const byte*) buf, rsize);
         this->_last_notaccessed_file_location += rsize;
 
 
@@ -45,6 +51,19 @@ nar::Packet* nar::USocket::PacketGenerator::operator[](unsigned int sqnm) {
         this->_packets[this->_next_seqnum] = pck;
     }
     return this->_packets[sqnm];
+}
+
+std::string nar::USocket::PacketGenerator::getHash() {
+    byte digest[ CryptoPP::Weak::MD5::DIGESTSIZE ];
+    this->hash.Final(digest);
+
+    CryptoPP::HexEncoder encoder;
+	std::string output;
+
+	encoder.Attach( new CryptoPP::StringSink( output ) );
+	encoder.Put( digest, sizeof(digest) );
+	encoder.MessageEnd();
+    return output;
 }
 
 void nar::USocket::PacketGenerator::remove(unsigned int sqnm) {
@@ -504,7 +523,7 @@ int nar::USocket::recv(char* buf, int len) {
     return read_len;
 }
 
-bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len) {
+bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len, std::string& hash) {
     boost::system::error_code ec;
     nar::USocket::PacketGenerator pckgen(file, this->_next_seqnum, this->_stream_id, start, len);
     std::unique_lock<std::mutex> lck(this->_work_mutex);
@@ -600,6 +619,7 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len)
         this->_event_cv.wait(lck);
     }
     lck.unlock();
+    hash = pckgen.getHash();
     return true;
 }
 
