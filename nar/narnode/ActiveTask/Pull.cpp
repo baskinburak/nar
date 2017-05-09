@@ -7,6 +7,12 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
 
+
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+#include <crypto++/md5.h>
+#include <cryptopp/filters.h>
+#include <cryptopp/hex.h>
+
 using std::string;
 using std::cout;
 using std::endl;
@@ -65,21 +71,45 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     std::string temp_native = temp.native();
 
     nar::File* tempfile1 = new nar::File(temp_native,"w",false);
-
+    int i=0;
     try {
-        for(int i=0;i<elements.size();i++) {
+        while( i<elements.size() ) {
             unsigned long stream_id = elements[i].stream_id;
             std::cout << "rand_port: " << rand_port << endl;
             nar::USocket* cli_sck = new nar::USocket(this->_globals->get_ioserv(), this->_globals->get_server_ip(), rand_port, stream_id);
-            cli_sck->connect();
-            long int total_read = 0;
-            char buf[1024];
-            while(total_read < elements[i].chunk_size) {
-                int len = cli_sck->recv(buf, 1024);
-                tempfile1->write(buf,len);
-                total_read += len;
+            try {
+                cli_sck->connect();
+                long int total_read = 0;
+                char *buf = new char [elements[i].chunk_size];
+                while(total_read < elements[i].chunk_size) {
+                    int len = cli_sck->recv(buf+total_read, elements[i].chunk_size - total_read);
+                    total_read += len;
+                }
+
+                byte digest[ CryptoPP::Weak::MD5::DIGESTSIZE];
+            	CryptoPP::Weak::MD5 hash;
+            	hash.CalculateDigest( digest, (const byte*)buf, elements[i].chunk_size );
+            	CryptoPP::HexEncoder encoder;
+            	std::string output;
+            	encoder.Attach( new CryptoPP::StringSink( output ) );
+            	encoder.Put( digest, sizeof(digest) );
+            	encoder.MessageEnd();
+                if ( ! std::string::compare(output,elements[i].hashed) ) // Wrong Hash
+                    {
+                        throw std::Exception();
+                    }
+            } catch (...) {
+                nar::MessageTypes::InfoChunkPull::Request _req(elements[i].chunk_id, 704);
+                nar::MessageTypes::InfoChunkPull::Response _resp;
+                _req.send_mess(server_socket,_resp);
+                elements[i].stream_id = _resp.get_stream_id();
+                delete [] buf;
+                continue;
             }
+
+            tempfile1->write(buf,len);
             cli_sck->close();
+            i++;
         }
     }
     catch ( ... ) {
@@ -94,6 +124,10 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
 
     string dust= tpath.native();
     nar::File * decompressed = decrypted->decompress(dust);
+
+    nar::MessageTypes::InfoChunkPull::Request _req(15, 200);
+    nar::MessageTypes::InfoChunkPull::Response _resp;
+    _req.send_mess(server_socket,_resp);
 
 
     nar::MessageTypes::IPCPull::Response ipcpull_resp(3,5);

@@ -4,7 +4,7 @@ long long int nar::MessageTypes::InfoChunkPull::Request::get_chunk_id() {
     return chunk_id;
 }
 
-bool nar::MessageTypes::InfoChunkPull::Request::get_success() {
+int nar::MessageTypes::InfoChunkPull::Request::get_success() {
     return success;
 }
 
@@ -20,11 +20,30 @@ void nar::MessageTypes::InfoChunkPull::Request::send_mess(nar::Socket* skt) {
     return;
 
 }
-void nar::MessageTypes::InfoChunkPull::Request::receive_message(nlohmann::json ipull_req_recv) {
-    nlohmann::json head = ipull_req_recv["header"];
-    recv_fill(head);
-    this->chunk_id = ipull_req_recv["payload"]["chunk_id"];
-    this->success = ipull_req_recv["payload"]["success"];
+
+void nar::MessageTypes::InfoChunkPull::Request::send_mess(nar::Socket* skt, nar::MessageTypes::InfoChunkPull::Response & resp) {
+    nlohmann::json ipull_req_send;
+    ipull_req_send["header"] = send_head();
+    ipull_req_send["payload"]["chunk_id"] = this->chunk_id;
+    ipull_req_send["payload"]["success"] = this->success;
+    send_message(skt,ipull_req_send.dump());
+    std::string temp = get_message(skt);
+    nlohmann::json ipull_req_recv = nlohmann::json::parse(temp);
+    resp.receive_message(ipull_req_recv);
+    return;
+}
+
+
+void nar::MessageTypes::InfoChunkPull::Request::receive_message(std::string& _ipull_req_recv) {
+    try {
+        ipull_req_recv = nlohmann::parse(_ipull_req_recv);
+        nlohmann::json head = ipull_req_recv["header"];
+        recv_fill(head);
+        this->chunk_id = ipull_req_recv["payload"]["chunk_id"];
+        this->success = ipull_req_recv["payload"]["success"];
+    } catch (...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("InfoChunkPull Request is constructed badly");
+    }
     return;
 }
 
