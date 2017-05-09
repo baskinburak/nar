@@ -88,7 +88,7 @@ int main(int argc, char* argv[]){
             std::cout << "Path is not a directory" << std::endl;
             return 0;
         }
-        
+
         nar::CLITasks::nar_pull(file_name, dir.string(), unamepwd.first, unamepwd.second, std::string("/"));
 
     } else if(first_arg == std::string("register")) {
@@ -96,7 +96,8 @@ int main(int argc, char* argv[]){
         nar::CLITasks::nar_register(unamepwd.first, unamepwd.second);
 
     } else if(first_arg == std::string("status")) {
-        nar::CLITasks::nar_status();
+        auto unamepwd = get_uname_pw();
+        nar::CLITasks::nar_status(unamepwd.first, unamepwd.second);
     } else if(first_arg == std::string("mkdir")) {
         if(argc < 3 ){
             return 0;

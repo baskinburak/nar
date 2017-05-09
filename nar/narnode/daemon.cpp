@@ -22,8 +22,12 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     std::string action;
     nar::UserVariables uservars;
     try {
+        //std::cout << "hobaa1" << std::endl;
         msg =  nar::trim(nar::get_message(*sck));
+        //std::cout << "hobaa2" << std::endl;
         action = nar::Messaging::get_action(msg);
+        std::cout << "action: " << action << std::endl;
+        //std::cout << "hobaa3" << std::endl;
         uservars = nar::Messaging::get_user_variables(msg);
     }
     catch ( nar::Exception::MessageTypes::BadMessageReceive& e ) {
@@ -33,7 +37,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         std::cout << std::string("Undefined error in nar daemon handle ipc req") << std::endl;
         return;
     }
-
+    //std::cout << "hobaa" << std::endl;
     if(action == string("ls")) {
         nar::MessageTypes::IPCLs::Request ipc_ls;
         ipc_ls.populate_object(msg);
@@ -67,6 +71,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     } else if(action == string("config")) {
         std::cout << "Config not implemented yet! See u soon!" << std::endl;
     } else if(action == string("status")) {
+        //std::cout << "stat" << std::endl;
         nar::MessageTypes::IPCStatus::Request ipc_status;
         ipc_status.populate_object(msg);
         nar::ActiveTask::Status status_task(globals, &uservars);

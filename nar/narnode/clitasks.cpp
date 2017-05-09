@@ -163,13 +163,11 @@ void nar::CLITasks::nar_register(std::string username, std::string password) {
     return;
 }
 
-void nar::CLITasks::nar_status() {
-    MessageTypes::IPCStatus::Request req(std::string(""), std::string(""), std::string("/"));
-
+void nar::CLITasks::nar_status(std::string username, std::string password) {
+    MessageTypes::IPCStatus::Request req(username, password, std::string("/"));
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
     ctx.load_verify_file("/root/.nar/ipcserver.crt");
-
 
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
@@ -181,7 +179,9 @@ void nar::CLITasks::nar_status() {
     }
     try {
         req.send_action(&cli_skt);
+        //std::cout << "here" << std::endl;
         req.print_loop(&cli_skt);
+        //std::cout << "here2" << std::endl;
     }
     catch( ... ) {
         std::cout << "Connection lost with daemon" << '\n';
