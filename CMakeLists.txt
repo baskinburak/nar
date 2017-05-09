@@ -44,6 +44,7 @@ file(GLOB NAR_MESSAGING_SOURCES
     nar/lib/Messaging/MessageTypes/Mkdir.cpp
     nar/lib/Messaging/MessageTypes/DeleteFile.cpp
     nar/lib/Messaging/MessageTypes/DeleteMachineChunk.cpp
+    nar/lib/Messaging/MessageTypes/DaemonShutdown.cpp
 )
 add_library(narmessaging SHARED ${NAR_MESSAGING_SOURCES})
 
@@ -67,6 +68,7 @@ set(SERVER_SOURCES
     nar/narserver/peers.cpp
     nar/narserver/sockinfo.cpp
     nar/narserver/Actions/keepalive_action.cpp
+    nar/narserver/Actions/daemon_shutdown_action.cpp
 )
 
 
