@@ -365,7 +365,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
             nar::DBStructs::Chunk ck;
             long long int cid= req.get_chunk_id();
             try {
-                ck = nar::DBStructs::Chunk ck = db->getChunk(cid);
+                ck = db->getChunk(cid);
             } catch(sql::SQLException &err) {
                 std::cout<<err.what()<<"second try for active pull action"<<std::endl;
                 return;
@@ -387,6 +387,11 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
                 std::cout << "Pull Server: Peer does not respond to WaitChunkPull" << std::endl;
             nar::MessageTypes::InfoChunkPull::Response resp(s_id,200);
             resp.send_mess(skt);
+        } catch(...) {
+            return;
+        }
+        if (req.get_success() == 200) {
+            break;
         }
 
     }

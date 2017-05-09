@@ -55,7 +55,12 @@ namespace nar {
                     int get_len() { return _len; }
             };
         };
-
+        namespace Peer {
+            class LeaveSessionError : public nar::Exception::ExcpBase {
+            public:
+                LeaveSessionError(const char* mess): ExcpBase(mess){}
+            };
+        }
         namespace Daemon {
             class ActiveChunkError : public nar::Exception::ExcpBase {
             public:
