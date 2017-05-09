@@ -8,6 +8,7 @@
 #include <nar/lib/Messaging/MessageTypes/WaitChunkPush.h>
 #include <nar/lib/Messaging/MessageTypes/WaitChunkPull.h>
 #include <nar/lib/Messaging/MessageTypes/DeleteMachineChunk.h>
+#include <nar/lib/Messaging/MessageTypes/InfoChunkPull.h>
 
 
 void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar::Socket* skt, nar::DBStructs::User& user) {
@@ -354,6 +355,41 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     }
     std::cout << "Waitchunkpull messages are completed time to send Resp "  << std::endl;
     resp.send_mess(skt);
+    while(true) {
+        std::string message = get_message(skt);
+        nar::MessageTypes::InfoChunkPull::Request req;
+        try {
+            req.receive_message(message);
+        } catch(nar::Exception::Daemon::ActiveChunkError & e) {
+            std::cout<<e.what()<<std::endl;
+            nar::DBStructs::Chunk ck;
+            long long int cid= req.get_chunk_id();
+            try {
+                ck = nar::DBStructs::Chunk ck = db->getChunk(cid);
+            } catch(sql::SQLException &err) {
+                std::cout<<err.what()<<"second try for active pull action"<<std::endl;
+                return;
+            }
+            std::vector<struct DBStructs::Machine> machines = db->getMachines(cid);
+            nar::SockInfo* peer_sck;
+            for(int j=0; !(peer_sck = s_global->peers->get_peer(machines[j].machine_id )); ++j);
+
+            std::cout << "Peer to get chunk " << peer_sck->get_machine_id() << std::endl;
+
+            long long int s_id = s_global->get_next_stream_id();
+
+            nar::MessageTypes::WaitChunkPull::Request chunk_req(r_port, s_id, cid, ck.chunk_size);
+            nar::MessageTypes::WaitChunkPull::Response chunk_resp;
+            std::cout << "Peer req sending "  << std::endl;
+            chunk_req.send_mess(peer_sck->get_sck(), chunk_resp);
+            std::cout << "Peer req received "  << std::endl;
+            if (chunk_resp.get_status_code() != 200 )
+                std::cout << "Pull Server: Peer does not respond to WaitChunkPull" << std::endl;
+            nar::MessageTypes::InfoChunkPull::Response resp(s_id,200);
+            resp.send_mess(skt);
+        }
+
+    }
     return;
 }
 

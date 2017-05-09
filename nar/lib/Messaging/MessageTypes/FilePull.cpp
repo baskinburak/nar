@@ -38,12 +38,13 @@ void nar::MessageTypes::FilePull::Response::add_element(struct nar::MessageTypes
     _elements.push_back(ele);
 }
 
-void nar::MessageTypes::FilePull::Response::add_element(std::string mid, unsigned long long int cid, long long int sid, unsigned long long int csize) {
+void nar::MessageTypes::FilePull::Response::add_element(std::string mid, unsigned long long int cid, long long int sid, unsigned long long int csize,std::string hashed) {
     struct PeerListElement ele = {
         mid, //peer id
         cid, // chunk id
         sid, // stream id
-        csize //chunk size
+        csize, //chunk size
+        hashed
     };
     this->_elements.push_back(ele);
 }
@@ -74,6 +75,7 @@ void nar::MessageTypes::FilePull::Response::send_mess(nar::Socket* skt){
             pull_resp_send["payload"]["peer_list"][i]["chunk_id"] = _elements[i].chunk_id;
             pull_resp_send["payload"]["peer_list"][i]["stream_id"] = _elements[i].stream_id;
             pull_resp_send["payload"]["peer_list"][i]["chunk_size"] = _elements[i].chunk_size;
+            pull_resp_send["payload"]["peer_list"][i]["hashed"] = _elements[i].hashed;
         }
         send_message(skt,pull_resp_send.dump());
         return;
@@ -103,7 +105,8 @@ void nar::MessageTypes::FilePull::Response::receive_message(nlohmann::json pull_
         unsigned long long int cid = pull_resp_recv["payload"]["peer_list"][i]["chunk_id"];
         long long int sid = pull_resp_recv["payload"]["peer_list"][i]["stream_id"];
         unsigned long long int csize = pull_resp_recv["payload"]["peer_list"][i]["chunk_size"];
-        this->add_element(mid,cid,sid,csize);
+        std::string hashed = pull_resp_recv["payload"]["peer_list"][i]["hashed"];
+        this->add_element(mid,cid,sid,csize,hashed);
     }
     return;
 }
@@ -119,6 +122,8 @@ nlohmann::json nar::MessageTypes::FilePull::Response::test_json() {
         pull_resp_test["payload"]["peer_list"][i]["chunk_id"] = _elements[i].chunk_id;
         pull_resp_test["payload"]["peer_list"][i]["stream_id"] = _elements[i].stream_id;
         pull_resp_test["payload"]["peer_list"][i]["chunk_size"] = _elements[i].chunk_size;
+
+        pull_resp_test["payload"]["peer_list"][i]["hashed"] = _elements[i].hashed;
     }
     return pull_resp_test;
 }

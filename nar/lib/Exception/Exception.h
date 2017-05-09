@@ -57,6 +57,10 @@ namespace nar {
         };
 
         namespace Daemon {
+            class ActiveChunkError : public nar::Exception::ExcpBase {
+            public:
+                ActiveChunkError(const char* mess): ExcpBase(mess){}
+            };
             class AuthenticationError : public nar::Exception::ExcpBase {
             public:
                 AuthenticationError(const char* mess): ExcpBase(mess){}

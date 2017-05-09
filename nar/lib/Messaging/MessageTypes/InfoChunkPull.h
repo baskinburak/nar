@@ -9,11 +9,16 @@ namespace nar {
     namespace MessageTypes {
         namespace InfoChunkPull {
             class Response : public ResponseHeader {
+                private:
+                    long long int _stream_id;
                 public:
-                    Response(int statcode = -1): ResponseHeader(statcode, std::string("info_chunk_pull"))  {}
+                    Response():ResponseHeader(-1, std::string("info_chunk_pull")), _stream_id(0)  {}
+                    Response( long long int stream_id,int statcode): ResponseHeader(statcode, std::string("info_chunk_pull")),  _stream_id(stream_id)  {}
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json ipull_resp_recv);
                     nlohmann::json test_json();
+                    unsigned  short  get_r_port();
+                    long long int get_stream_id();
             };
 
             class Request : public RequestHeader {
