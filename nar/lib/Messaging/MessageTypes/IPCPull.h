@@ -28,6 +28,7 @@ namespace nar {
                     std::string get_dir_path();
 					nlohmann::json generate_json();
 					void populate_object(std::string& jsn_str);
+                    void print_loop(nar::Socket* skt);
             };
 
             class Response : public IPCBaseResponse {

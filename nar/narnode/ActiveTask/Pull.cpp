@@ -49,6 +49,13 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         std::cout << std::string( "nar_daemon::activepull " ).append(e.what()) << std::endl;
         return;
     }
+
+    if ( pull_resp.get_status_code() == 666 ) {     // Not enough online peer
+        nar::MessageTypes::IPCPull::Response ipcpull_resp(3,666);           // Params ?
+        ipcpull_resp.send_message_end(ipc_socket);
+        return;
+    }
+
     unsigned short rand_port = pull_resp.get_rendezvous_port();
     std::cout << "resp: " << rand_port << std::endl;
     std::vector<struct nar::MessageTypes::FilePull::Response::PeerListElement> elements = pull_resp.get_elements();
