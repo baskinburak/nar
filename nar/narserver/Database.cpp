@@ -305,7 +305,7 @@ unsigned long nar::Database::insertSession(struct DBStructs::Session &ses) {
 void nar::Database::leaveSession(struct DBStructs::Session &ses) {
     nar::db::Session session = turnSession(ses);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("UPDATE Sessions SET leave_time = NOW() WHERE session_id = ? ");
+    prep_stmt = _con -> prepareStatement("UPDATE Sessions SET leave_time = NOW() WHERE session_id = ? ;");
     prep_stmt -> setBigInt(1, session.session_id);
     prep_stmt -> execute();
     delete prep_stmt;

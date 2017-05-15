@@ -324,7 +324,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
 
     std::vector<struct DBStructs::Chunk> chunks = db->getChunks(f_id);
     unsigned short r_port;
-    nar::MessageTypes::FilePull::Response resp(200, -1);
+    nar::MessageTypes::FilePull::Response resp;
 
     try {
         r_port = s_global->get_randezvous_port();
@@ -351,7 +351,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
         if (chunk_resp.get_status_code() != 200 )
             std::cout << "Pull Server: Peer does not respond to WaitChunkPull" << std::endl;
 
-        resp.add_element(peer_sck->get_machine_id(), chunks[i].chunk_id, s_id, chunks[i].chunk_size);
+        resp.add_element(peer_sck->get_machine_id(), chunks[i].chunk_id, s_id, chunks[i].chunk_size, chunks[i].hashed);
     }
     std::cout << "Waitchunkpull messages are completed time to send Resp "  << std::endl;
     resp.send_mess(skt);

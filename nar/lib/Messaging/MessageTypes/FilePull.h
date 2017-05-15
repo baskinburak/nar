@@ -59,6 +59,7 @@ namespace nar {
                      * @tested: Yes
                     */
                     void add_element(struct PeerListElement& ele);
+
                     /*
                      * adds new elements to pull file message
                      *
