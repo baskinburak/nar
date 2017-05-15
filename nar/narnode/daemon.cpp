@@ -10,6 +10,7 @@
 #include <nar/lib/Messaging/MessageTypes/IPCLs.h>
 #include <nar/lib/Messaging/MessageTypes/IPCMkdir.h>
 #include <nar/lib/Messaging/messaging_utility.h>
+#include <nar/lib/Messaging/MessageTypes/DaemonShutdown.h>
 #include <nar/narnode/reactive.h>
 #include <nar/narnode/ActiveTask/ActiveTask.h>
 #include <boost/asio/signal_set.hpp>
