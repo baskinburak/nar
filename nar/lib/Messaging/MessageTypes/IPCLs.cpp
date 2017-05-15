@@ -41,10 +41,10 @@ void nar::MessageTypes::IPCLs::Request::print_loop(nar::Socket* skt) {
         std::string tmp = get_message(*skt);
         nlohmann::json received = nlohmann::json::parse(tmp);
 
-        
+
         if(received["header"]["reply_to"] == std::string("END")){
             break;
-        } 
+        }
         int stat = received["payload"]["status_code"];
         if (stat != 200) {
             if(stat/100 == 3) {
@@ -77,9 +77,13 @@ void nar::MessageTypes::IPCLs::Request::print_loop(nar::Socket* skt) {
 			v_items.push_back(items);
 		}
     }
-	for(int i=0;i<v_items.size();i++) {
-		std::cout << v_items[i];
-	}
+    if(v_items.size() == 0){
+        std::cout << "-> Your nar system is currently empty <-"
+    } else {
+        for(int i=0;i<v_items.size();i++) {
+            std::cout << v_items[i];
+        }
+    }
     return;
 }
 
