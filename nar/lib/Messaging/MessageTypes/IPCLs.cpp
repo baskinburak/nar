@@ -78,7 +78,7 @@ void nar::MessageTypes::IPCLs::Request::print_loop(nar::Socket* skt) {
 		}
     }
     if(v_items.size() == 0){
-        std::cout << "-> Your nar system is currently empty <-"
+        std::cout << "-> Your nar system is currently empty <-" << std::endl;
     } else {
         for(int i=0;i<v_items.size();i++) {
             std::cout << v_items[i];
