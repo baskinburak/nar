@@ -25,6 +25,33 @@ nlohmann::json nar::MessageTypes::IPCPull::Request::generate_json() {
     return jsn;
 }
 
+
+void nar::MessageTypes::IPCPull::Request::print_loop(nar::Socket* skt) {
+
+    std::string tmp = get_message(*skt);
+    nlohmann::json received = nlohmann::json::parse(tmp);
+
+    int stat = received["payload"]["status_code"];
+    if (stat != 200) {
+        if(stat/100 == 3) {
+            std::cout<<"Your request was not complete or was wrong --- stat"<< stat<<std::endl;
+        } else  if(stat/100 == 4) {
+            std::cout<<"Database problem --- stat"<< stat<<std::endl;
+        } else  if(stat/100 == 5) {
+
+            std::cout<<"Some things went wrong in server --- stat"<< stat<<std::endl;
+        } else if (stat == 666) {
+            std::cout << "Your file cannot be created with the online chunks at the moment. Please try again later." << std::endl;
+        } else  if(stat/100 == 6) {
+            std::cout<<"Some things went wrong in daemon --- stat"<< stat<<std::endl;
+        }
+    }
+
+    return;
+}
+
+
+
 void nar::MessageTypes::IPCPull::Request::populate_object(std::string& jsn_str) {
     auto jsn = nlohmann::json::parse(jsn_str);
     IPCBaseRequest::populate_object(jsn);
@@ -39,7 +66,7 @@ void nar::MessageTypes::IPCPull::Request::send_action(nar::Socket* skt) {
 }
 
 void nar::MessageTypes::IPCPull::Request::receive_message(nlohmann::json &js){
-	//sil bu func i    
+	//sil bu func i
 	//this -> _action = js["header"]["action"];
     this -> _file_name = js["payload"]["file_name"];
     this->_dir_name = js["payload"]["dir_name"];

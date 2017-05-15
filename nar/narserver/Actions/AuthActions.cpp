@@ -337,7 +337,16 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     for(int i=0; i < chunks.size(); ++i) {
         std::vector<struct DBStructs::Machine> machines = db->getMachines(chunks[i].chunk_id);
         nar::SockInfo* peer_sck;
-        for(int j=0; !(peer_sck = s_global->peers->get_peer(machines[j].machine_id )); ++j);
+        int j;
+        for( j=0; !(peer_sck = s_global->peers->get_peer(machines[j].machine_id )) && (j < machines.size()) ; ++j);
+
+        if (j == machines.size()) {     // Chunk is not online
+            resp.set_status_code(666);
+            try {
+                resp.send_mess(skt);
+            } catch (...) {}
+            return;
+        }
 
         std::cout << "Peer to get chunk " << peer_sck->get_machine_id() << std::endl;
 
@@ -354,7 +363,9 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
         resp.add_element(peer_sck->get_machine_id(), chunks[i].chunk_id, s_id, chunks[i].chunk_size, chunks[i].hashed);
     }
     std::cout << "Waitchunkpull messages are completed time to send Resp "  << std::endl;
-    resp.send_mess(skt);
+    try {
+        resp.send_mess(skt);
+    } catch(...) {}
     while(true) {
         std::string message = get_message(skt);
         nar::MessageTypes::InfoChunkPull::Request req;
