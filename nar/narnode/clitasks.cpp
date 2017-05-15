@@ -163,13 +163,11 @@ void nar::CLITasks::nar_register(std::string username, std::string password) {
     return;
 }
 
-void nar::CLITasks::nar_status() {
-    MessageTypes::IPCStatus::Request req(std::string(""), std::string(""), std::string("/"));
-
+void nar::CLITasks::nar_status(std::string username, std::string password) {
+    MessageTypes::IPCStatus::Request req(username, password, std::string("/"));
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
     ctx.load_verify_file("/root/.nar/ipcserver.crt");
-
 
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
@@ -181,7 +179,9 @@ void nar::CLITasks::nar_status() {
     }
     try {
         req.send_action(&cli_skt);
+        //std::cout << "here" << std::endl;
         req.print_loop(&cli_skt);
+        //std::cout << "here2" << std::endl;
     }
     catch( ... ) {
         std::cout << "Connection lost with daemon" << '\n';
@@ -223,15 +223,22 @@ void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::s
     std::size_t last_found;
     std::string temp;
     std::string sql_string = "";
+
     if((dir_name[dir_name.length()-1] == '/') && dir_name.length()>1 ){
-        dir_name = dir_name.substr(0,dir_name.length()-1);
+        try{
+            dir_name = dir_name.substr(0,dir_name.length()-1);
+        } catch(...){
+            std::cout << "A bad_alloc exception is thrown if the function needs to allocate storage and fails." << std::endl;
+            return;
+        }
     }
+
     if((dir_name[0] == '/') && dir_name.length()>1){
-        found = dir_name.find("/",1);
+        found = dir_name.find("/",1); //harmless
         last_found = 1;
     }
     else{
-        found = dir_name.find("/");
+        found = dir_name.find("/"); //harmless
         last_found = 0;
     }
 
@@ -239,7 +246,7 @@ void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::s
         if(found == 0 && last_found == 0){
             temp = dir_name.substr(last_found,1);
             last_found = found+1;
-            found = dir_name.find("/",last_found);
+            found = dir_name.find("/",last_found); //harmless
             names.push_back(temp);
         }
         else{
@@ -254,6 +261,7 @@ void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::s
         temp = dir_name.substr(last_found);
         names.push_back(temp);
     }
+
     std::string dir_path("");
     std::string file_name("");
     for(int i=0;i<names.size();i++) {
@@ -264,12 +272,21 @@ void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::s
             dir_path += names[i]+ std::string("/");
         }
     }
+
     std::cout<<"file_name "<<file_name<<std::endl;
     std::cout<<"dir_name "<<dir_path<<std::endl;
+
     nar::MessageTypes::IPCMkdir::Request req(dir_name,file_name, username, password, std::string("/"));
-    boost::asio::io_service io_serv;
+
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-    ctx.load_verify_file("/root/.nar/ipcserver.crt");
+    try {
+        ctx.load_verify_file(NARIPC_CRT_DIR);
+    } catch(boost::system::system_error& exp) {
+        std::cout << "Could not load IPC certificate from " << NARIPC_CRT_DIR << std::endl;
+        return;
+    }
+
+    boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
 
     try {
@@ -278,12 +295,38 @@ void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::s
     catch(nar::Exception::Socket::ConnectionError er) {
         return;
     }
+
+
     try {
         req.send_action(&cli_skt);
-        req.print_loop(&cli_skt);
+    } catch(nar::Exception::MessageTypes::BadlyConstructedMessageSend& Exp ) {
+        std::cout << "Badly constructed message tried to be sent" << std::endl;
+        return;
+    } catch(nar::Exception::Socket::SystemError& Exp) {
+        std::cout << "Connection lost with daemon" << std::endl;
+        return;
+    } catch(nar::Exception::LowLevelMessaging::Error& Exp) {
+        std::cout << "Low Level Messaging error." << std::endl;
+        return;
+    } catch(...) {
+        std::cout << "Unknown error in send_action" << std::endl;
+        return;
     }
-    catch( ... ) {
-        std::cout << "Connection lost with daemon" << '\n';
+
+    try {
+        req.print_loop(&cli_skt);
+    } catch(nar::Exception::Socket::SystemError& Exp) {
+        std::cout << "Connection lost with daemon in print_loop." << std::endl;
+        return;
+    } catch(nar::Exception::LowLevelMessaging::Error& Exp) {
+        std::cout << "Low Level Messaging error in print_loop." << std::endl;
+        return;
+    } catch(nar::Exception::MessageTypes::BadMessageReceive& Exp) {
+        std::cout << "Bad message received in print_loop" << std::endl;
+        return;
+    } catch(...) {
+        std::cout << "Unknown error in print_loop" << std::endl;
+        return;
     }
     return;
 }

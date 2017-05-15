@@ -11,20 +11,43 @@ using std::string;
 */
 
 void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCMkdir::Request* req) {
-    nar::Socket* server_sck = this->_globals->establish_server_connection();
-    string dest_dir = req->get_dest_dir();
-    string dir_name = req->get_dir_name();
-    if(dest_dir.empty()) {
-        dest_dir = _vars->get_current_directory();
+    nar::Socket* server_sck;
+    try{
+        server_sck = this->_globals->establish_server_connection();
+    } catch(...) {
+        std::cout << "Cannot establish server connection." << std::endl;
+
+        nar::MessageTypes::IPCPush::Response resp(601);
+        nar::MessageTypes::IPCBaseResponse end_resp;
+
+        try {
+            resp.send_message(ipc_socket);
+            end_resp.send_message_end(ipc_socket);
+        } catch(...) {
+            std::cout << "CLI seems down." << std::endl;
+        }
+        return;
     }
+
+    //server connection is done!
+    string dest_dir = req->get_dest_dir(); //harmless
+    string dir_name = req->get_dir_name(); //harmless
+
+    if(dest_dir.empty()) { //No-throw guarantee for empty()
+        dest_dir = _vars->get_current_directory(); //harmless
+    }
+
     try {
         nar::ActiveTask::user_authenticate(server_sck, this->_vars);
     } catch (nar::Exception::Daemon::AuthenticationError exp) {
         std::cout<<exp.what()<<std::endl;
         return;
     }
+
     nar::MessageTypes::Mkdir::Request mkdir_req(dir_name,dest_dir);
+
     nar::MessageTypes::Mkdir::Response mdkir_resp;
+
     try{
         mkdir_req.send_mess(server_sck,mdkir_resp);
     } catch(nar::Exception::ExcpBase e) {

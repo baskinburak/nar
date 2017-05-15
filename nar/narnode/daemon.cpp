@@ -55,9 +55,6 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         std::cout << "handle_ipc_request: Bad message received, no uservars" << std::endl;
         return;
     }
-
-
-
     if(action == string("ls")) {
         nar::MessageTypes::IPCLs::Request ipc_ls;
         ipc_ls.populate_object(msg);
@@ -91,6 +88,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     } else if(action == string("config")) {
         std::cout << "Config not implemented yet! See u soon!" << std::endl;
     } else if(action == string("status")) {
+        //std::cout << "stat" << std::endl;
         nar::MessageTypes::IPCStatus::Request ipc_status;
         ipc_status.populate_object(msg);
         nar::ActiveTask::Status status_task(globals, &uservars);
