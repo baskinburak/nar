@@ -2,6 +2,7 @@
 #include <nar/lib/Exception/Exception.h>
 #include <nar/lib/Messaging/MessageTypes/FilePull.h>
 #include <nar/lib/Socket/USocket.h>
+#include <nar/lib/Messaging/MessageTypes/InfoChunkPull.h>
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -84,10 +85,11 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
             unsigned long stream_id = elements[i].stream_id;
             std::cout << "rand_port: " << rand_port << endl;
             nar::USocket* cli_sck = new nar::USocket(this->_globals->get_ioserv(), this->_globals->get_server_ip(), rand_port, stream_id);
+            char* buf = NULL;
             try {
                 cli_sck->connect();
                 long int total_read = 0;
-                char *buf = new char [elements[i].chunk_size];
+                buf = new char [elements[i].chunk_size];
                 while(total_read < elements[i].chunk_size) {
                     int len = cli_sck->recv(buf+total_read, elements[i].chunk_size - total_read);
                     total_read += len;
@@ -101,20 +103,22 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
             	encoder.Attach( new CryptoPP::StringSink( output ) );
             	encoder.Put( digest, sizeof(digest) );
             	encoder.MessageEnd();
-                if ( ! std::string::compare(output,elements[i].hashed) ) // Wrong Hash
-                    {
-                        throw std::Exception();
-                    }
+                if (  output.compare(elements[i].hashed) ) // Wrong Hash
+                {
+                    throw nar::Exception::Unknown("Wrong Hash");
+                }
+                tempfile1->write(buf,total_read);
             } catch (...) {
                 nar::MessageTypes::InfoChunkPull::Request _req(elements[i].chunk_id, 704);
                 nar::MessageTypes::InfoChunkPull::Response _resp;
-                _req.send_mess(server_socket,_resp);
+                _req.send_mess(server_sck,_resp);
                 elements[i].stream_id = _resp.get_stream_id();
-                delete [] buf;
+                if (buf)
+                    delete [] buf;
                 continue;
             }
 
-            tempfile1->write(buf,len);
+            
             cli_sck->close();
             i++;
         }
@@ -134,7 +138,7 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
 
     nar::MessageTypes::InfoChunkPull::Request _req(15, 200);
     nar::MessageTypes::InfoChunkPull::Response _resp;
-    _req.send_mess(server_socket,_resp);
+    _req.send_mess(server_sck,_resp);
 
 
     nar::MessageTypes::IPCPull::Response ipcpull_resp(3,5);
