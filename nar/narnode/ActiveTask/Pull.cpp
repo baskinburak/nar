@@ -81,7 +81,10 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     nar::File* tempfile1 = new nar::File(temp_native,"w",false);
     int i=0;
     try {
+        std::cout<<elements.size()<<std::endl;
+        unsigned long offset = 0;
         while( i<elements.size() ) {
+
             unsigned long stream_id = elements[i].stream_id;
             std::cout << "rand_port: " << rand_port << endl;
             nar::USocket* cli_sck = new nar::USocket(this->_globals->get_ioserv(), this->_globals->get_server_ip(), rand_port, stream_id);
@@ -107,8 +110,12 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
                 {
                     throw nar::Exception::Unknown("Wrong Hash");
                 }
-                tempfile1->write(buf,total_read);
+
+                tempfile1->write(buf,offset,total_read);
+                offset+=total_read;
+                std::cout<<offset<<"----"<<total_read<<std::endl;
             } catch (...) {
+                std::cout<<"pull.cpp inside"<<std::endl;
                 nar::MessageTypes::InfoChunkPull::Request _req(elements[i].chunk_id, 704);
                 nar::MessageTypes::InfoChunkPull::Response _resp;
                 _req.send_mess(server_sck,_resp);
@@ -130,8 +137,13 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     }
     delete tempfile1;
     tempfile1 = new nar::File(temp_native,"r",true);
+    nar::File * decrypted;
+    try{
+        decrypted = tempfile1->decrypt(file_aes);
+    } catch(...) {
+       std::cout<<"wwwwwwoowwwwwwwwww"<<std::endl;
+    }
 
-    nar::File * decrypted = tempfile1->decrypt(file_aes);
 
     string dust= tpath.native();
     nar::File * decompressed = decrypted->decompress(dust);

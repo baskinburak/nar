@@ -22,81 +22,81 @@ file(GLOB IPC_MESSAGING_SOURCES nar/lib/Messaging/MessageTypes/IPC*cpp)
 add_library(naripcmessaging SHARED ${IPC_MESSAGING_SOURCES})
 
 file(GLOB NAR_MESSAGING_SOURCES
-    nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.cpp
-    nar/lib/Messaging/MessageTypes/UserAuthenticationInit.cpp
-    nar/lib/Messaging/MessageTypes/FilePush.cpp
-    nar/lib/Messaging/MessageTypes/FilePull.cpp
-    nar/lib/Messaging/MessageTypes/UserRegister.cpp
-    nar/lib/Messaging/messaging_utility.cpp
-    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
-    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
-    nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
-    nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
-    nar/lib/Messaging/MessageTypes/KeepAlive.cpp
-    nar/lib/Messaging/MessageTypes/KeepAliveCheck.cpp
-    nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
-    nar/lib/Messaging/MessageTypes/RequestHeader.cpp
-    nar/lib/Messaging/MessageTypes/UserRegister.cpp
-    nar/lib/Messaging/MessageTypes/MachineRegister.cpp
-    nar/lib/Messaging/MessageTypes/DirInfo.cpp
-    nar/lib/base64/base64.cpp
-    nar/lib/Messaging/MessageTypes/DirInfo.cpp
-    nar/lib/Messaging/MessageTypes/Mkdir.cpp
-    nar/lib/Messaging/MessageTypes/DeleteFile.cpp
-    nar/lib/Messaging/MessageTypes/DeleteMachineChunk.cpp
-    nar/lib/Messaging/MessageTypes/DaemonShutdown.cpp
-    nar/lib/Messaging/MessageTypes/InfoChunkPull.cpp
-)
+        nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.cpp
+        nar/lib/Messaging/MessageTypes/UserAuthenticationInit.cpp
+        nar/lib/Messaging/MessageTypes/FilePush.cpp
+        nar/lib/Messaging/MessageTypes/FilePull.cpp
+        nar/lib/Messaging/MessageTypes/UserRegister.cpp
+        nar/lib/Messaging/messaging_utility.cpp
+        nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
+        nar/lib/Messaging/MessageTypes/RequestHeader.cpp
+        nar/lib/Messaging/MessageTypes/WaitChunkPush.cpp
+        nar/lib/Messaging/MessageTypes/WaitChunkPull.cpp
+        nar/lib/Messaging/MessageTypes/KeepAlive.cpp
+        nar/lib/Messaging/MessageTypes/KeepAliveCheck.cpp
+        nar/lib/Messaging/MessageTypes/ResponseHeader.cpp
+        nar/lib/Messaging/MessageTypes/RequestHeader.cpp
+        nar/lib/Messaging/MessageTypes/UserRegister.cpp
+        nar/lib/Messaging/MessageTypes/MachineRegister.cpp
+        nar/lib/Messaging/MessageTypes/DirInfo.cpp
+        nar/lib/base64/base64.cpp
+        nar/lib/Messaging/MessageTypes/DirInfo.cpp
+        nar/lib/Messaging/MessageTypes/Mkdir.cpp
+        nar/lib/Messaging/MessageTypes/DeleteFile.cpp
+        nar/lib/Messaging/MessageTypes/DeleteMachineChunk.cpp
+        nar/lib/Messaging/MessageTypes/DaemonShutdown.cpp
+        nar/lib/Messaging/MessageTypes/InfoChunkPull.cpp
+        )
 add_library(narmessaging SHARED ${NAR_MESSAGING_SOURCES})
 
 file(GLOB NAR_CRYPTION_SOURCES
-    nar/lib/Cryption/aes.cpp
-    nar/lib/Cryption/rsa.cpp
-)
+        nar/lib/Cryption/aes.cpp
+        nar/lib/Cryption/rsa.cpp
+        )
 add_library(narcrypto SHARED ${NAR_CRYPTION_SOURCES})
 
 
 set(SERVER_SOURCES
-    nar/narserver/Database.cpp
-    nar/narserver/server.cpp
-    nar/narserver/ServerGlobal.cpp
-    nar/narserver/Actions/authenticate_action.cpp
-    nar/narserver/Actions/register_action.cpp
-    nar/narnode/utility.cpp
-    nar/narnode/uservars.cpp
-    nar/narnode/File/File.cpp
-    nar/narserver/Actions/AuthActions.cpp
-    nar/narserver/peers.cpp
-    nar/narserver/sockinfo.cpp
-    nar/narserver/Actions/keepalive_action.cpp
-    nar/narserver/Actions/daemon_shutdown_action.cpp
-)
+        nar/narserver/Database.cpp
+        nar/narserver/server.cpp
+        nar/narserver/ServerGlobal.cpp
+        nar/narserver/Actions/authenticate_action.cpp
+        nar/narserver/Actions/register_action.cpp
+        nar/narnode/utility.cpp
+        nar/narnode/uservars.cpp
+        nar/narnode/File/File.cpp
+        nar/narserver/Actions/AuthActions.cpp
+        nar/narserver/peers.cpp
+        nar/narserver/sockinfo.cpp
+        nar/narserver/Actions/keepalive_action.cpp
+        nar/narserver/Actions/daemon_shutdown_action.cpp
+        )
 
 
 set(CLI_SOURCES
-    nar/narnode/cli.cpp
-    nar/narnode/clitasks.cpp
-    nar/narnode/utility.cpp
-    nar/narnode/uservars.cpp
-    nar/narnode/File/File.cpp
-)
+        nar/narnode/cli.cpp
+        nar/narnode/clitasks.cpp
+        nar/narnode/utility.cpp
+        nar/narnode/uservars.cpp
+        nar/narnode/File/File.cpp
+        )
 
 set(DAEMON_SOURCES
-    nar/narnode/daemon.cpp
-    nar/narnode/utility.cpp
-    nar/narnode/uservars.cpp
-    nar/narnode/global.cpp
-    nar/narnode/File/File.cpp
-    nar/narnode/reactive.cpp
-    nar/narnode/ActiveTask/ActiveFunctions.cpp
-    nar/narnode/ActiveTask/Push.cpp
-    nar/narnode/ActiveTask/Register.cpp
-    nar/narnode/ActiveTask/Pull.cpp
-    nar/narnode/ActiveTask/LS.cpp
-    nar/narnode/ActiveTask/Mkdir.cpp
-    nar/narnode/ActiveTask/DeleteFile.cpp
-    nar/narnode/ActiveTask/Status.cpp
-)
+        nar/narnode/daemon.cpp
+        nar/narnode/utility.cpp
+        nar/narnode/uservars.cpp
+        nar/narnode/global.cpp
+        nar/narnode/File/File.cpp
+        nar/narnode/reactive.cpp
+        nar/narnode/ActiveTask/ActiveFunctions.cpp
+        nar/narnode/ActiveTask/Push.cpp
+        nar/narnode/ActiveTask/Register.cpp
+        nar/narnode/ActiveTask/Pull.cpp
+        nar/narnode/ActiveTask/LS.cpp
+        nar/narnode/ActiveTask/Mkdir.cpp
+        nar/narnode/ActiveTask/DeleteFile.cpp
+        nar/narnode/ActiveTask/Status.cpp
+        )
 
 set(DAEMON_LIBRARIES narcrypto.so narmessaging.so libnaripcmessaging.so libnarsocket.so pthread cryptopp z ${OPENSSL_LIB} crypto)
 set(SERVER_LIBRARIES narcrypto.so narmessaging.so libnarsocket.so pthread cryptopp mysqlcppconn ${OPENSSL_LIB} crypto)
