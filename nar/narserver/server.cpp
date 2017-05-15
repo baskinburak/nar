@@ -17,6 +17,7 @@
 #include <nar/narnode/utility.h>
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationAnswer.h>
+#include <nar/lib/Messaging/MessageTypes/DaemonShutdown.h>
 #include <nar/lib/Messaging/MessageTypes/MachineRegister.h>
 #include <nar/lib/Messaging/MessageTypes/KeepAlive.h>
 
@@ -50,6 +51,19 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
                 return;
             }
             nar::ServerAction::keepalive_action(s_global, req, skt);
+        } else if(action == "daemon_shutdown") {
+            nar::MessageTypes::DaemonShutdown::Request req;
+
+            try{
+                req.receive_message(msg);
+            } catch(nar::Exception::MessageTypes::BadMessageReceive & e) {
+                std::cout<< e.what()<<std::endl;
+                return;
+            }
+
+            nar::ServerAction::daemon_shutdown_action(s_global,req,skt);
+
+
         }
 
     } catch(nar::Exception::Socket::SystemError& exp) {

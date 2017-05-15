@@ -26,7 +26,7 @@ namespace nar {
                         unsigned long long int chunk_id;
                         long long int stream_id;
                         unsigned long long int chunk_size;
-
+                        std::string hashed;
                         bool operator < (const PeerListElement& str) const
                         {
                            return (chunk_id < str.chunk_id);
@@ -59,6 +59,7 @@ namespace nar {
                      * @tested: Yes
                     */
                     void add_element(struct PeerListElement& ele);
+
                     /*
                      * adds new elements to pull file message
                      *
@@ -69,7 +70,7 @@ namespace nar {
                      * @param: csize, unsigned long long int, chunk size value
                      * @tested: Yes
                     */
-                    void add_element(std::string mid, unsigned long long int cid, long long int sid, unsigned long long int csize);
+                    void add_element(std::string mid, unsigned long long int cid, long long int sid, unsigned long long int csize,std::string hashed);
                     /*
                      * gives the elements of the peerlist
                      *

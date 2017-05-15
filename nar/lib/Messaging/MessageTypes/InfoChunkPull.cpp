@@ -39,17 +39,26 @@ nlohmann::json nar::MessageTypes::InfoChunkPull::Request::test_json() {
 void nar::MessageTypes::InfoChunkPull::Response::send_mess(nar::Socket* skt) {
     nlohmann::json ipull_resp_send;
     ipull_resp_send["header"] = send_head();
+    ipull_resp_send["payload"]["stream_id"] = this->_stream_id;
     send_message(skt,ipull_resp_send.dump());
-    std::string temp = get_message(skt);
-    nlohmann::json ipull_resp_recv = nlohmann::json::parse(temp);
-    receive_message(ipull_resp_recv);
     return;
 }
 
 void nar::MessageTypes::InfoChunkPull::Response::receive_message(nlohmann::json ipull_resp_recv) {
-    nlohmann::json head = ipull_resp_recv["header"];
-    recv_fill(head);
+    try{
+        nlohmann::json head = ipull_resp_recv["header"];
+        recv_fill(head);
+        this->_stream_id = ipull_resp_recv["payload"]["stream_id"];
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("info chunk pull receive failure");
+    }
+
+
     return;
+}
+
+long long int nar::MessageTypes::InfoChunkPull::Response::get_stream_id() {
+    return this->_stream_id;
 }
 
 nlohmann::json nar::MessageTypes::InfoChunkPull::Response::test_json() {

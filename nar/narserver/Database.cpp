@@ -174,16 +174,27 @@ void nar::Database::insertUser(struct DBStructs::User &us)
 void nar::Database::insertDirectory(struct DBStructs::Directory & dir){
     nar::db::Directory directory = turnDirectory(dir);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
-                                            "Dir_size, Dir_id) "
-                                            "VALUES( ?, ?, ?);");
-;
-    prep_stmt -> setString(1, directory.dir_name);
-    prep_stmt -> setBigInt(2, directory.dir_size);
-    prep_stmt -> setBigInt(3, directory.dir_id);
+    if(dir.dir_id == -1) {
+        prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
+                                                           "Dir_size) "
+                                                           "VALUES( ?, ?);");
+
+        prep_stmt -> setString(1, directory.dir_name);
+        prep_stmt -> setBigInt(2, directory.dir_size);
+    } else {
+        prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
+                                                           "Dir_size, Dir_id) "
+                                                           "VALUES( ?, ?, ?);");
+
+        prep_stmt -> setString(1, directory.dir_name);
+        prep_stmt -> setBigInt(2, directory.dir_size);
+        prep_stmt -> setBigInt(3, directory.dir_id);
+    }
+
 
     prep_stmt -> execute();
     delete prep_stmt;
+    return;
 }
 
 void nar::Database::insertDirectoryTo(struct DBStructs::DirectoryTo & dirTo){
@@ -294,7 +305,7 @@ unsigned long nar::Database::insertSession(struct DBStructs::Session &ses) {
 void nar::Database::leaveSession(struct DBStructs::Session &ses) {
     nar::db::Session session = turnSession(ses);
     sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("UPDATE Sessions SET leave_time = NOW() WHERE session_id = ? ");
+    prep_stmt = _con -> prepareStatement("UPDATE Sessions SET leave_time = NOW() WHERE session_id = ? ;");
     prep_stmt -> setBigInt(1, session.session_id);
     prep_stmt -> execute();
     delete prep_stmt;

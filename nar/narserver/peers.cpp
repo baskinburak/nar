@@ -114,8 +114,33 @@ nar::SockInfo* nar::Peers::get_peer(string& machine_id) {
 
     if (it == _keepalives.end())
         result = NULL;
-    else
+    else{
         result = it->second;
+
+        nar::MessageTypes::KeepAliveCheck::Request req;
+        nar::MessageTypes::KeepAliveCheck::Response resp;
+        nar::SockInfo* sckinf = it->second;
+        nar::Socket* sck = sckinf->get_sck();
+        try {
+            req.send_mess(sck, resp);
+        } catch(...) {
+            unsigned long sessid = sckinf->get_sessid();
+            nar::DBStructs::Session sess;
+            sess.session_id = sessid;
+            try{
+                this->_db->leaveSession(sess);
+            } catch(sql::SQLException & err) {
+                std::cout<<err.what()<<std::endl;
+            }
+
+            this->_keepalives.erase(it->first);
+            std::vector<std::string>::iterator iter;
+            if ((iter = std::find(_macs.begin(), _macs.end(), machine_id)) != _macs.end()) {
+                this->_macs.erase(iter);
+            }
+            result = NULL;
+        }
+    }
 
     read_end();
     return result;

@@ -70,7 +70,18 @@ namespace nar {
             };
         };
 
+        namespace Peer {
+            class LeaveSessionError : public nar::Exception::ExcpBase {
+            public:
+                LeaveSessionError(const char* mess): ExcpBase(mess){}
+            };
+        }
+
         namespace Daemon {
+            class ActiveChunkError : public nar::Exception::ExcpBase {
+            public:
+                ActiveChunkError(const char* mess): ExcpBase(mess){}
+            };
             class AuthenticationError : public nar::Exception::ExcpBase {
             public:
                 AuthenticationError(const char* mess): ExcpBase(mess){}
