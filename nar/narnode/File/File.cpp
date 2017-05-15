@@ -87,7 +87,7 @@ unsigned long nar::File::write(char* buffer, unsigned long offset, unsigned long
         throw nar::Exception::File::WrongMode("File is not opened with 'w'", _mode.c_str());
     }
     if(_file_handle.is_open()) {
-        unsigned long file_len = size();
+        unsigned long file_len = this->size();
         if(offset >= file_len)
             throw nar::Exception::File::OffsetOutOfBounds("Offset is greater than file length in write()", offset);
         if(len < 0)
