@@ -94,7 +94,6 @@ void nar::MessageTypes::IPCBaseRequest::send_action(nar::Socket* skt) {
 void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
     while(true) {
         std::string tmp;
-        nlohmann::json received;
         try {
             tmp = get_message(*skt);
         } catch(nar::Exception::Socket::SystemError& Exp) {
@@ -103,6 +102,9 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
             throw nar::Exception::LowLevelMessaging::Error("Low level messaging error in print_loop.");
         }
 
+        std::cout << tmp << std::endl;
+
+        nlohmann::json received;
         try {
             received = nlohmann::json::parse(tmp);
         } catch(...) {
@@ -110,8 +112,11 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
         }
         int statcode;
         try {
-            if(received["header"]["reply_to"] == std::string("END"))
+            std::cout << received["header"]["reply_to"].get<std::string>().size() << " " << std::string("END").size() << std::endl;
+            if(received["header"]["reply_to"].get<std::string>() == std::string("END")) {
+                std::cout << "break;" << std::endl;
                 break;
+            }
             statcode = received["payload"]["status_code"];
         }
         catch ( ... ) {
@@ -136,5 +141,8 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
         }
 
     }
+
+    std::cout << "i am out" << std::endl;
     skt->close();
+    std::cout << "skt closed" << std::endl;
 }

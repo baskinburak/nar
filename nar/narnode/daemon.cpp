@@ -57,6 +57,8 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         action = nar::Messaging::get_action(msg);
     } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
         std::cout << "handle_ipc_request: Bad message received, no action" << std::endl;
+        sck->close();
+        return;
     }
 
 
@@ -64,8 +66,10 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         uservars = nar::Messaging::get_user_variables(msg);
     } catch ( nar::Exception::MessageTypes::BadMessageReceive& e ) {
         std::cout << "handle_ipc_request: Bad message received, no uservars" << std::endl;
+        sck->close();
         return;
     }
+
     boost::asio::signal_set _signals(globals->get_ioserv());
     _signals.add(SIGINT);
     _signals.add(SIGTERM);
@@ -82,6 +86,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
             ipc_push.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
             std::cout << "handle_ipc_request: Bad message received from UI, Request Type: push" << std::endl;
+            sck->close();
             return;
         }
         nar::ActiveTask::Push push_task(globals, &uservars);
@@ -89,6 +94,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
             push_task.run(sck, &ipc_push);
         } catch(...) {
             std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            sck->close();
             return;
         }
     } else if(action == string("pull")) {
@@ -120,6 +126,8 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         nar::ActiveTask::DeleteFile delete_file(globals, &uservars);
         delete_file.run(sck, &ipc_delete_file);
     }
+
+    sck->close();
 }
 
 

@@ -99,6 +99,7 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
 
     unsigned long start = 0;
     for(int i=0; i<elements.size(); i++) {
+        std::cout << "Sending " << i << " start" << endl;
         boost::asio::io_service& ioserv = this->_globals->get_ioserv();
         nar::USocket* usck = new nar::USocket(ioserv, this->_globals->get_server_ip(), push_resp.get_randezvous_port(), elements[i].stream_id);
         usck->connect();
@@ -107,10 +108,12 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         usck->send(*encrypted, start, elements[i].chunk_size, hash);
         start += elements[i].chunk_size;
         usck->close();
+        std::cout << "Sending " << i << " end" << endl;
     }
 
-    nar::MessageTypes::IPCPush::Response ipcpush_resp(3,5);
+    
 
+    nar::MessageTypes::IPCPush::Response ipcpush_resp;
     ipcpush_resp.send_message_end(ipc_socket);
 
     delete compressed;

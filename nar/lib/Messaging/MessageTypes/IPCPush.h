@@ -31,6 +31,7 @@ namespace nar {
 
             class Response : public IPCBaseResponse {
                 public:
+                    Response() : IPCBaseResponse(100, std::string("push"), -1) {}
                     Response(long int sc) : IPCBaseResponse(100, std::string("push"), sc) {}
                     Response(long int prog, long int sc) : IPCBaseResponse(prog, std::string("push"), sc) {}
                     nlohmann::json give_myresponsejson();

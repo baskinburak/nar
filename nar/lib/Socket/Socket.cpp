@@ -174,8 +174,10 @@ int nar::Socket::recv(char* offset, int length) const {
 }
 
 void nar::Socket::close() const {
+    std::cout << "before shutdown" << std::endl;
     boost::system::error_code ec;
     _ssl_sock->shutdown(ec);
+    std::cout << "after shutdown" << std::endl;
 }
 
 std::string nar::Socket::get_dest_ip() const {
