@@ -364,6 +364,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     }
     std::cout << "Waitchunkpull messages are completed time to send Resp "  << std::endl;
     try {
+        resp.set_status_code(200);
         resp.send_mess(skt);
     } catch(...) {}
     while(true) {

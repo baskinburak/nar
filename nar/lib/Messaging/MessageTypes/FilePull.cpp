@@ -17,11 +17,15 @@ void nar::MessageTypes::FilePull::Request::send_mess(nar::Socket* skt ,nar::Mess
     return;
 }
 void nar::MessageTypes::FilePull::Request::receive_message(std::string& mess) {
-    nlohmann::json pull_req_recv = nlohmann::json::parse(mess);
-    nlohmann::json head = pull_req_recv["header"];
-    recv_fill(head);
-    this->_file_name = pull_req_recv["payload"]["file_name"];
-    this->_dir_name = pull_req_recv["payload"]["dir_name"];
+    try {nlohmann::json pull_req_recv = nlohmann::json::parse(mess);
+        nlohmann::json head = pull_req_recv["header"];
+        recv_fill(head);
+        this->_file_name = pull_req_recv["payload"]["file_name"];
+        this->_dir_name = pull_req_recv["payload"]["dir_name"];
+    } catch (...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("file pull bad message");
+    }
+
     return;
 }
 
@@ -89,24 +93,31 @@ void nar::MessageTypes::FilePull::Response::send_mess(nar::Socket* skt){
 
 }
 void nar::MessageTypes::FilePull::Response::receive_message(nlohmann::json pull_resp_recv){
-    nlohmann::json head = pull_resp_recv["header"];
-    recv_fill(head);
-    if(_status_code == 300) {
-        throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
-    } else if(_status_code == 301) {
-        throw nar::Exception::MessageTypes::NoValidPeerPull("Not enough valid peer for pull operation", _status_code);
-    } else if(_status_code == 302) {
-        throw nar::Exception::MessageTypes::PullFileDoesNotExist("Desired file should be pushed first", _status_code);
-    }
-    this->_rendezvous_port = pull_resp_recv["payload"]["rand_port"];
-    unsigned long int size = pull_resp_recv["payload"]["size"];
-    for(int i=0;i<size;i++) {
-        std::string mid = pull_resp_recv["payload"]["peer_list"][i]["machine_id"];
-        unsigned long long int cid = pull_resp_recv["payload"]["peer_list"][i]["chunk_id"];
-        long long int sid = pull_resp_recv["payload"]["peer_list"][i]["stream_id"];
-        unsigned long long int csize = pull_resp_recv["payload"]["peer_list"][i]["chunk_size"];
-        std::string hashed = pull_resp_recv["payload"]["peer_list"][i]["hashed"];
-        this->add_element(mid,cid,sid,csize,hashed);
+    try {
+        nlohmann::json head = pull_resp_recv["header"];
+        recv_fill(head);
+        if(_status_code == 300) {
+            throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
+        } else if(_status_code == 301) {
+            throw nar::Exception::MessageTypes::NoValidPeerPull("Not enough valid peer for pull operation", _status_code);
+        } else if(_status_code == 302) {
+            throw nar::Exception::MessageTypes::PullFileDoesNotExist("Desired file should be pushed first", _status_code);
+        }
+        this->_rendezvous_port = pull_resp_recv["payload"]["rand_port"];
+        unsigned long int size = pull_resp_recv["payload"]["size"];
+        for(int i=0;i<size;i++) {
+            std::string mid = pull_resp_recv["payload"]["peer_list"][i]["machine_id"];
+            unsigned long long int cid = pull_resp_recv["payload"]["peer_list"][i]["chunk_id"];
+            long long int sid = pull_resp_recv["payload"]["peer_list"][i]["stream_id"];
+            unsigned long long int csize = pull_resp_recv["payload"]["peer_list"][i]["chunk_size"];
+            std::string hashed = pull_resp_recv["payload"]["peer_list"][i]["hashed"];
+            this->add_element(mid,cid,sid,csize,hashed);
+        }
+
+
+    } catch(...) {
+        std::cout<<pull_resp_recv.dump()<<std::endl;
+        throw nar::Exception::MessageTypes::BadMessageReceive("file pull response recevei message");
     }
     return;
 }
