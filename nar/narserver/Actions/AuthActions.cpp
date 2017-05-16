@@ -331,7 +331,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
         resp.set_rendezvous_port(r_port);
     }
     catch ( nar::Exception::USocket::NoAvailablePort& e ) {
-        resp.set_status_code(200);                              // STATUS CODE?
+        resp.set_status_code(500);                              // STATUS CODE?
     }
 
     for(int i=0; i < chunks.size(); ++i) {
@@ -364,6 +364,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     }
     std::cout << "Waitchunkpull messages are completed time to send Resp "  << std::endl;
     try {
+        resp.set_status_code(200);
         resp.send_mess(skt);
     } catch(...) {}
     while(true) {

@@ -30,6 +30,7 @@ namespace nar {
                     long long int get_chunk_id();
 					int get_success();
                     void send_mess(nar::Socket* skt, nar::MessageTypes::InfoChunkPull::Response & resp);
+                    void send_mess(nar::Socket* skt);
                     void receive_message(std::string& ipull_req_recv);
                     nlohmann::json test_json();
             };

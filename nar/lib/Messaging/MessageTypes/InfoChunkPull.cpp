@@ -21,6 +21,15 @@ void nar::MessageTypes::InfoChunkPull::Request::send_mess(nar::Socket* skt, nar:
     return;
 }
 
+void nar::MessageTypes::InfoChunkPull::Request::send_mess(nar::Socket* skt) {
+    nlohmann::json ipull_req_send;
+    ipull_req_send["header"] = send_head();
+    ipull_req_send["payload"]["chunk_id"] = this->chunk_id;
+    ipull_req_send["payload"]["success"] = this->success;
+    send_message(skt,ipull_req_send.dump());
+    return;
+}
+
 
 void nar::MessageTypes::InfoChunkPull::Request::receive_message(std::string& _ipull_req_recv) {
     try {

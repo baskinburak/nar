@@ -28,22 +28,36 @@ nlohmann::json nar::MessageTypes::IPCPull::Request::generate_json() {
 
 void nar::MessageTypes::IPCPull::Request::print_loop(nar::Socket* skt) {
 
-    std::string tmp = get_message(*skt);
-    nlohmann::json received = nlohmann::json::parse(tmp);
+    while (true) {
 
-    int stat = received["payload"]["status_code"];
-    if (stat != 200) {
-        if(stat/100 == 3) {
-            std::cout<<"Your request was not complete or was wrong --- stat"<< stat<<std::endl;
-        } else  if(stat/100 == 4) {
-            std::cout<<"Database problem --- stat"<< stat<<std::endl;
-        } else  if(stat/100 == 5) {
+        std::string tmp = get_message(*skt);
+        std::cout << tmp << std::endl;
+        nlohmann::json received = nlohmann::json::parse(tmp);
+        std::cout << "PARSED" << std::endl;
 
-            std::cout<<"Some things went wrong in server --- stat"<< stat<<std::endl;
-        } else if (stat == 666) {
-            std::cout << "Your file cannot be created with the online chunks at the moment. Please try again later." << std::endl;
-        } else  if(stat/100 == 6) {
-            std::cout<<"Some things went wrong in daemon --- stat"<< stat<<std::endl;
+
+        if( received["header"]["reply_to"] == std::string("END")  ) {
+                break;
+        }
+
+        int stat = received["payload"]["status_code"];
+        if (stat != 200) {
+            if(stat/100 == 3) {
+                std::cout<<"Your request was not complete or was wrong --- stat"<< stat<<std::endl;
+                break;
+            } else  if(stat/100 == 4) {
+                std::cout<<"Database problem --- stat"<< stat<<std::endl;
+                break;
+            } else  if(stat/100 == 5) {
+                std::cout<<"Some things went wrong in server --- stat"<< stat<<std::endl;
+                break;
+            } else if (stat == 666) {
+                std::cout << "Your file cannot be created with the online chunks at the moment. Please try again later." << std::endl;
+                break;
+            } else  if(stat/100 == 6) {
+                std::cout<<"Some things went wrong in daemon --- stat"<< stat<<std::endl;
+                break;
+            }
         }
     }
 

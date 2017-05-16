@@ -81,7 +81,10 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     nar::File* tempfile1 = new nar::File(temp_native,"w",false);
     int i=0;
     try {
+        std::cout<<elements.size()<<std::endl;
+        unsigned long offset = 0;
         while( i<elements.size() ) {
+
             unsigned long stream_id = elements[i].stream_id;
             std::cout << "rand_port: " << rand_port << endl;
             nar::USocket* cli_sck = new nar::USocket(this->_globals->get_ioserv(), this->_globals->get_server_ip(), rand_port, stream_id);
@@ -94,21 +97,47 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
                     int len = cli_sck->recv(buf+total_read, elements[i].chunk_size - total_read);
                     total_read += len;
                 }
-
+                std::cout << "Read Done" << std::endl;
                 byte digest[ CryptoPP::Weak::MD5::DIGESTSIZE];
             	CryptoPP::Weak::MD5 hash;
             	hash.CalculateDigest( digest, (const byte*)buf, elements[i].chunk_size );
+                std::cout << "Digest Done" << std::endl;
             	CryptoPP::HexEncoder encoder;
             	std::string output;
             	encoder.Attach( new CryptoPP::StringSink( output ) );
             	encoder.Put( digest, sizeof(digest) );
             	encoder.MessageEnd();
-                if (  output.compare(elements[i].hashed) ) // Wrong Hash
+                std::cout << "Comp begin" << std::endl;
+                /* if (  output.compare(elements[i].hashed) ) // Wrong Hash
                 {
+                    std::cout <<"Benim Hesabim: " << output << std::endl;
+                    std::cout <<"Carsidaki Hesap: " << elements[i].hashed << std::endl;
                     throw nar::Exception::Unknown("Wrong Hash");
-                }
+                } */
+                std::cout << "File Written B" << std::endl;
                 tempfile1->write(buf,total_read);
-            } catch (...) {
+                std::cout << "File Written" << std::endl;
+                offset+=total_read;
+                std::cout<<offset<<"----"<<total_read<<std::endl;
+            }
+            catch (nar::Exception::File::WrongMode& e) {
+                std::cout << e.what() << std::endl;
+            }
+            catch (nar::Exception::File::OffsetOutOfBounds& e) {
+                std::cout << e.what() << std::endl;
+            }
+            catch ( nar::Exception::DomainError::Negative& e) {
+                std::cout << e.what() << std::endl;
+            }
+            catch ( nar::Exception::File::WriteError& e) {
+                std::cout << e.what() << std::endl;
+            }
+            catch ( nar::Exception::File::NotOpen& e) {
+                std::cout << e.what() << std::endl;
+            }
+
+            catch (...) {
+                std::cout<<"pull.cpp inside"<<std::endl;
                 nar::MessageTypes::InfoChunkPull::Request _req(elements[i].chunk_id, 704);
                 nar::MessageTypes::InfoChunkPull::Response _resp;
                 _req.send_mess(server_sck,_resp);
@@ -118,7 +147,7 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
                 continue;
             }
 
-            
+
             cli_sck->close();
             i++;
         }
@@ -128,24 +157,30 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
         delete tempfile1;
         return;
     }
+
     delete tempfile1;
     tempfile1 = new nar::File(temp_native,"r",true);
-
-    nar::File * decrypted = tempfile1->decrypt(file_aes);
+    nar::File * decrypted;
+    try{
+        decrypted = tempfile1->decrypt(file_aes);
+    } catch(...) {
+       std::cout<<"wwwwwwoowwwwwwwwww"<<std::endl;
+    }
 
     string dust= tpath.native();
     nar::File * decompressed = decrypted->decompress(dust);
 
-    nar::MessageTypes::InfoChunkPull::Request _req(15, 200);
-    nar::MessageTypes::InfoChunkPull::Response _resp;
-    _req.send_mess(server_sck,_resp);
+
+    nar::MessageTypes::InfoChunkPull::Request _req(50, 200);
+    _req.send_mess(server_sck);
 
 
-    nar::MessageTypes::IPCPull::Response ipcpull_resp(3,5);
+    nar::MessageTypes::IPCPull::Response ipcpull_resp(100,200);
 
     ipcpull_resp.send_message_end(ipc_socket);
 
     delete tempfile1;
     delete decrypted;
     delete decompressed;
+    return;
 }
