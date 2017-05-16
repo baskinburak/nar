@@ -46,7 +46,7 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     } catch (nar::Exception::Socket::SystemError& Exp) {
         std::cout << "Server connection broken." << std::endl;
         server_sck->forceclose();
-        this->send_error_response(ipc_socket, 601);
+        this->send_error_response(ipc_socket, 604);
         return;
     } catch(nar::Exception::LowLevelMessaging::Error& Exp) {
         std::cout << "LowLevelMessaging error with server." << std::endl;
@@ -158,7 +158,6 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
 
     std::string pushdir = this->_vars->get_current_directory(); // nar directory
 
-    // burda kaldık aga
 
     std::string file_name;
     for(int i=file_path.size()-1; i>=0; i--) {
@@ -170,29 +169,71 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
 
     nar::MessageTypes::FilePush::Request push_req(file_name, pushdir, file_size);
     nar::MessageTypes::FilePush::Response push_resp;
-    push_req.send_mess(server_sck, push_resp);
 
-    std::vector<nar::MessageTypes::FilePush::Response::PeerListElement> elements = push_resp.get_elements();
-
-
-    unsigned long start = 0;
-    for(int i=0; i<elements.size(); i++) {
-        std::cout << "Sending " << i << " start" << endl;
-        boost::asio::io_service& ioserv = this->_globals->get_ioserv();
-        nar::USocket* usck = new nar::USocket(ioserv, this->_globals->get_server_ip(), push_resp.get_randezvous_port(), elements[i].stream_id);
-        usck->connect();
-        std::cout << elements[i].chunk_size << std::endl;
-        std::string hash;                                   // hash
-        usck->send(*encrypted, start, elements[i].chunk_size, hash);
-        start += elements[i].chunk_size;
-        usck->close();
-        std::cout << "Sending " << i << " end" << endl;
+    try {
+        push_req.send_mess(server_sck, push_resp);
+    } catch(nar::Exception::LowLevelMessaging::Error& err) {
+        std::cout << "LowLevelMessaging error with server." << std::endl;
+        server_sck->forceclose();
+        this->send_error_response(ipc_socket, 602);
+        return;
+    } catch(nar::Exception::Socket::SystemError& err) {
+        std::cout << "Server connection broken." << std::endl;
+        server_sck->forceclose();
+        this->send_error_response(ipc_socket, 604);
+        return;
+    } catch(nar::Exception::MessageTypes::NoValidPeerPush& err) { // :(:(
+        std::cout << "No valid peer found in the server" << std::endl;
+        server_sck->close();
+        this->send_error_response(ipc_socket, 707);
+        return;
+    } catch(nar::Exception::MessageTypes::BadMessageReceive& err) {
+        std::cout << "Server sent bad message." << std::endl;
+        server_sck->forceclose();
+        this->send_error_response(ipc_socket, 603);
+        return;
+    } catch(...) {
+        std::cout << "push_req unknown error." << std::endl;
+        server_sck->forceclose();
+        this->send_error_response(ipc_socket, 900);
+        return;
     }
 
-    
 
-    nar::MessageTypes::IPCPush::Response ipcpush_resp;
-    ipcpush_resp.send_message_end(ipc_socket);
+    std::vector<nar::MessageTypes::FilePush::Response::PeerListElement>& elements = push_resp.get_elements();
+
+
+    std::cout << "Total chunks to be sent: " << elements.size() << std::endl;
+    unsigned long start = 0;
+    for(int i=0; i<elements.size(); i++) {
+        std::cout << "Sending chunk " << i << " with id " << elements[i].chunk_id << " with stream_id " << elements[i].stream_id << ".";
+        boost::asio::io_service& ioserv = this->_globals->get_ioserv();
+        nar::USocket* usck = new nar::USocket(ioserv, this->_globals->get_server_ip(), push_resp.get_randezvous_port(), elements[i].stream_id);
+        std::cout << "Trying to connect...";
+        usck->connect();
+        std::cout << "CONNECTED." << std::endl;
+        std::string hash;
+        std::cout << "Send is starting..." << std::endl;
+        try {
+            usck->send(*encrypted, start, elements[i].chunk_size, hash);
+        } catch(nar::Exception::USocket::InactivePeer& exp) {
+            std::cout << "FAIL. [peer inactive]" << std::endl;
+            usck->close();
+            break;
+        }
+        std::cout << "SENT. Hash: " << hash << std::endl;
+        start += elements[i].chunk_size;
+        usck->close();
+    }
+
+
+    nar::MessageTypes::IPCPush::Response ipcpush_resp(200);
+    try {
+        ipcpush_resp.send_message(ipc_socket);
+        ipcpush_resp.send_message_end(ipc_socket);
+    } catch(...) {
+        std::cout << "IPC Push Response sent unknown error." << std::endl;
+    }
 
     delete compressed;
     delete encrypted;

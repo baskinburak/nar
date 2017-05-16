@@ -15,6 +15,9 @@
 #include <crypto++/md5.h>
 #include <cryptopp/filters.h>
 
+
+#define NAR_INACTIVE_ALLOW 10
+
 using boost::asio::ip::udp;
 using std::pair;
 
@@ -134,6 +137,8 @@ namespace nar {
             bool _exp_sqnm_set;
             std::atomic<bool> _close_sck;
 
+            int _inactive_allow;
+            bool _inactive_flag;
 
             unsigned int rand_seqnum();
         public:

@@ -103,10 +103,10 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
             	encoder.Attach( new CryptoPP::StringSink( output ) );
             	encoder.Put( digest, sizeof(digest) );
             	encoder.MessageEnd();
-                if (  output.compare(elements[i].hashed) ) // Wrong Hash
+               /* if (  output.compare(elements[i].hashed) ) // Wrong Hash
                 {
                     throw nar::Exception::Unknown("Wrong Hash");
-                }
+                }*/
                 tempfile1->write(buf,total_read);
             } catch (...) {
                 nar::MessageTypes::InfoChunkPull::Request _req(elements[i].chunk_id, 704);

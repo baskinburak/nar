@@ -86,9 +86,10 @@ void f(int naber, int iyidir);
     * 502: RsaCryptor unexpected server error
     * 503: base64 unexpected server error
 * //6xx//: Connection errors
-    * 601: Cannot connect to the server [Daemon to server]
+    * 601: Cannot connect to the server [Daemon to CLI]
     * 602: Low level messaging error [send_message and get_message in utilities]
     * 603: Server sent bad message [Bad request or bad response]
+    * 604: Server connection broken [Daemon to CLI]
 * //7xx//: Normal workflow errors [Errors like not able to authenticate]
     * 701: No such username [Server sends to daemon]
     * 702: Cannot authenticate user [Daemon sends to CLI]
@@ -96,4 +97,6 @@ void f(int naber, int iyidir);
     * 704: Cannot open file [Daemon sends to CLI]
     * 705: Cannot open a tempfile [Daemon sends to CLI]
     * 706: Compression error
+    * 707: Not enough valid peers to push your file [Server sends to daemon, daemon sends to CLI]
+    * 708: Cryption error
 * //900//: Unknown error

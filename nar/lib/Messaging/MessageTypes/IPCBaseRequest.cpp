@@ -133,6 +133,8 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
             std::cout << "Low level messaging error with server." << std::endl;
         } else if(statcode == 603) {
             std::cout << "Server sent bad message. Are you connected to a legit server?" << std::endl << "Check your config file." << std::endl;
+        } else if(statcode == 604) {
+            std::cout << "Server connection is broken." << std::endl;
         } else if(statcode == 702) {
             std::cout << "Cannot authenticate your user" << std::endl;
         } else if(statcode == 900){
@@ -149,8 +151,10 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
             std::cout << "Cannot open a tempfile." << std::endl;
         } else if(statcode == 706) {
             std::cout << "Compression error." << std::endl;
-        } else if(statcode == 707) {
+        } else if(statcode == 708) {
             std::cout << "Cryption error." << std::endl;
+        } else if(statcode == 707) {
+            std::cout << "No valid peers to push file." << std::endl;
         } else {
             std::cout << "Non-handled error." << std::endl;
         }

@@ -190,6 +190,12 @@ namespace nar {
                 };
             };
 
+            class InactivePeer : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    InactivePeer(const char* mess) : ExcpBase(mess) {}
+            };
+
             class NoAvailablePort : public nar::Exception::ExcpBase {
                 private:
                 public:
