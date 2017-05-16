@@ -94,7 +94,6 @@ void nar::MessageTypes::FilePull::Response::send_mess(nar::Socket* skt){
 }
 void nar::MessageTypes::FilePull::Response::receive_message(nlohmann::json pull_resp_recv){
     try {
-        std::cout<<pull_resp_recv.dump()<<std::endl;
         nlohmann::json head = pull_resp_recv["header"];
         recv_fill(head);
         if(_status_code == 300) {
@@ -117,7 +116,6 @@ void nar::MessageTypes::FilePull::Response::receive_message(nlohmann::json pull_
 
 
     } catch(...) {
-
         throw nar::Exception::MessageTypes::BadMessageReceive("file pull response recevei message");
     }
     return;
