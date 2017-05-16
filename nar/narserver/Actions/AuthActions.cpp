@@ -1,4 +1,4 @@
-#include <nar/lib/Messaging/MessageTypes/FilePush.h>
+    #include <nar/lib/Messaging/MessageTypes/FilePush.h>
 #include <nar/lib/Messaging/MessageTypes/FilePull.h>
 #include <nar/narserver/Database.h>
 #include <nar/narserver/dbstructs.h>
@@ -116,8 +116,6 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
             std::cout<<"send_mess_bomb"<<std::endl;
             return;
         }
-
-
         return;
     }
 

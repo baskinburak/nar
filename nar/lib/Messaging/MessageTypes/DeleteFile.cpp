@@ -10,6 +10,7 @@ void nar::MessageTypes::DeleteFile::Request::send_mess(nar::Socket* skt, nar::Me
     mkdir_req_send["payload"]["dest_dir"] = this->_dest_dir;
     send_message(skt,mkdir_req_send.dump());
     std::string temp = get_message(skt);
+    std::cout << "temp" << temp << std::endl;
     nlohmann::json mkdir_req_recv = nlohmann::json::parse(temp);
     resp.receive_message(mkdir_req_recv);
     return;

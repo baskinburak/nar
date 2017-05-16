@@ -24,14 +24,24 @@ void nar::ActiveTask::DeleteFile::run(nar::Socket* ipc_socket, nar::MessageTypes
         return;
     }
 
+
     nar::MessageTypes::DeleteFile::Request reqq(file_name,dest_dir);
     nar::MessageTypes::DeleteFile::Response resp;
     try{
         reqq.send_mess(server_sck,resp);
     }
     catch(...){
+        std::cout << "Problem in sending" <<std::endl;
         return;
     }
-    nar::MessageTypes::IPCDeleteFile::Response ipc_resp;
+
+    int status = resp.get_status_code();
+
+
+    nar::MessageTypes::IPCDeleteFile::Response ipc_resp(15,300);
+    if(status != 200) {
+        ipc_resp.set_status_code(status);
+    }
+    ipc_resp.send_message(ipc_socket);
     ipc_resp.send_message_end(ipc_socket);
 }
