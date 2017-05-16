@@ -2,6 +2,7 @@
 #define NAR_DBSTRUCTS_H
 #include <time.h>
 #include <string>
+#include <vector>
 
 namespace nar {
     namespace DBStructs {
@@ -9,8 +10,8 @@ namespace nar {
             Session():session_id(-1){}
             long long int session_id;
             std::string machine_id;
-            long long int join_time;
-            long long int leave_time;
+            unsigned long join_time;
+            unsigned long leave_time;
         };
 
         struct Directory{
@@ -73,6 +74,41 @@ namespace nar {
         struct ChunkToMachine {
             long long int chunk_id;
             std::string machine_id;
+        };
+        struct TimeTable {
+            TimeTable() {
+                time_keep(24);
+                time_count(24);
+            }
+            std::string machine_id;
+            std::vector<unsigned long> time_keep;
+            std::vector<unsigned long> time_count;
+            /*unsigned long  i0_1;
+            unsigned long i1_2;
+            unsigned long i2_3;
+            unsigned long i3_4;
+            unsigned long i4_5;
+            unsigned long i5_6;
+            unsigned long i6_7;
+            unsigned long i7_8;
+            unsigned long i8_9;
+            unsigned long i9_10;
+            unsigned long i10_11;
+            unsigned long i11_12;
+            unsigned long i12_13;
+            unsigned long i13_14;
+            unsigned long i14_15;
+            unsigned long i15_16;
+            unsigned long i16_17;
+            unsigned long i17_18;
+            unsigned long i18_19;
+            unsigned long i19_20;
+            unsigned long i20_21;
+            unsigned long i21_22;
+            unsigned long i22_23;
+            unsigned long i23_24;*/
+            unsigned long last_update;
+            unsigned long session_count;
         };
     }
 }

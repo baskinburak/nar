@@ -66,6 +66,43 @@ namespace nar {
             sql::SQLString chunk_id;
             std::string machine_id;
         };
+
+        struct TimeTable {
+            TimeTable() {
+                time_keep(24);
+                time_count(24);
+            }
+            std::string machine_id;
+            std::vector<sql::SQLString> time_keep;
+            std::vector<sql::SQLString> time_count;
+            /*
+            sql::SQLString i0_1;
+            sql::SQLString i1_2;
+            sql::SQLString i2_3;
+            sql::SQLString i3_4;
+            sql::SQLString i4_5;
+            sql::SQLString i5_6;
+            sql::SQLString i6_7;
+            sql::SQLString i7_8;
+            sql::SQLString i8_9;
+            sql::SQLString i9_10;
+            sql::SQLString i10_11;
+            sql::SQLString i11_12;
+            sql::SQLString i12_13;
+            sql::SQLString i13_14;
+            sql::SQLString i14_15;
+            sql::SQLString i15_16;
+            sql::SQLString i16_17;
+            sql::SQLString i17_18;
+            sql::SQLString i18_19;
+            sql::SQLString i19_20;
+            sql::SQLString i20_21;
+            sql::SQLString i21_22;
+            sql::SQLString i22_23;
+            sql::SQLString i23_24;*/
+            sql::SQLString last_update;
+            sql::SQLString session_count;
+        };
     }
 
 }

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <ctime>
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -59,6 +60,8 @@ namespace nar {
             nar::db::Directory turnDirectory(nar::DBStructs::Directory & directory);
             nar::db::DirectoryTo turnDirectoryTo(nar::DBStructs::DirectoryTo & directoryTo);
             nar::db::Session turnSession(nar::DBStructs::Session & session);
+            nar::db::TimeTable turnTimeTable(nar::DBStructs::TimeTable & timetable);
+
 
         public:
             Database():read_mtx(), write_mtx() {}
@@ -104,6 +107,7 @@ namespace nar {
             void updateMachineDiskSpace(struct DBStructs::Machine & machine);
             void updateMachineUserId(struct DBStructs::Machine & machine);
             void updateMachineDeleteList(struct DBStructs::Machine & machine);
+            void updateTimeTable(db::Session &session);
 
             void deleteUser(struct DBStructs::User & user);
             void deleteChunk(struct DBStructs::Chunk & chunk);
@@ -138,6 +142,7 @@ namespace nar {
 
             bool does_file_exist(std::string& file_name, std::string& parent_name ,std::string& user_name);
             bool does_dir_exist(std::string& dir_name, std::string& parent_name, std::string& user_name);
+
 
     };
 

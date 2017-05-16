@@ -1,4 +1,5 @@
 #include <nar/narserver/Database.h>
+#include "boost/date_time/posix_time/posix_time.hpp" //include all types plus i/o
 void nar::Database::read_start() {
     read_mtx.lock();
     read_count++;
@@ -108,6 +109,46 @@ nar::db::Session nar::Database::turnSession(nar::DBStructs::Session &session) {
     ses.join_time = std::to_string(session.join_time);
     ses.leave_time = std::to_string(session.leave_time);
     return ses;
+}
+nar::db::TimeTable nar::Database::turnTimeTable(nar::DBStructs::TimeTable &timetable) {
+    nar::db::TimeTable tt;
+    tt.machine_id = timetable.machine_id;
+    for(int i=0;i<24;i++) {
+        tt.time_keep[i] = std::to_string(timetable.time_keep[i]);
+    }
+    for(int i=0;i<24;i++) {
+        tt.time_count[i] = std::to_string(timetable.time_count[i]);
+    }
+    /*
+    tt.i0_1 = std::to_string(timetable.i0_1);
+    tt.i1_2 = std::to_string(timetable.i1_2);
+    tt.i2_3 = std::to_string(timetable.i2_3);
+    tt.i3_4 = std::to_string(timetable.i3_4);
+    tt.i4_5 = std::to_string(timetable.i4_5);
+    tt.i5_6 = std::to_string(timetable.i5_6);
+    tt.i6_7 = std::to_string(timetable.i6_7);
+    tt.i7_8 = std::to_string(timetable.i7_8);
+    tt.i8_9 = std::to_string(timetable.i8_9);
+    tt.i9_10 = std::to_string(timetable.i9_10);
+    tt.i10_11 = std::to_string(timetable.i10_11);
+    tt.i11_12 = std::to_string(timetable.i11_12);
+    tt.i12_13 = std::to_string(timetable.i12_13);
+    tt.i13_14 = std::to_string(timetable.i13_14);
+    tt.i14_15 = std::to_string(timetable.i14_15);
+    tt.i15_16 = std::to_string(timetable.i15_16);
+    tt.i16_17 = std::to_string(timetable.i16_17);
+    tt.i17_18 = std::to_string(timetable.i17_18);
+    tt.i18_19 = std::to_string(timetable.i18_19);
+    tt.i19_20 = std::to_string(timetable.i19_20);
+    tt.i20_21 = std::to_string(timetable.i20_21);
+    tt.i21_22 = std::to_string(timetable.i21_22);
+    tt.i22_23 = std::to_string(timetable.i22_23);
+    tt.i23_24 = std::to_string(timetable.i23_24);*/
+    tt.last_update = std::to_string(timetable.last_update);
+    tt.session_count = std::to_string(timetable.session_count);
+    return tt;
+
+
 
 
 }
@@ -300,16 +341,90 @@ unsigned long nar::Database::insertSession(struct DBStructs::Session &ses) {
     delete prep_stmt;
     return last;
 }
+void nar::Database::updateTimeTable(nar::db::Session &session) {
+    sql::PreparedStatement *prep_stmt;
+    sql::ResultSet *res;
+    prep_stmt = _con -> prepareStatement("SELECT machine_id, UNIX_TIMESTAMP(join_time) As j_time, UNIX_TIMESTAMP(leave_time) as l_time "
+                                                       " FROM Sessions "
+                                                       " WHERE session_id = ? ;");
 
+    prep_stmt -> setBigInt(1, session.session_id);
+    res = prep_stmt->executeQuery();
+    nar::DBStructs::Session ses;
+    ses.machine_id = res->getString("machine_id").asStdString();
+    time_t j_time = res->getUInt64("j_time");
+    time_t l_time = res->getUInt64("l_time");
+    boost::posix_time::ptime join_time= boost::posix_time::from_time_t(j_time);
+    boost::posix_time::ptime leave_time= boost::posix_time::from_time_t(l_time);
+   // struct tm join_time = *gmtime(&j_time);
+    //struct tm leave_time = *gmtime(&l_time);
+    prep_stmt = _con->prepareStatement("SELECT i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15"
+                                                     ", i16, i17, i18, i19, i20, i21, i22, i23, s0, s1, s2, s3, s4"
+                                                     ", s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17"
+                                                     ", s18, s19, s20, s21, s22, s23 "
+                                                     ", UNIX_TIMESTAMP(last_update) As l_update, session_count "
+                                                     " FROM TimeTable "
+                                                     " WHERE TimeTable.machine_id = ? ;");
+    prep_stmt ->setString(1,ses.machine_id);
+    res = prep_stmt->executeQuery();
+    nar::DBStructs::TimeTable tt;
+    // get interval and session count numbers for each interval
+    for(int i=0 ; i<24 ; i++) {
+        tt.time_keep[i] = res->getUInt64(std::string("i")+std::to_string(i));
+        tt.time_count[i] = res->getUInt64(std::string("s")+std::to_string(i));
+    }
+
+    time_t l_update =  res->getUInt64("l_update");
+    boost::posix_time::ptime last_update= boost::posix_time::from_time_t(l_update);
+    int join_m = join_time.time_of_day().minutes();
+    int leave_m = leave_time.time_of_day().minutes();
+    int join_h = join_time.time_of_day().hours();
+    int leave_h = leave_time.time_of_day().hours();
+    int last_m = last_update.time_of_day().minutes();
+    int last_h = last_update.time_of_day().hours();
+    // difference between leave time and joint time
+    boost::posix_time::time_duration diff =  leave_time - join_time;
+
+    // difference between last update and joint time
+    boost::posix_time::time_duration sesdiff = join_time - last_update;
+    int shour = sesdiff.hours();
+    int sminute = sesdiff.minutes();
+    int change = 0;
+    // if diff is not enough to increment the one hour not increace session count
+    if(join_m+diff.minutes() <= 60) {
+        tt.time_keep[join_h]+= diff.minutes();
+    } else {
+        change = 60- join_m;
+        tt.time_keep[join_h]+= change;
+
+    }
+    if((shour == 0 )&& (last_m+sminute)>60) {
+        tt.time_count[join_h]++;
+    }
+    boost::posix_time::ptime updated = join_time - boost::posix_time::minutes(join_m);
+    updated = updated + boost::posix_time::hours(1);
+    boost::posix_time::time_iterator titr(updated, boost::posix_time::hours(1));
+    while(titr < leave_time) {
+        tt.time_count[int(updated.time_of_day().hours())]++;
+        tt.time_keep[int(updated.time_of_day().hours())] += 60;
+        titr++;
+    }
+    boost::posix_time::time_duration rem = updated- leave_time;
+    tt.time_keep[leave_h]-= rem.minutes();
+
+
+}
 
 void nar::Database::leaveSession(struct DBStructs::Session &ses) {
-    nar::db::Session session = turnSession(ses);
+    struct nar::db::Session session = turnSession(ses);
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con -> prepareStatement("UPDATE Sessions SET leave_time = NOW() WHERE session_id = ? ;");
     prep_stmt -> setBigInt(1, session.session_id);
     prep_stmt -> execute();
+    updateTimeTable(session);
     delete prep_stmt;
 }
+
 
 nar::DBStructs::User nar::Database::getUser(std::string name)
 {
@@ -1196,3 +1311,5 @@ bool nar::Database::does_dir_exist(std::string& dir_name, std::string& parent_na
     }
     return true;
 }
+
+
