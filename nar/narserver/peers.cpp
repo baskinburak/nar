@@ -71,7 +71,20 @@ nar::SockInfo* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long
 }
 
 nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned long chunk_size) {
+
     std::set<std::string> user_machines = _db->get_user_machines(user);
+
+    bool another_keepalive = false;
+    for(int i=0; i<_macs.size(); i++) {
+        if(user_machines.find(_macs[i]) == user_machines.end()) {
+            another_keepalive = true;
+            break;
+        }
+    }
+
+    if(!another_keepalive) {
+        throw nar::Exception::Peers::NoValidPeer("No valid peer to push");
+    }
 
     std::random_device rd; // only used once to initialise (seed) engine
     std::mt19937 rng(rd()); // random-number engine used (Mersenne-Twister in this case)

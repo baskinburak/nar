@@ -221,6 +221,15 @@ namespace nar {
                     int get_value() const { return _value; }
             };
         };
+
+        namespace Peers {
+            class NoValidPeer : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    NoValidPeer(const char* mess): nar::Exception::ExcpBase(mess) {}
+            };
+        };
+
         namespace MessageTypes {
             class UnknownStatCode : public nar::Exception::ExcpBase {
                 private:

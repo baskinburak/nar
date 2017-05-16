@@ -99,4 +99,5 @@ void f(int naber, int iyidir);
     * 706: Compression error
     * 707: Not enough valid peers to push your file [Server sends to daemon, daemon sends to CLI]
     * 708: Cryption error
+    * 799: Peer down
 * //900//: Unknown error

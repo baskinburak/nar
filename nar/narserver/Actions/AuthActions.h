@@ -10,6 +10,9 @@
 #include <nar/lib/Messaging/MessageTypes/Mkdir.h>
 #include <nar/lib/Messaging/MessageTypes/DeleteFile.h>
 #include <nar/narserver/dbstructs.h>
+#include <algorithm>
+
+#define CHUNK_SIZE 1000000ULL
 
 namespace nar {
     namespace AuthAction {

@@ -12,7 +12,6 @@
 #include <set>
 #include <nar/narserver/peers.h>
 
-#define CHUNK_SIZE 1000000                           // BURAYA BAKARLAR
 
 using std::string;
 using std::map;

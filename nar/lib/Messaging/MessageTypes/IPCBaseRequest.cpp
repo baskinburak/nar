@@ -155,6 +155,8 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
             std::cout << "Cryption error." << std::endl;
         } else if(statcode == 707) {
             std::cout << "No valid peers to push file." << std::endl;
+        } else if(statcode == 799) {
+            std::cout << "Peer down." << std::endl;
         } else {
             std::cout << "Non-handled error." << std::endl;
         }
