@@ -96,6 +96,8 @@ void nar::MessageTypes::UserAuthenticationInit::Response::receive_message(nlohma
 
     if(stat == 701) {
         throw nar::Exception::Authentication::NoSuchUsername("UserAuthenticationInit::Response::receive_message");
+    } else if(stat/100 == 5) {
+        throw nar::Exception::MessageTypes::InternalServerError("InternalServerError", stat);
     } else if(stat == 200) {
         try {
             this->_private_key = keep_resp_recv["payload"]["private_key"];

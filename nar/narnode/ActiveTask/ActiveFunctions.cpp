@@ -83,6 +83,5 @@ std::string nar::ActiveTask::user_authenticate(nar::Socket* skt, nar::UserVariab
         throw nar::Exception::Daemon::AuthenticationError("AES decrypt file_aes error.");
     }
 
-    //std::cout << "aes first: " << file_aes << std::endl;
     return file_aes;
 }

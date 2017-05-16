@@ -353,6 +353,17 @@ namespace nar {
             };
         };
         namespace File {
+            class CompressError : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    CompressError(const char* mess): nar::Exception::ExcpBase(mess) {}
+            };
+            class CryptError : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    CryptError(const char* mess): nar::Exception::ExcpBase(mess) {}
+            };
+
             class WriteError : public nar::Exception::ExcpBase {
                 private:
                     int _offset;

@@ -14,6 +14,7 @@
 void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar::Socket* skt, nar::DBStructs::User& user) {
     std::string message = get_message(skt);
     std::string action = Messaging::get_action(message);
+
     if(action == std::string("file_push_request")) {
         nar::MessageTypes::FilePush::Request req;
         try{

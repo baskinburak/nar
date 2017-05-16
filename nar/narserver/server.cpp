@@ -30,7 +30,7 @@ using namespace nlohmann;
 
 void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
     try {
-        string msg = nar::trim(nar::get_message(*skt));
+        string msg = nar::get_message(*skt);
         string action = nar::Messaging::get_action(msg);
         if(action == "user_authentication_init") {
             nar::MessageTypes::UserAuthenticationInit::Request req;
@@ -62,20 +62,28 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
             }
 
             nar::ServerAction::daemon_shutdown_action(s_global,req,skt);
-
-
         }
-
     } catch(nar::Exception::Socket::SystemError& exp) {
-        skt->close();
+        skt->forceclose();
         return;
     } catch(nar::Exception::LowLevelMessaging::NoSize& exp) {
-        skt->close();
+        skt->forceclose();
         return;
     } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& exp) {
-        skt->close();
+        skt->forceclose();
+        return;
+    } catch(nar::Exception::LowLevelMessaging::ServerSizeIntOverflow& exp) {
+        skt->forceclose();
+        return;
+    } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+        skt->forceclose();
+        return;
+    } catch(...) {
+        skt->forceclose();
         return;
     }
+
+    skt->close();
 }
 
 

@@ -82,6 +82,9 @@ void f(int naber, int iyidir);
     * 302: Domain error [At least one of the fields does not have required domain]
 * //4xx//: Database related error
 * //5xx//: Algorithmic error
+    * 501: AesCryptor unexpected server error
+    * 502: RsaCryptor unexpected server error
+    * 503: base64 unexpected server error
 * //6xx//: Connection errors
     * 601: Cannot connect to the server [Daemon to server]
     * 602: Low level messaging error [send_message and get_message in utilities]
@@ -90,4 +93,7 @@ void f(int naber, int iyidir);
     * 701: No such username [Server sends to daemon]
     * 702: Cannot authenticate user [Daemon sends to CLI]
     * 703: Wrong decrypted task string [Server sends to daemon]
+    * 704: Cannot open file [Daemon sends to CLI]
+    * 705: Cannot open a tempfile [Daemon sends to CLI]
+    * 706: Compression error
 * //900//: Unknown error
