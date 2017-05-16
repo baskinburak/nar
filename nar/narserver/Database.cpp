@@ -407,7 +407,7 @@ void nar::Database::updateTimeTable(nar::db::Session &session) {
     while(titr < leave_time) {
         tt.time_count[int(updated.time_of_day().hours())]++;
         tt.time_keep[int(updated.time_of_day().hours())] += 60;
-        titr++;
+        ++titr;
     }
     boost::posix_time::time_duration rem = updated- leave_time;
     tt.time_keep[leave_h]-= rem.minutes();

@@ -69,8 +69,8 @@ namespace nar {
 
         struct TimeTable {
             TimeTable() {
-                time_keep(24);
-                time_count(24);
+                time_keep.resize(24);
+                time_count.resize(24);
             }
             std::string machine_id;
             std::vector<sql::SQLString> time_keep;
