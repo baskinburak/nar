@@ -71,7 +71,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
             req.receive_message(message);
         } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
             std::cout<<exp.what()<<std::endl;
-            nar::MessageTypes::DirInfo::Response resp(300);
+            nar::MessageTypes::DeleteFile::Response resp(300);
             resp.send_mess(skt);
         }
 

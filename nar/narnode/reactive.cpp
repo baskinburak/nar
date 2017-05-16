@@ -104,7 +104,7 @@ void nar::delete_chunk( nar::Global* globals, std::string chunk_id, nar::Socket*
     boost::filesystem::path path(globals->get_file_folder());
     path /= chunkToDelete;
 
-    if( !boost::filesystem::exists(path) || boost::filesystem::is_directory(path) || boost::filesystem::remove(path) ) {
+    if( !boost::filesystem::exists(path) || boost::filesystem::is_directory(path) || !boost::filesystem::remove(path) ) {
         nar::MessageTypes::DeleteMachineChunk::Response resp(601);
         std::cout << "Reactive delete failed" << std::endl;
         try {
