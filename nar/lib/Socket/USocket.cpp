@@ -156,15 +156,20 @@ void nar::USocket::timer_thread(unsigned long usec, bool* stop_timer) {
         timer.wait();
     } catch(boost::system::system_error& Exp) {
     }
-    std::unique_lock<std::mutex> lck(this->_work_mutex);
-    if(!(*stop_timer)) {
-        this->_timer_flag = true;
-        this->_event_cv.notify_all();
+
+
+    try {
+	    std::unique_lock<std::mutex> lck(this->_work_mutex);
+	    if(!(*stop_timer)) {
+		this->_timer_flag = true;
+		this->_event_cv.notify_all();
+
+	    }
+	    delete stop_timer;
+
+	    lck.unlock();
+    } catch(std::system_error& ia) {
     }
-    delete stop_timer;
-
-    lck.unlock();
-
 }
 
 bool* nar::USocket::start_timer(unsigned long usec) {
@@ -194,10 +199,12 @@ void nar::USocket::poke_sock(unsigned short port, bool* stop, boost::asio::io_se
     std::string dummy_string("a");
 
     while(!*stop) {
+
         timer.expires_from_now(boost::posix_time::microseconds(1000000));
         timer.wait();
         pke.send_to(boost::asio::buffer(dummy_string), ep);
     }
+
 
     delete stop;
 }
@@ -218,6 +225,8 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
     while(true) {
         lck.unlock();
         std::size_t len = sock->_socket.receive_from(boost::asio::buffer(buff, nar::Packet::PACKET_LEN), remote_endpoint, 0, ec);
+        lck.lock();
+
         if(sock->_close_sck) {
             *stop_poke = true;
             delete sock;
@@ -228,8 +237,6 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
             break;
         }
 
-
-        lck.lock();
 
         if(len == 1 && buff[0] == 'a') {
             if(sock->_inactive_allow == 0) {
@@ -352,6 +359,7 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
             delete rcvpck;
         }
     }
+    lck.unlock();
 }
 
 void nar::USocket::randezvous_server() {
@@ -550,7 +558,7 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len,
     boost::system::error_code ec;
     nar::USocket::PacketGenerator pckgen(file, this->_next_seqnum, this->_stream_id, start, len);
     std::unique_lock<std::mutex> lck(this->_work_mutex);
-    double window_size = 256; // packets
+    double window_size = 16; // packets
     unsigned int used_window = 0; // packets
     double rtt = 1000000; // microseconds
     double devrtt = 0; // microseconds

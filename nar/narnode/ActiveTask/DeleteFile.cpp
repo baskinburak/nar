@@ -38,7 +38,7 @@ void nar::ActiveTask::DeleteFile::run(nar::Socket* ipc_socket, nar::MessageTypes
     int status = resp.get_status_code();
 
 
-    nar::MessageTypes::IPCDeleteFile::Response ipc_resp(15,300);
+    nar::MessageTypes::IPCDeleteFile::Response ipc_resp(15,200);
     if(status != 200) {
         ipc_resp.set_status_code(status);
     }

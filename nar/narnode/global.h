@@ -7,7 +7,11 @@
 #include <nar/narnode/utility.h>
 #include <boost/asio.hpp>
 #include <cstdlib>
+#include <nar/lib/Logging/logger.h>
 #include <atomic>
+
+extern nar::Logger* nar_log;
+#define NAR_LOG *nar_log                            // BURAYA BAKARLAR
 
 namespace nar {
     class Global {

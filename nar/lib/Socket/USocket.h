@@ -16,7 +16,7 @@
 #include <cryptopp/filters.h>
 
 
-#define NAR_INACTIVE_ALLOW 10
+#define NAR_INACTIVE_ALLOW 2147483647
 
 using boost::asio::ip::udp;
 using std::pair;
