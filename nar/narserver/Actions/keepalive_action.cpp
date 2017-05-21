@@ -14,7 +14,6 @@ void nar::ServerAction::keepalive_action(nar::ServerGlobal* s_global, nar::Messa
     std::string& mac_id = req.get_machine_id();
     nar::Peers* peers = s_global->peers;
     try {
-        
         peers->insert_keepalive(mac_id, skt);
         nar::MessageTypes::KeepAlive::Response resp(200);
         resp.send_mess(skt);
