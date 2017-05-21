@@ -11,8 +11,13 @@
 #include <atomic>
 #include <set>
 #include <nar/narserver/peers.h>
+#include <nar/lib/Logging/logger.h>
+
+extern nar::Logger* nar_log;
 
 #define CHUNK_SIZE 1000000                           // BURAYA BAKARLAR
+#define NAR_LOG *nar_log                            // BURAYA BAKARLAR
+
 
 using std::string;
 using std::map;

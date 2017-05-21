@@ -71,7 +71,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
             req.receive_message(message);
         } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
             std::cout<<exp.what()<<std::endl;
-            nar::MessageTypes::DirInfo::Response resp(300);
+            nar::MessageTypes::DeleteFile::Response resp(300);
             resp.send_mess(skt);
         }
 
@@ -104,6 +104,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
     std::string& d_name = req.get_dest_dir();
     std::string& f_name = req.get_file_name();
     long long int file_id;
+
     try{
         file_id = findFileId(f_name, d_name, u_name, db);
     } catch(...) {
@@ -260,7 +261,14 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
 
     }
     struct nar::DBStructs::File m_file;
+    struct nar::DBStructs::Directory m_dir = db->findDirectoryId(u_name ,d_name);
+
+    struct nar::DBStructs::DirectoryTo dir_to;
+    dir_to.dir_id = m_dir.dir_id;
+    dir_to.item_id = file_id;
+    dir_to.ForD = 0;
     m_file.file_id = file_id;
+
     try {
         db->deleteFile(m_file);
     } catch (...) {
@@ -279,6 +287,20 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         resp.send_mess(skt);
     }catch(...) {
         std::cout<<"send_mess_bomb"<<std::endl;
+        return;
+    }
+    try {
+        db->deleteDirectoryTo(dir_to);
+    } catch(sql::SQLException& e) {
+        std::cout<<e.what()<<std::endl;
+        std::cout<<"DATABASE BOOOOOOOOOOOM"<<std::endl;
+        nar::MessageTypes::DeleteFile::Response resp(408);
+        try {
+            resp.send_mess(skt);
+        }catch(...) {
+            std::cout<<"send_mess_bomb"<<std::endl;
+            return;
+        }
         return;
     }
     return;

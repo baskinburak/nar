@@ -20,12 +20,13 @@
 #include <nar/lib/Messaging/MessageTypes/DaemonShutdown.h>
 #include <nar/lib/Messaging/MessageTypes/MachineRegister.h>
 #include <nar/lib/Messaging/MessageTypes/KeepAlive.h>
-
+#include <nar/lib/Logging/logger.h>
 
 
 
 using namespace nlohmann;
 
+nar::Logger* nar_log = new nar::Logger(std::cout);      // LOGGER OBJECT
 
 
 void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
@@ -35,6 +36,7 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
         if(action == "user_authentication_init") {
             nar::MessageTypes::UserAuthenticationInit::Request req;
             req.receive_message(msg);
+            NAR_LOG << "Authentication init has received" << std::endl;
             nar::ServerAction::authenticate_action(s_global, req, skt);
         } else if(action == "user_register") {
             nar::MessageTypes::UserRegister::Request req;
