@@ -26,8 +26,8 @@
 
 using namespace nlohmann;
 
+nar::Logger* nar_log = new nar::Logger(std::cout);      // LOGGER OBJECT
 
-nar::Logger* nar_log = new nar::Logger(std::cout);
 
 void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
     try {
