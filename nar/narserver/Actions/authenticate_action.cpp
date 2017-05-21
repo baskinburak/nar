@@ -106,7 +106,8 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
         nar::AuthAction::authentication_dispatcher(s_global, skt, user);
     } else {
         nar::MessageTypes::UserAuthenticationAnswer::Response ans_resp(703);
+        NAR_LOG << "AUTHENTICATON FAILED! (Wrong Key)" << std::endl;
         ans_resp.send_mess(skt);
     }
-    NAR_LOG << "AUTHENTICATION SUCCESFULL!" << std::endl;
+    NAR_LOG << "AUTHENTICATION SUCCESFULL" << std::endl;
 }

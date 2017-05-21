@@ -170,15 +170,19 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     string dust= tpath.native();
     nar::File * decompressed = decrypted->decompress(dust);
 
+    NAR_LOG << "ASD" << std::endl;
 
     nar::MessageTypes::InfoChunkPull::Request _req(50, 200);
+    NAR_LOG << "MUCH" << std::endl;
     _req.send_mess(server_sck);
+NAR_LOG << "WOW" << std::endl;
+    try {
+        nar::MessageTypes::IPCPull::Response ipcpull_resp(100,200);
 
-
-    nar::MessageTypes::IPCPull::Response ipcpull_resp(100,200);
-
-    ipcpull_resp.send_message_end(ipc_socket);
-
+        ipcpull_resp.send_message_end(ipc_socket);
+    } catch (...){
+        std::cout << "BAK HATAAA!!! " << std::endl;
+    }
     delete tempfile1;
     delete decrypted;
     delete decompressed;

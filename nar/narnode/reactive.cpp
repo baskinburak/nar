@@ -22,7 +22,7 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
     nar::MessageTypes::KeepAlive::Response resp;
     int tried = 1;
 
-    std::cout << "Trying to open keepalive connection to the server: ";
+    //std::cout << "Trying to open keepalive connection to the server: ";
     while (true) {
         std::cout << tried++ << " ";
         try {
@@ -30,10 +30,10 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
             std::cout << resp.get_status_code() << std::endl;
             break;
         } catch (nar::Exception::MessageTypes::ServerSocketAuthenticationError& exp) {
-            std::cout << "You probably have non-existing machine id" << std::endl;
+            NAR_LOG << "You probably have non-existing machine id" << std::endl;
             sleep(1);
         } catch (nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
+            NAR_LOG << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
             exit(0);
         }
     }
@@ -124,14 +124,17 @@ void nar::delete_chunk( nar::Global* globals, std::string chunk_id, nar::Socket*
 
 void nar::reactive_dispatcher(nar::Global *globals) {
     nar::Socket* server_socket = globals->establish_server_connection();
+    NAR_LOG << "Server Connection established" << std::endl;
     keep_alive(server_socket, globals);
+    NAR_LOG << "KeepAlive Connection established" << std::endl;
 
     for(;;) {
         std::string message;
         try {
-            message = nar::get_message(server_socket);
-        } catch(nar::Exception::Socket::SystemError& exp) {
-            std::cout << "here" << std::endl;
+
+            message = nar::get_message( *server_socket);
+        } catch(...) {
+            NAR_LOG << "Server Connection Lost, trying to reconnect ... " << std::endl;
             server_socket->forceclose();
             delete server_socket;
             sleep(1);
@@ -143,7 +146,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
         try {
             action = Messaging::get_action(message);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
+            NAR_LOG << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
             exit(0);
         }
 

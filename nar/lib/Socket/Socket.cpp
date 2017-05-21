@@ -117,6 +117,7 @@ void nar::Socket::accept(nar::Socket& acc) const {
     if(acc._type == 's') {
         throw nar::Exception::Socket::WrongSocketType("Server socket is given as an argument to a accept call",_type);
     }
+
     boost::asio::ip::tcp::socket::lowest_layer_type& sock = acc._ssl_sock->lowest_layer();
     _acceptor->accept(sock);
     sock.set_option(boost::asio::ip::tcp::no_delay(true));
@@ -174,8 +175,13 @@ int nar::Socket::recv(char* offset, int length) const {
 }
 
 void nar::Socket::close() const {
+    try {
     boost::system::error_code ec;
     _ssl_sock->shutdown(ec);
+    _ssl_sock->lowest_layer().close(ec);
+    } catch (...) {
+	std::cout << "YAKALADIM EHEHEHE" << std::endl;
+	}
 }
 
 void nar::Socket::forceclose() const {

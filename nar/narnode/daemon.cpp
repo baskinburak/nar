@@ -14,6 +14,10 @@
 #include <nar/narnode/reactive.h>
 #include <nar/narnode/ActiveTask/ActiveTask.h>
 #include <boost/asio/signal_set.hpp>
+#include <nar/lib/Logging/logger.h>
+
+
+nar::Logger *nar_log = new nar::Logger(std::cout);
 
 using std::string;
 using std::cout;
@@ -70,11 +74,6 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         return;
     }
 
-    boost::asio::signal_set _signals(globals->get_ioserv());
-    _signals.add(SIGINT);
-    _signals.add(SIGTERM);
-    _signals.async_wait(boost::bind(clean_up, globals, &uservars));
-
     if(action == string("ls")) {
         nar::MessageTypes::IPCLs::Request ipc_ls;
         ipc_ls.populate_object(msg);
@@ -127,22 +126,38 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         delete_file.run(sck, &ipc_delete_file);
     }
 
+
+    NAR_LOG << "slm" << std::endl;
+    //globals->get_ioserv().run();
     sck->close();
+    NAR_LOG << "canim" << std::endl;
 }
 
 
 int main() {
+try {
+/*    boost::asio::signal_set _signals(globals->get_ioserv());
+    _signals.add(SIGINT);
+    _signals.add(SIGTERM);
+    _signals.async_wait(boost::bind(clean_up, globals, &uservars));*/
+
     nar::Global* globals = new nar::Global(std::string("/root/.nar/config"));
     nar::Socket ipc_entry(globals->get_ioserv(), globals->get_ipc_ctx(), 's');
     ipc_entry.bind(17700, "127.0.0.1");
 
+    NAR_LOG << "KeepAlive thread is starting" << std::endl;
     std::thread reactive_thr(nar::reactive_dispatcher, globals);
     reactive_thr.detach();
 
     while(true) {
         nar::Socket* sck = new nar::Socket(globals->get_ioserv(), globals->get_ipc_ctx(), 'c');
+	std::cout << "wooooooooooooot" << std::endl;
         ipc_entry.accept(*sck);
         std::thread ipc_thread(handle_ipc_request, sck, globals);
         ipc_thread.detach();
     }
+} catch(std::invalid_argument& ia) {
+	std::cout << ia.what() << std::endl;
 }
+}
+
