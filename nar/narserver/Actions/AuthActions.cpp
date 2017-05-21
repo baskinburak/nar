@@ -1,4 +1,4 @@
-#include <nar/lib/Messaging/MessageTypes/FilePush.h>
+    #include <nar/lib/Messaging/MessageTypes/FilePush.h>
 #include <nar/lib/Messaging/MessageTypes/FilePull.h>
 #include <nar/narserver/Database.h>
 #include <nar/narserver/dbstructs.h>
@@ -107,6 +107,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
 
     try{
         file_id = findFileId(f_name, d_name, u_name, db);
+        std::cout << "file id: " << file_id << std::endl;
     } catch(...) {
         std::cout<<"some error with findFileId in server"<<std::endl;
         nar::MessageTypes::DeleteFile::Response resp(400);
@@ -116,8 +117,6 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
             std::cout<<"send_mess_bomb"<<std::endl;
             return;
         }
-
-
         return;
     }
 
@@ -132,9 +131,11 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         }
         return;
     }
+    std::cout << "here here" << std::endl;
     std::vector<struct DBStructs::Chunk> chunks;
     try{
         chunks  = db->getChunks(file_id);
+        std::cout << "your chunks, sir" << std::endl;
     } catch(...) {
         std::cout<<"Server delete file getchunk error------fileid "<<std::endl;
         nar::MessageTypes::DeleteFile::Response resp(401);
@@ -146,12 +147,15 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         }
         return;
     }
-
+    std::cout << "all chunks" << std::endl;
     for(int i=0;i<chunks.size();i++) {
         std::vector<struct DBStructs::Machine> chunk_machines;
 
         try {
+            std::cout << "machines" << std::endl;
             chunk_machines= db->getMachines(chunks[i].chunk_id);
+            std::cout << "machines2" << std::endl;
+
         } catch(...) {
             std::cout<<"Server delete file getmachines error----chunkid "<<chunks[i].chunk_id<<std::endl;
             nar::MessageTypes::DeleteFile::Response resp(402);
@@ -163,10 +167,13 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
             }
             return;
         }
+        std::cout << "chunk machinessssss ay" << std::endl;
         for(int j=0;j<chunk_machines.size();j++) {
             nar::SockInfo* peer_sck;
             try {
+                std::cout << "efendim" << std::endl;
                 peer_sck = s_global->peers->get_peer(chunk_machines[j].machine_id );
+                std::cout << "olur" << std::endl;
             } catch(...) {
                 std::cout<<"Server delete file get_peer error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
                 nar::MessageTypes::DeleteFile::Response resp(500);
@@ -214,8 +221,11 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
             } else {
                 nar::MessageTypes::DeleteMachineChunk::Request del_req(std::to_string(chunks[i].chunk_id));
                 nar::MessageTypes::DeleteMachineChunk::Response del_resp(200);
+                std::cout << "paladins are da best" << std::endl;
                 try {
+                    std::cout << "monklar da iyi ama kullanana" << std::endl;
                     del_req.send_mess(peer_sck->get_sck(),del_resp);
+                    std::cout << "eheh masterim" << std::endl;
                 } catch (nar::Exception::MessageTypes::InternalDaemonError exp) {
                     std::cout<<exp.what()<<std::endl;
                     struct nar::DBStructs::Machine t_mac;
@@ -260,6 +270,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         }
 
     }
+    std::cout << "delete file da amma uzunmus" << std::endl;
     struct nar::DBStructs::File m_file;
     struct nar::DBStructs::Directory m_dir = db->findDirectoryId(u_name ,d_name);
 
@@ -270,7 +281,10 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
     m_file.file_id = file_id;
 
     try {
+        std::cout << "yaparim" << std::endl;
+        std::cout << "alla allah" << std::endl;
         db->deleteFile(m_file);
+        std::cout << "mitoloji2" << std::endl;
     } catch (...) {
         std::cout<<"File could not be deleted from Database"<<std::endl;
         nar::MessageTypes::DeleteFile::Response resp(407);
@@ -283,8 +297,11 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         return;
     }
     nar::MessageTypes::DeleteFile::Response resp(200);
+    std::cout << "b.tt." << std::endl;
     try {
+        std::cout << "sanirim" << std::endl;
         resp.send_mess(skt);
+        std::cout << "hobaa" << std::endl;
     }catch(...) {
         std::cout<<"send_mess_bomb"<<std::endl;
         return;

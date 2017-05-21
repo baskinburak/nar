@@ -43,26 +43,41 @@ void nar::MessageTypes::IPCDeleteFile::Request::send_action(nar::Socket* skt) {
 }
 
 void nar::MessageTypes::IPCDeleteFile::Request::print_loop(nar::Socket* skt) {
+    while (true) {
+
+        std::string tmp = get_message(*skt);
+        std::cout << tmp << std::endl;
+        nlohmann::json received = nlohmann::json::parse(tmp);
+        std::cout << "PARSED" << std::endl;
+
+
+        if( received["header"]["reply_to"] == std::string("END")  ) {
+                break;
+        }
+
+        int stat = received["payload"]["status_code"];
+        if (stat != 200) {
+            if(stat/100 == 3) {
+                std::cout<<"Your request was not complete or was wrong --- stat"<< stat<<std::endl;
+                break;
+            } else  if(stat/100 == 4) {
+                std::cout<<"Problem With Server--- stat"<< stat<<std::endl;
+                break;
+            } else  if(stat/100 == 5) {
+                std::cout<<"Some things went wrong in server --- stat"<< stat<<std::endl;
+                break;
+            } else if (stat == 300) {
+                std::cout << "The file you specified does not exist in the nar system." << std::endl;
+                break;
+            } else  if(stat/100 == 6) {
+                std::cout<<"Some things went wrong in daemon --- stat"<< stat<<std::endl;
+                break;
+            }
+        }
+    }
 
     return;
 }
-
-/*
-char* nar::MessageTypes::IPCDeleteFile::Request::masctime(const struct tm *timeptr)
-{
-	static const char wday_name[][4] = {
-	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-	};
-	static const char mon_name[][4] = {
-	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-	};
-	static char result[26];
-	sprintf(result, "%.3s%2d %.2d:%.2d", mon_name[timeptr->tm_mon], timeptr->tm_mday, timeptr->tm_hour, timeptr->tm_min);
-	return result;
-}
-*/
-
 
 nlohmann::json nar::MessageTypes::IPCDeleteFile::Response::give_myresponsejson() {
     nlohmann::json resp_json;

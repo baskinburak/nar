@@ -207,8 +207,11 @@ void nar::CLITasks::nar_delete_file(std::string file_name, std::string username,
         return;
     }
     try {
+        std::cout<<"alicik"<<std::endl;
         req.send_action(&cli_skt);
+        std::cout<<"aysecik"<<std::endl;
         req.print_loop(&cli_skt);
+        std::cout<<"fatmacik"<<std::endl;
     }
     catch( ... ) {
         std::cout << "Connection lost with daemon" << '\n';
