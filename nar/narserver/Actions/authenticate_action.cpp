@@ -11,6 +11,7 @@
 #include <nar/lib/Messaging/messaging_utility.h>
 #include <nar/lib/Cryption/rsa.h>
 #include <nar/lib/base64/base64.h>
+#include <nar/narserver/ServerGlobal.h>
 #include <iostream>
 
 void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::MessageTypes::UserAuthenticationInit::Request& req, nar::Socket* skt) {
@@ -23,7 +24,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
         user = db->getUser(username);
     }
     catch(...) {
-        std::cout<<"Server Authentication Database get User Error"<<std::endl;
+        NAR_LOG<<"Server Authentication Database get User Error"<<std::endl;
         nar::MessageTypes::UserAuthenticationInit::Response auth_resp(400);
         auth_resp.send_mess(skt);
         return;
@@ -39,7 +40,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
     try{
         AesCryptor::generate_key(rand_string,120);
     } catch(...) {
-        std::cout<<"Server Authentication AesCryptor error"<<std::endl;
+        NAR_LOG<<"Server Authentication AesCryptor error"<<std::endl;
         nar::MessageTypes::UserAuthenticationInit::Response auth_resp(500);
         auth_resp.send_mess(skt);
         return;
@@ -51,7 +52,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
     try {
         rsa_pub = base64_decode(user.rsa_pub);
     } catch(...) {
-        std::cout<<"Server Authentication base64 decode error"<<std::endl;
+        NAR_LOG<<"Server Authentication base64 decode error"<<std::endl;
         nar::MessageTypes::UserAuthenticationInit::Response auth_resp(501);
         auth_resp.send_mess(skt);
         return;
@@ -60,7 +61,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
         rsa.set_pub(rsa_pub);
         rsa.encrypt(rand_string,task_string);
     } catch(...) {
-        std::cout<<"Server Authentication RSA error"<<std::endl;
+        NAR_LOG<<"Server Authentication RSA error"<<std::endl;
         nar::MessageTypes::UserAuthenticationInit::Response auth_resp(502);
         auth_resp.send_mess(skt);
         return;
@@ -69,7 +70,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
     try {
         task_string = base64_encode((const unsigned char*)task_string.c_str(), task_string.size());
     } catch(...) {
-        std::cout<<"Server Authentication base64 encode error"<<std::endl;
+        NAR_LOG<<"Server Authentication base64 encode error"<<std::endl;
         nar::MessageTypes::UserAuthenticationInit::Response auth_resp(503);
         auth_resp.send_mess(skt);
         return;
@@ -79,7 +80,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
     try {
         auth_resp.send_mess(skt);
     } catch (nar::Exception::MessageTypes::BadlyConstructedMessageSend exp) {
-        std::cout << exp.what() << std::endl;
+        NAR_LOG << exp.what() << std::endl;
         auth_resp.set_status_code(504);
         auth_resp.send_mess(skt);
         return;
@@ -91,14 +92,14 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
     try {
         message = get_message(skt);
     } catch(...) {
-        std::cout<<"Server Authentication get_message error"<<std::endl;
+        NAR_LOG<<"Server Authentication get_message error"<<std::endl;
         return;
     }
 
     try {
         ans_req.receive_message(message);
     } catch (...) {
-        std::cout<<"Server Authentication UserAuthenticationAnswer::Request receive error"<<std::endl;
+        NAR_LOG<<"Server Authentication UserAuthenticationAnswer::Request receive error"<<std::endl;
         nar::MessageTypes::UserAuthenticationAnswer::Response ans_resp(301);
         ans_resp.send_mess(skt);
         return;
@@ -108,7 +109,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
     try {
         result_string = base64_decode(result_string);
     } catch(...) {
-        std::cout<<"Server Authentication result string base64 decode"<<std::endl;
+        NAR_LOG<<"Server Authentication result string base64 decode"<<std::endl;
         nar::MessageTypes::UserAuthenticationAnswer::Response ans_resp(505);
         ans_resp.send_mess(skt);
         return;
@@ -125,5 +126,6 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
 
     nar::MessageTypes::UserAuthenticationAnswer::Response ans_resp(status_code);
     ans_resp.send_mess(skt);
+    NAR_LOG << "AUTHENTICATION SUCCESFULL!" << std::endl;
     nar::AuthAction::authentication_dispatcher(s_global,skt,user);
 }

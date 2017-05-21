@@ -773,7 +773,7 @@ void nar::Database::deleteDirectoryTo(struct DBStructs::DirectoryTo & dirTo){
     bool keeper = dirTo.ForD;
     sql::PreparedStatement *prep_stmt;
     prep_stmt = _con->prepareStatement("DELETE FROM DirectoryTo "
-                                        "WHERE Dir_name = ? AND Item_id = ? AND ForD = ?;");
+                                        "WHERE Dir_id = ? AND Item_id = ? AND ForD = ?;");
     prep_stmt->setBigInt(1,directoryTo.dir_id);
     prep_stmt->setBigInt(2,directoryTo.item_id);
     prep_stmt->setBoolean(3,keeper);
@@ -935,7 +935,7 @@ long long int nar::Database::getNextChunkId(long long int N){
     next_id += N;
     write_end();
     return ret;
-    
+
 }
 long long int nar::Database::getNextDirectoryId(long long int N){
     static long long int next_id = -1;
