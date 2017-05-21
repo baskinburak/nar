@@ -215,11 +215,10 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
             } else {
                 nar::MessageTypes::DeleteMachineChunk::Request del_req(std::to_string(chunks[i].chunk_id));
                 nar::MessageTypes::DeleteMachineChunk::Response del_resp(200);
-                std::cout << "paladins are da best" << std::endl;
+
                 try {
-                    std::cout << "monklar da iyi ama kullanana" << std::endl;
                     del_req.send_mess(peer_sck->get_sck(),del_resp);
-                    std::cout << "eheh masterim" << std::endl;
+
                 } catch (nar::Exception::MessageTypes::InternalDaemonError exp) {
                     std::cout<<exp.what()<<std::endl;
                     struct nar::DBStructs::Machine t_mac;
@@ -264,7 +263,6 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         }
 
     }
-    std::cout << "delete file da amma uzunmus" << std::endl;
     struct nar::DBStructs::File m_file;
     struct nar::DBStructs::Directory m_dir = db->findDirectoryId(u_name ,d_name);
 
@@ -275,10 +273,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
     m_file.file_id = file_id;
 
     try {
-        std::cout << "yaparim" << std::endl;
-        std::cout << "alla allah" << std::endl;
         db->deleteFile(m_file);
-        std::cout << "mitoloji2" << std::endl;
     } catch (...) {
         std::cout<<"File could not be deleted from Database"<<std::endl;
         nar::MessageTypes::DeleteFile::Response resp(407);
@@ -291,11 +286,8 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         return;
     }
     nar::MessageTypes::DeleteFile::Response resp(200);
-    std::cout << "b.tt." << std::endl;
     try {
-        std::cout << "sanirim" << std::endl;
         resp.send_mess(skt);
-        std::cout << "hobaa" << std::endl;
     }catch(...) {
         std::cout<<"send_mess_bomb"<<std::endl;
         return;
