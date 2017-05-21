@@ -131,6 +131,9 @@ nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, u
     this->_ack_flag = false;
     this->_ran_flag = false;
     this->_synack_flag = false;
+    this->_inactive_flag = false;
+
+    this->_inactive_allow = NAR_INACTIVE_ALLOW;
 
     this->_start_seqnum = this->rand_seqnum();
     this->_next_seqnum = this->_start_seqnum + 1;
@@ -189,9 +192,9 @@ void nar::USocket::poke_sock(unsigned short port, bool* stop, boost::asio::io_se
     pke.open(udp::v4());
 
     std::string dummy_string("a");
-  //  boost::asio::buffer dummy_buffer(dummy_string);
 
     while(!*stop) {
+        timer.expires_from_now(boost::posix_time::microseconds(1000000));
         timer.wait();
         pke.send_to(boost::asio::buffer(dummy_string), ep);
     }
@@ -224,7 +227,20 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
             }
             break;
         }
+
+
         lck.lock();
+
+        if(len == 1 && buff[0] == 'a') {
+            if(sock->_inactive_allow == 0) {
+                sock->_inactive_flag = true;
+                sock->_event_cv.notify_all();
+            } else {
+                sock->_inactive_allow--;
+            }
+            continue;
+        }
+
         if(ec) {
             continue;
         }
@@ -249,7 +265,7 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
             continue;
         }
 
-
+        sock->_inactive_allow = NAR_INACTIVE_ALLOW;
          //rcvpck->print(); // debug
 
 
@@ -508,7 +524,14 @@ void nar::USocket::connect() {
 
 int nar::USocket::recv(char* buf, int len) {
     std::unique_lock<std::mutex> lck(this->_work_mutex);
-    while(!this->_recv_flag) {
+    while(true) {
+        if(this->_recv_flag) {
+            break;
+        } else if(this->_inactive_flag) {
+            this->_inactive_flag = false;
+            std::cout << "Inactive recv thrown" << std::endl;
+            throw nar::Exception::USocket::InactivePeer("Peer is inactive.");
+        }
         this->_event_cv.wait(lck);
     }
     int read_len;
@@ -559,7 +582,10 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len,
             }
         }
 
-        if(this->_ack_flag) {
+        if(this->_inactive_flag) {
+            this->_inactive_flag = false;
+            throw nar::Exception::USocket::InactivePeer("Peer is inactive.");
+        } else if(this->_ack_flag) {
             bool timer_stopped = false;
             for(auto sqnm : this->_acks) {
                 if(sent_times.find(sqnm) != sent_times.end()) {

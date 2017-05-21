@@ -107,14 +107,14 @@ void nar::ActiveTask::Pull::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
             	encoder.Attach( new CryptoPP::StringSink( output ) );
             	encoder.Put( digest, sizeof(digest) );
             	encoder.MessageEnd();
-                std::cout << "Comp begin" << std::endl;
-                /* if (  output.compare(elements[i].hashed) ) // Wrong Hash
+
+               /* if (  output.compare(elements[i].hashed) ) // Wrong Hash
                 {
                     std::cout <<"Benim Hesabim: " << output << std::endl;
                     std::cout <<"Carsidaki Hesap: " << elements[i].hashed << std::endl;
                     throw nar::Exception::Unknown("Wrong Hash");
                 } */
-                std::cout << "File Written B" << std::endl;
+
                 tempfile1->write(buf,total_read);
                 std::cout << "File Written" << std::endl;
                 offset+=total_read;

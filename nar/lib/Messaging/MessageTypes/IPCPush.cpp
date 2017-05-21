@@ -41,8 +41,14 @@ void nar::MessageTypes::IPCPush::Request::send_action(nar::Socket* skt) {
         send_message(skt, json_to_sent.dump());
     } catch(nar::Exception::Socket::SystemError& Exp) {
         throw;
-    } catch(...) {
+    } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& Exp) {
         throw nar::Exception::LowLevelMessaging::Error("Low level messaging error in IPCPush::send_action.");
+    } catch(nar::Exception::LowLevelMessaging::FormatError& Exp) {
+        throw nar::Exception::LowLevelMessaging::Error("Low level messaging error in IPCPush::send_action.");
+    } catch(nar::Exception::LowLevelMessaging::ServerSizeIntOverflow& Exp) {
+        throw nar::Exception::LowLevelMessaging::Error("Low level messaging error in IPCPush::send_action.");
+    } catch(...) {
+        throw;
     }
     return;
 }

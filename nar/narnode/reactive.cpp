@@ -29,7 +29,7 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
             req.send_mess(sck, resp);
             break;
         } catch (nar::Exception::MessageTypes::ServerSocketAuthenticationError& exp) {
-            std::cout << "err" << std::endl;
+            std::cout << "You probably have non-existing machine id" << std::endl;
             sleep(1);
         } catch (nar::Exception::MessageTypes::BadMessageReceive& exp) {
             std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
@@ -44,17 +44,12 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
 
 
 void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long long int chunk_size, unsigned short rand_port, long long int chunk_id) {
-    std::cout << "before const" << std::endl;
     nar::USocket* cli_sck = new nar::USocket(globals->get_ioserv(), globals->get_server_ip(), rand_port, stream_id);
-    std::cout << "before connect" << std::endl;
-    //std::cout << "HERE THREAD, chunk size: "<< chunk_size << std::endl;
     cli_sck->connect();
-    std::cout << "Ready To Read " << chunk_id << " " << chunk_size << std::endl;
 
 
     boost::filesystem::path path(globals->get_file_folder());
     path /= std::string("c") + std::to_string(chunk_id);
-    std::cout << path.string() << "<<<<<<<<" << std::endl;
 
     nar::File recvfile(path.string(), "w", false);
 
@@ -65,9 +60,14 @@ void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long
     CryptoPP::Weak::MD5 hash;
 
     while(total_read < chunk_size) {
-        //std::cout << stream_id << " before" << std::endl;
-         int len = cli_sck->recv(buf, 1024);
-        //std::cout << stream_id << " after " << len << std::endl;
+         int len;
+         try {
+            len = cli_sck->recv(buf, 1024);
+         } catch(nar::Exception::USocket::InactivePeer& exp) {
+            std::cout << "Reactive push replier peer inactive. Removing file: " << path << std::endl;
+            boost::filesystem::remove(path);
+            return;
+         }
          hash.Update((const byte*) buf, len);
          recvfile.write(buf, len);
          total_read += len;
@@ -130,14 +130,30 @@ void nar::reactive_dispatcher(nar::Global *globals) {
         try {
             message = nar::get_message( *server_socket);
         } catch(...) {
+            server_socket->forceclose();
+            delete server_socket;
             sleep(1);
+            server_socket = globals->establish_server_connection();
+            keep_alive(server_socket, globals);
             continue;
         }
-        std::string action = Messaging::get_action(message);
-        std::cout << "Action::    " <<  std::endl << action << std::endl;
+        std::string action;
+        try {
+            action = Messaging::get_action(message);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
+            exit(0);
+        }
+
         if(action == std::string("wait_chunk_push_request")) {
             nar::MessageTypes::WaitChunkPush::Request req;
-            req.receive_message(Messaging::transform(message));
+
+            try {
+                req.receive_message(Messaging::transform(message));
+            } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+                std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
+                exit(0);
+            }
 
             long long int stream_id = req.get_stream_id();
             long long int chunk_id = req.get_chunk_id();
@@ -147,7 +163,19 @@ void nar::reactive_dispatcher(nar::Global *globals) {
             // DO CHECKS IF THERE ARE ANY B4 SENDING SUCCESS
 
             nar::MessageTypes::WaitChunkPush::Response resp(200);
-            resp.send_mess(server_socket);
+            try {
+                resp.send_mess(server_socket);
+            } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& exp) {
+                continue;
+            } catch(nar::Exception::LowLevelMessaging::FormatError& exp) {
+                continue;
+            } catch(nar::Exception::LowLevelMessaging::ServerSizeIntOverflow& exp) {
+                continue;
+            } catch(nar::Exception::Socket::SystemError& exp) {
+                continue;
+            } catch(...) {
+                continue;
+            }
 
             std::thread thr(&nar::chunk_push_replier, stream_id, globals, chunk_size, rand_port, chunk_id);
             thr.detach();

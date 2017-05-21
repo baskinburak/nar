@@ -43,9 +43,35 @@ void nar::MessageTypes::FilePush::Request::send_mess(nar::Socket* skt , nar::Mes
     push_req_send["payload"]["file_size"] = this->_file_size;
     push_req_send["payload"]["dir_name"] = this->_dir_name;
     push_req_send["payload"]["file_name"] = this->_file_name;
-    send_message(skt,push_req_send.dump());
-    std::string temp = get_message(skt);
-    resp.receive_message(temp);
+
+    try {
+        send_message(skt,push_req_send.dump());
+    } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("SizeIntOverflow");
+    } catch(nar::Exception::LowLevelMessaging::FormatError& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("SizeIntOverflow");
+    } catch(nar::Exception::LowLevelMessaging::ServerSizeIntOverflow& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("SizeIntOverflow");
+    }
+
+
+    std::string temp;
+    try {
+        temp = get_message(skt);
+    } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("SizeIntOverflow");
+    } catch(nar::Exception::LowLevelMessaging::NoSize& exp) {
+        throw nar::Exception::LowLevelMessaging::Error("NoSize");
+    }
+
+    try {
+        resp.receive_message(temp);
+    } catch(nar::Exception::MessageTypes::NoValidPeerPush& exp) {
+        throw;
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("Bad message received in FilePush::Request::send_mess");
+    }
+
     return;
 }
 void nar::MessageTypes::FilePush::Request::receive_message(std::string msg){
@@ -66,6 +92,7 @@ nlohmann::json nar::MessageTypes::FilePush::Request::test_json() {
     push_req_test["payload"]["file_name"] = this->_file_name;
     return push_req_test;
 }
+
 void nar::MessageTypes::FilePush::Response::send_mess(nar::Socket* skt){
     int status = get_status_code();
     if(status == 200) {
@@ -91,18 +118,24 @@ void nar::MessageTypes::FilePush::Response::send_mess(nar::Socket* skt){
 
 
 }
+
+/*
+* @throws nar::Exception::MessageTypes::NoValidPeerPush, if server cannot find any valid peer to push
+* @throws json exceptions, if server sends not valid json.(catch with ...)
+*/
 void nar::MessageTypes::FilePush::Response::receive_message(std::string msg){
     nlohmann::json push_resp_recv = nlohmann::json::parse(msg);
     nlohmann::json head = push_resp_recv["header"];
     recv_fill(head);
-    if(_status_code == 300) {
-        throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
-    } else if(_status_code == 301) {
+
+    if(_status_code == 707) {
         throw nar::Exception::MessageTypes::NoValidPeerPush("Not enough valid peer for push operation", _status_code);
     }
+
+
     this->_randezvous_port = push_resp_recv["payload"]["rand_port"];
     unsigned long int size = push_resp_recv["payload"]["size"];
-    for(int i=0;i<size;i++) {
+    for(int i=0; i < size; i++) {
         std::string mid = push_resp_recv["payload"]["peer_list"][i]["machine_id"];
         unsigned long long int cid = push_resp_recv["payload"]["peer_list"][i]["chunk_id"];
         unsigned int sid = push_resp_recv["payload"]["peer_list"][i]["stream_id"];
@@ -112,6 +145,8 @@ void nar::MessageTypes::FilePush::Response::receive_message(std::string msg){
     sort(this->_elements.begin(), this->_elements.end());
     return;
 }
+
+
 nlohmann::json nar::MessageTypes::FilePush::Response::test_json() {
     nlohmann::json push_resp_test;
     push_resp_test["header"] = send_head();

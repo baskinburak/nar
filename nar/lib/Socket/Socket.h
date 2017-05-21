@@ -133,6 +133,8 @@ namespace nar {
             **/
             void close() const;
 
+            void forceclose() const;
+
             /**
             * This function is used to learn to which ip the socket is connected.
             * @author: utku

@@ -98,11 +98,14 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
             tmp = get_message(*skt);
         } catch(nar::Exception::Socket::SystemError& Exp) {
             throw;
+        } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& Exp) {
+            throw nar::Exception::LowLevelMessaging::Error("Low level messaging error in IPCPush::send_action.");
+        } catch(nar::Exception::LowLevelMessaging::FormatError& Exp) {
+            throw nar::Exception::LowLevelMessaging::Error("Low level messaging error in IPCPush::send_action.");
         } catch(...) {
-            throw nar::Exception::LowLevelMessaging::Error("Low level messaging error in print_loop.");
+            throw;
         }
 
-        std::cout << tmp << std::endl;
 
         nlohmann::json received;
         try {
@@ -112,9 +115,7 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
         }
         int statcode;
         try {
-            std::cout << received["header"]["reply_to"].get<std::string>().size() << " " << std::string("END").size() << std::endl;
             if(received["header"]["reply_to"].get<std::string>() == std::string("END")) {
-                std::cout << "break;" << std::endl;
                 break;
             }
             statcode = received["payload"]["status_code"];
@@ -132,17 +133,35 @@ void nar::MessageTypes::IPCBaseRequest::print_loop(nar::Socket* skt) {
             std::cout << "Low level messaging error with server." << std::endl;
         } else if(statcode == 603) {
             std::cout << "Server sent bad message. Are you connected to a legit server?" << std::endl << "Check your config file." << std::endl;
+        } else if(statcode == 604) {
+            std::cout << "Server connection is broken." << std::endl;
         } else if(statcode == 702) {
             std::cout << "Cannot authenticate your user" << std::endl;
         } else if(statcode == 900){
             std::cout << "Unknown error." << std::endl;
+        } else if(statcode == 501) {
+            std::cout << "AesCryptor unexpected server error." << std::endl;
+        } else if(statcode == 502) {
+            std::cout << "RsaCryptor unexpected server error." << std::endl;
+        } else if(statcode == 503) {
+            std::cout << "base64 unexpected server error." << std::endl;
+        } else if(statcode == 704) {
+            std::cout << "Cannot open file." << std::endl;
+        } else if(statcode == 705) {
+            std::cout << "Cannot open a tempfile." << std::endl;
+        } else if(statcode == 706) {
+            std::cout << "Compression error." << std::endl;
+        } else if(statcode == 708) {
+            std::cout << "Cryption error." << std::endl;
+        } else if(statcode == 707) {
+            std::cout << "No valid peers to push file." << std::endl;
+        } else if(statcode == 799) {
+            std::cout << "Peer down." << std::endl;
         } else {
             std::cout << "Non-handled error." << std::endl;
         }
 
     }
 
-    std::cout << "i am out" << std::endl;
     skt->close();
-    std::cout << "skt closed" << std::endl;
 }

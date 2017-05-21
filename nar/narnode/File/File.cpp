@@ -28,24 +28,13 @@ nar::File::File(const char* file_path, const char* mode, bool is_temp): _mode(mo
             _file_handle.open(file_path, std::ios::out | std::ios::binary);
         else if(mod == "r")
             _file_handle.open(file_path, std::ios::in | std::ios::binary);
-    } catch(std::ios_base::failure& Exp) {
-        throw nar::Exception::File::OpenFail(Exp.what(), file_path);
+    } catch(...) {
+        throw nar::Exception::File::OpenFail("OpenFail in constructor", file_path);
     }
 }
 
-nar::File::File(std::string file_path, const char* mode, bool is_temp): _mode(mode), _is_temp(is_temp), _file_path(file_path) {
-    std::string mod(mode);
-    if(mod != "w" && mod != "r") {
-        throw nar::Exception::File::UnrecognizedFileMode("File open mode unrecognized.", mode);
-    }
-    try {
-        if(mod == "w")
-            _file_handle.open(file_path.c_str(), std::ios::out | std::ios::binary);
-        else if(mod == "r")
-            _file_handle.open(file_path.c_str(), std::ios::in | std::ios::binary);
-    } catch(std::ios_base::failure& Exp) {
-        throw nar::Exception::File::OpenFail(Exp.what(), file_path.c_str());
-    }
+nar::File::File(std::string file_path, const char* mode, bool is_temp): nar::File::File(file_path.c_str(), mode, is_temp) {
+
 }
 
 nar::File::~File() {
@@ -147,23 +136,39 @@ void nar::File::close() {
     }
 }
 
+
+/*
+* @throws nar::Exception::Unknown, if no unique path is generated.
+* @throws nar::Exception::File::OpenFail, if temp files cannot be opened.
+* @throws nar::Exception::File::CompressError, if there is an error in compression
+*/
 nar::File* nar::File::compress() {
     boost::filesystem::path temp;
     try {
         temp = boost::filesystem::unique_path();
-    } catch(std::ios_base::failure& Exp) {
-        throw nar::Exception::Unknown(Exp.what());
+    } catch(...) {
+        throw nar::Exception::Unknown("Unknown error");
     }
-    std::string temp_file =temp.native();
+
+    std::string temp_file = temp.native();
     temp_file += std::string(".z");
     nar::File tempfile(temp_file, "w", false);
+
     if(this->_mode != "r") {
         throw nar::Exception::File::WrongMode("File is not opened with 'r'", _mode.c_str());
     }
-    boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
-    in.push(boost::iostreams::zlib_compressor());
-    in.push(this->_file_handle);
-    boost::iostreams::copy(in, tempfile._file_handle);
+    try {
+        boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
+        in.push(boost::iostreams::zlib_compressor());
+        in.push(this->_file_handle);
+        boost::iostreams::copy(in, tempfile._file_handle);
+    } catch(...) {
+        tempfile.close();
+        throw nar::Exception::File::CompressError("CompressError");
+    }
+
+    tempfile.close();
+
     nar::File* r_version = new nar::File(temp_file, "r", true);
     return  r_version;
 }
@@ -181,36 +186,44 @@ nar::File* nar::File::decompress(std::string& fname) {
     return  r_version;
 }
 
-nar::File* nar::File::encrypt(std::string& aes) {
 
+/*
+* @throws nar::Exception::Unknown, if no unique path is generated.
+* @throws nar::Exception::File::OpenFail, if temp files cannot be opened.
+* @throws nar::Exception::File::CryptError, if there is an error in cryption
+*/
+nar::File* nar::File::encrypt(std::string& aes) {
     boost::filesystem::path temp;
     try {
         temp = boost::filesystem::unique_path();
     } catch(std::ios_base::failure& Exp) {
         throw nar::Exception::Unknown(Exp.what());
     }
+
     if(this->_mode != "r") {
         throw nar::Exception::File::WrongMode("File is not opened with 'r'", _mode.c_str());
     }
 
     std::string temp_native = temp.native();
     temp_native.append(".enc");
-    std::cout<<temp_native<<std::endl;
     nar::File out(temp_native,"w",false);
 
-    byte iv[256];
-    CryptoPP::AutoSeededRandomPool pool;
-    pool.GenerateBlock(iv, 256);
-    std::string ivStr = byte_to_hex(iv,256);
-    out._file_handle << ivStr;
+    try {
+        byte iv[256];
+        CryptoPP::AutoSeededRandomPool pool;
+        pool.GenerateBlock(iv, 256);
+        std::string ivStr = byte_to_hex(iv,256);
+        out._file_handle << ivStr;
+        const int TAG_SIZE = 12;
+        byte* _aes = string_to_byte(aes);
+        CryptoPP::GCM<CryptoPP::AES>::Encryption enc;
+        enc.SetKeyWithIV(_aes, 16, iv, 256);
+        CryptoPP::FileSource ss1(this->_file_handle, true, new CryptoPP::AuthenticatedEncryptionFilter(enc, new CryptoPP::FileSink(out._file_handle),false,TAG_SIZE));
+    } catch(...) {
+        out.close();
+        throw nar::Exception::File::CryptError("CryptError");
+    }
 
-
-    const int TAG_SIZE = 12;
-
-    byte* _aes = string_to_byte(aes);
-    CryptoPP::GCM<CryptoPP::AES>::Encryption enc;
-    enc.SetKeyWithIV(_aes, 16, iv, 256);
-    CryptoPP::FileSource ss1(this->_file_handle, true, new CryptoPP::AuthenticatedEncryptionFilter(enc, new CryptoPP::FileSink(out._file_handle/*binary*/),false,TAG_SIZE));
     out.close();
     nar::File* out2 = new nar::File(temp_native,"r",true);
     return out2;

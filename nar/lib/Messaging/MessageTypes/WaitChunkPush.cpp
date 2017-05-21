@@ -19,21 +19,23 @@ void nar::MessageTypes::WaitChunkPush::Request::send_mess(nar::Socket* skt, nar:
     wpush_req_send["payload"]["rand_port"] = this->rand_port;
     wpush_req_send["payload"]["chunk_size"] =  this->chunk_size;
     wpush_req_send["payload"]["chunk_id"] = this->chunk_id;
-    std::cout << "GELDIMMMM BENNNNNNNNN :OOOOOOO" << std::endl;
     send_message(skt,wpush_req_send.dump());
     std::string temp = get_message(skt);
-    std::cout << "WAITCHUNK REQ GOT RESP" << std::endl;
     nlohmann::json wpush_req_recv = nlohmann::json::parse(temp);
     resp.receive_message(wpush_req_recv);
     return;
 }
 void nar::MessageTypes::WaitChunkPush::Request::receive_message(nlohmann::json wpush_req_recv) {
-    nlohmann::json head = wpush_req_recv["header"];
-    recv_fill(head);
-    this->stream_id = wpush_req_recv["payload"]["stream_id"];
-    this->rand_port = wpush_req_recv["payload"]["rand_port"];
-    this->chunk_size = wpush_req_recv["payload"]["chunk_size"];
-    this->chunk_id = wpush_req_recv["payload"]["chunk_id"];
+    try {
+        nlohmann::json head = wpush_req_recv["header"];
+        recv_fill(head);
+        this->stream_id = wpush_req_recv["payload"]["stream_id"];
+        this->rand_port = wpush_req_recv["payload"]["rand_port"];
+        this->chunk_size = wpush_req_recv["payload"]["chunk_size"];
+        this->chunk_id = wpush_req_recv["payload"]["chunk_id"];
+    } catch(...) {
+        throw nar::Exception::MessageTypes::BadMessageReceive("WaitChunkPush::Request::receive_message");
+    }
     return;
 }
 nlohmann::json nar::MessageTypes::WaitChunkPush::Request::test_json() {

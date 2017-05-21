@@ -190,6 +190,12 @@ namespace nar {
                 };
             };
 
+            class InactivePeer : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    InactivePeer(const char* mess) : ExcpBase(mess) {}
+            };
+
             class NoAvailablePort : public nar::Exception::ExcpBase {
                 private:
                 public:
@@ -215,6 +221,15 @@ namespace nar {
                     int get_value() const { return _value; }
             };
         };
+
+        namespace Peers {
+            class NoValidPeer : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    NoValidPeer(const char* mess): nar::Exception::ExcpBase(mess) {}
+            };
+        };
+
         namespace MessageTypes {
             class UnknownStatCode : public nar::Exception::ExcpBase {
                 private:
@@ -353,6 +368,17 @@ namespace nar {
             };
         };
         namespace File {
+            class CompressError : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    CompressError(const char* mess): nar::Exception::ExcpBase(mess) {}
+            };
+            class CryptError : public nar::Exception::ExcpBase {
+                private:
+                public:
+                    CryptError(const char* mess): nar::Exception::ExcpBase(mess) {}
+            };
+
             class WriteError : public nar::Exception::ExcpBase {
                 private:
                     int _offset;

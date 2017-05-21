@@ -14,7 +14,6 @@
 #include <nar/lib/Logging/logger.h>
 
 extern nar::Logger* nar_log;
-
 #define CHUNK_SIZE 1000000                           // BURAYA BAKARLAR
 #define NAR_LOG *nar_log                            // BURAYA BAKARLAR
 

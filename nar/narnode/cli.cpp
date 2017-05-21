@@ -23,7 +23,13 @@ int main(int argc, char* argv[]){
     std::string first_arg(argv[1]);
 
     if(first_arg == std::string("push")) {
-        if(argc < 3) {
+        if(argc < 4) {
+            std::cout << "Usage: nar push <relative-file-path> <nar-folder>" << std::endl;
+            return 0;
+        }
+        std::string nar_dir(argv[3]);
+        if(nar_dir[0] != '/') {
+            std::cout << "<nar-folder> must start with /" << std::endl;
             return 0;
         }
         std::string file_name(argv[2]);
@@ -44,7 +50,7 @@ int main(int argc, char* argv[]){
         }
 
         auto unamepwd = get_uname_pw();
-        nar::CLITasks::nar_push(file_name, unamepwd.first, unamepwd.second, std::string("/"));
+        nar::CLITasks::nar_push(file_name, unamepwd.first, unamepwd.second, nar_dir);
 
     } else if(first_arg == std::string("ls")) {
         auto unamepwd = get_uname_pw();

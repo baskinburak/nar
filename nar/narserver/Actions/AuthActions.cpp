@@ -14,16 +14,10 @@
 void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar::Socket* skt, nar::DBStructs::User& user) {
     std::string message = get_message(skt);
     std::string action = Messaging::get_action(message);
+
     if(action == std::string("file_push_request")) {
         nar::MessageTypes::FilePush::Request req;
-        try{
-            req.receive_message(message);
-        }
-        catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
-            std::cout<<exp.what()<<std::endl;
-            nar::MessageTypes::UserRegister::Response resp(300);
-            resp.send_mess(skt);
-        }
+        req.receive_message(message);
         push_file_action(s_global,skt,req,user);
     } else if(action == std::string("file_pull_request")) {
         nar::MessageTypes::FilePull::Request req;
@@ -502,19 +496,19 @@ void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* 
 
 void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::FilePush::Request& req, nar::DBStructs::User& user) {
     unsigned long long int file_size = req.get_file_size();
+    if(file_size < 0) {
+        return;
+    }
     std::string dir_name = req.get_dir_name();
     std::string file_name = req.get_file_name();
 
     nar::Database* db = s_global->get_db();
 
-     unsigned long long int peer_num = (file_size / CHUNK_SIZE);
-     std::cout<<"peer_num>>>>>"<<peer_num<<std::endl;
-     unsigned long long int remainder = file_size - (peer_num*CHUNK_SIZE);
-     if( file_size - (peer_num*CHUNK_SIZE) ) peer_num++;
-
+    unsigned long long int peer_num = ((file_size + CHUNK_SIZE - 1) / CHUNK_SIZE);
     unsigned short r_port = s_global->get_randezvous_port();
 
     nar::MessageTypes::FilePush::Response p_resp(200, r_port);
+
 
     nar::SockInfo* peer_sock;
 
@@ -525,23 +519,27 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
     long long int c_id = db->getNextChunkId(peer_num);
     long long int f_id = db->getNextFileId(1);
     long long int f_cid = c_id;
-    for(int i=0;i<peer_num;i++, c_id++) {
+    unsigned long long int f_size = file_size;
+
+    for(int i=0; i<peer_num; i++, c_id++, f_size -= CHUNK_SIZE) {
         nar::DBStructs::Chunk chnk;
         nar::DBStructs::ChunkToMachine c_to_m;
 
-        long long int c_size = CHUNK_SIZE;
-        if ( peer_num-1 == i && remainder) c_size = remainder;
+        long long int c_size = std::min(CHUNK_SIZE, f_size);
         long long int s_id = s_global->get_next_stream_id();
 
         nar::MessageTypes::WaitChunkPush::Request chunk_req(r_port, s_id, c_id, c_size);
         nar::MessageTypes::WaitChunkPush::Response chunk_resp;
-        do {
-            std::cout << "peer select" << std::endl;
-            peer_sock = s_global->peers->peer_select(user,CHUNK_SIZE);
-            std::cout << "peer select end" << std::endl;
-            chunk_req.send_mess(peer_sock->get_sck(), chunk_resp);
-        } while(chunk_resp.get_status_code() != 200);
 
+        try {
+            peer_sock = s_global->peers->peer_select(user, CHUNK_SIZE);
+        } catch(nar::Exception::Peers::NoValidPeer& exp) {
+            p_resp.set_status_code(707);
+            p_resp.send_mess(skt);
+            return;
+        }
+
+        chunk_req.send_mess(peer_sock->get_sck(), chunk_resp);
         v_macid.push_back(peer_sock->get_machine_id());
         p_resp.add_element(std::string(""), c_id, s_id, c_size);
     }
@@ -550,29 +548,31 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
 
     // WAIT FOR CONFIRMATION IF THERE ARE ANY
 
-    nar::DBStructs::File fl;
-    fl.file_id = f_id;
-    fl.file_name = file_name;
-    fl.file_size = file_size;
-    nar::DBStructs::DirectoryTo dt;
-    dt.dir_id = user.dir_id;
-    dt.item_id = f_id;
-    dt.ForD = false;
-    db->insertFile(fl);
-    db->insertDirectoryTo(dt);
-
-    for(int i=0;i<peer_num;i++){
-        nar::DBStructs::Chunk chnk;
-        nar::DBStructs::ChunkToMachine c_to_m;
-        c_to_m.chunk_id = chnk.chunk_id = f_cid++;
-        chnk.file_id = f_id ;
-        chnk.chunk_size = CHUNK_SIZE;
-        if (i == peer_num-1) chnk.chunk_size = remainder;
-        db->insertChunk(chnk);
-        c_to_m.machine_id = v_macid[i];
-        db->insertChunkToMachine(c_to_m);
+    try {
+        nar::DBStructs::File fl;
+        fl.file_id = f_id;
+        fl.file_name = file_name;
+        fl.file_size = file_size;
+        nar::DBStructs::DirectoryTo dt;
+        dt.dir_id = user.dir_id;
+        dt.item_id = f_id;
+        dt.ForD = false;
+        db->insertFile(fl);
+        db->insertDirectoryTo(dt);
+        f_size = file_size;
+        for(int i=0;i<peer_num;i++, f_size -= CHUNK_SIZE){
+            nar::DBStructs::Chunk chnk;
+            nar::DBStructs::ChunkToMachine c_to_m;
+            c_to_m.chunk_id = chnk.chunk_id = f_cid++;
+            chnk.file_id = f_id ;
+            chnk.chunk_size = std::min(CHUNK_SIZE, f_size);
+            db->insertChunk(chnk);
+            c_to_m.machine_id = v_macid[i];
+            db->insertChunkToMachine(c_to_m);
+        }
+    } catch(...) {
+        //rollback TODO !!!!
     }
-    return;
 }
 
 void nar::AuthAction::machine_register_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::MachineRegister::Request& req, nar::DBStructs::User& user) {
