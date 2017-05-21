@@ -12,7 +12,6 @@
 #include <nar/narserver/dbstructs.h>
 #include <algorithm>
 
-#define CHUNK_SIZE 1000000ULL
 
 namespace nar {
     namespace AuthAction {
