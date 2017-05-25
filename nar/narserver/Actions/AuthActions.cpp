@@ -30,6 +30,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
             try {
                 resp.send_mess(skt);
             } catch ( ... ) { }
+            return;
         }
         try {
             pull_file_action(s_global,skt,req,user);
@@ -52,6 +53,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
             std::cout<<exp.what()<<std::endl;
             nar::MessageTypes::DirInfo::Response resp(300);
             resp.send_mess(skt);
+            return;
         }
 
         dir_info_action(s_global,skt,req,user);
@@ -67,6 +69,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
             std::cout<<exp.what()<<std::endl;
             nar::MessageTypes::DeleteFile::Response resp(300);
             resp.send_mess(skt);
+            return;
         }
 
         delete_file_action(s_global,skt,req,user);
@@ -169,7 +172,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                 peer_sck = s_global->peers->get_peer(chunk_machines[j].machine_id );
                 std::cout << "olur" << std::endl;
             } catch(...) {
-                std::cout<<"Server delete file get_peer error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                NAR_LOG <<"Server delete file get_peer error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
                 nar::MessageTypes::DeleteFile::Response resp(500);
                 try {
                     resp.send_mess(skt);
@@ -220,7 +223,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                     del_req.send_mess(peer_sck->get_sck(),del_resp);
 
                 } catch (nar::Exception::MessageTypes::InternalDaemonError exp) {
-                    std::cout<<exp.what()<<std::endl;
+                    std::cout<< "AuthAction::Delete" << exp.what()<<std::endl;
                     struct nar::DBStructs::Machine t_mac;
                     try {
                         t_mac =  db->getMachine(chunk_machines[j].machine_id);

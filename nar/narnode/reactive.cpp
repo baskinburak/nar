@@ -116,7 +116,9 @@ void nar::delete_chunk( nar::Global* globals, std::string chunk_id, nar::Socket*
     }
     nar::MessageTypes::DeleteMachineChunk::Response resp(200);
     try {
+        std::cout << "Resp send b4" << std::endl;
         resp.send_mess(server_socket);
+        std::cout << "Resp send After" << std::endl;
     }
     catch (...) { std::cout << "Daemon-server socket failed." << std::endl; }
     return;
@@ -131,7 +133,6 @@ void nar::reactive_dispatcher(nar::Global *globals) {
     for(;;) {
         std::string message;
         try {
-
             message = nar::get_message( *server_socket);
         } catch(...) {
             NAR_LOG << "Server Connection Lost, trying to reconnect ... " << std::endl;

@@ -150,7 +150,7 @@ nar::SockInfo* nar::Peers::get_peer(string& machine_id) {
             try{
                 this->_db->leaveSession(sess);
             } catch(sql::SQLException & err) {
-                std::cout<<err.what()<<std::endl;
+                std::cout<< "Peers.cpp::get_peer "<<err.what()<<std::endl;
             }
 
             this->_keepalives.erase(it->first);
