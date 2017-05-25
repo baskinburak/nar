@@ -65,8 +65,9 @@ void nar::Peers::delete_keepalive(std::string& mac_id) {
 
 nar::SockInfo* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long chunk_size) {
     read_start();
+    nar::SockInfo* result;
     try {
-        nar::SockInfo* result = random_policy(user, chunk_size);
+        result = random_policy(user, chunk_size);
     } catch (...) {
         std::cout << "PEER SELECT FAILED" << std::endl;
         read_end();
