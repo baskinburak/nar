@@ -38,10 +38,12 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
             req.receive_message(msg);
             NAR_LOG << "Authentication init has received" << std::endl;
             nar::ServerAction::authenticate_action(s_global, req, skt);
+            skt->close();
         } else if(action == "user_register") {
             nar::MessageTypes::UserRegister::Request req;
             req.receive_message(msg);
             nar::ServerAction::register_action(s_global, req, skt);
+            skt->close();
         } else if(action == "keepalive") {
             nar::MessageTypes::KeepAlive::Request req;
             try {
@@ -64,6 +66,7 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
             }
 
             nar::ServerAction::daemon_shutdown_action(s_global,req,skt);
+            skt->close();
         }
     } catch(nar::Exception::Socket::SystemError& exp) {
         skt->forceclose();
@@ -85,7 +88,6 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
         return;
     }
 
-    skt->close();
 }
 
 

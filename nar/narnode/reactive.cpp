@@ -27,6 +27,7 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
         std::cout << tried++ << " ";
         try {
             req.send_mess(sck, resp);
+            std::cout << resp.get_status_code() << std::endl;
             break;
         } catch (nar::Exception::MessageTypes::ServerSocketAuthenticationError& exp) {
             NAR_LOG << "You probably have non-existing machine id" << std::endl;
@@ -130,6 +131,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
     for(;;) {
         std::string message;
         try {
+
             message = nar::get_message( *server_socket);
         } catch(...) {
             NAR_LOG << "Server Connection Lost, trying to reconnect ... " << std::endl;
