@@ -217,7 +217,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
             }
             std::string c_id = req.get_chunk_id();
             std::thread thr(&delete_chunk, globals, c_id, server_socket);
-            thr.detach();
+            thr.join();
         }
     }
 }
