@@ -96,13 +96,16 @@ void nar::MessageTypes::FilePull::Response::receive_message(nlohmann::json pull_
     try {
         nlohmann::json head = pull_resp_recv["header"];
         recv_fill(head);
-        if(_status_code == 300) {
-            throw nar::Exception::MessageTypes::ServerSocketAuthenticationError("Server can not authenticate socket created for this user", _status_code);
-        } else if(_status_code == 301) {
-            throw nar::Exception::MessageTypes::NoValidPeerPull("Not enough valid peer for pull operation", _status_code);
-        } else if(_status_code == 302) {
-            throw nar::Exception::MessageTypes::PullFileDoesNotExist("Desired file should be pushed first", _status_code);
+        
+        int stat = get_status_code();
+        if(stat/100 == 3) {
+            throw nar::Exception::MessageTypes::BadRequest("Your request was not complete or was wrong", stat);
+        } else  if(stat/100 == 4) {
+            throw nar::Exception::MessageTypes::InternalServerDatabaseError("Database problem", stat);
+        } else  if(stat/100 == 5) {
+            throw nar::Exception::MessageTypes::InternalServerError("Some things went wrong in server", stat);
         }
+
         this->_rendezvous_port = pull_resp_recv["payload"]["rand_port"];
         unsigned long int size = pull_resp_recv["payload"]["size"];
         for(int i=0;i<size;i++) {

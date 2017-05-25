@@ -347,7 +347,7 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
 void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket* skt, nar::MessageTypes::FilePull::Request& req, nar::DBStructs::User&  user) {
     std::string file_name = req.get_file_name();
     std::string dir_name = req.get_dir_name();
-
+    nar::MessageTypes::FilePull::Response resp;
     std::cout << "File Pull Fnc Entered" << std::endl;
 
     nar::Database* db = s_global->get_db();
@@ -355,9 +355,17 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
 
     std::cout << "File id to pull : " << f_id << std::endl;
 
+    if (f_id == -1) {
+        resp.set_status_code(315);
+        NAR_LOG << "File pull request with non-existing file" << std::endl;
+        try {
+            resp.send_mess(skt);
+        } catch (...) {}
+        return;
+    }
+
     std::vector<struct DBStructs::Chunk> chunks = db->getChunks(f_id);
     unsigned short r_port;
-    nar::MessageTypes::FilePull::Response resp;
 
     try {
         r_port = s_global->get_randezvous_port();
@@ -374,7 +382,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
         for( j=0; !(peer_sck = s_global->peers->get_peer(machines[j].machine_id )) && (j < machines.size()) ; ++j);
 
         if (j == machines.size()) {     // Chunk is not online
-            resp.set_status_code(666);
+            resp.set_status_code(515);
             try {
                 resp.send_mess(skt);
             } catch (...) {}
