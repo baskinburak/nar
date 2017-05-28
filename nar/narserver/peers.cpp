@@ -90,6 +90,7 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
     }
 
     if(!another_keepalive) {
+        std::cout<<"not enough user to push "<<std::endl;
         throw nar::Exception::Peers::NoValidPeer("No valid peer to push");
     }
 
@@ -110,6 +111,7 @@ nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned lo
         try {
             req.send_mess(sck, resp);
         } catch(...) {
+            std::cout<<"can not connect peer"<<std::endl;
             nar::SockInfo* sckinf = this->_keepalives[selected];
             unsigned long sessid = sckinf->get_sessid();
             nar::DBStructs::Session sess;

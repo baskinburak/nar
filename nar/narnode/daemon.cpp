@@ -76,9 +76,22 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
 
     if(action == string("ls")) {
         nar::MessageTypes::IPCLs::Request ipc_ls;
-        ipc_ls.populate_object(msg);
+        try {
+            ipc_ls.populate_object(msg);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            sck->forceclose();
+            return;
+        }
+
         nar::ActiveTask::LS ls_task(globals, &uservars);
-        ls_task.run(sck, &ipc_ls);
+        try {
+            ls_task.run(sck, &ipc_ls);
+        } catch(...) {
+            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            sck->forceclose();
+            return;
+        }
     } else if(action == string("push")) {
         nar::MessageTypes::IPCPush::Request ipc_push;
         try {
@@ -98,32 +111,98 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         }
     } else if(action == string("pull")) {
         nar::MessageTypes::IPCPull::Request ipc_pull;
-        ipc_pull.populate_object(msg);
+        try {
+            ipc_pull.populate_object(msg);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: pull" << std::endl;
+            sck->forceclose();
+            return;
+        }
+
         nar::ActiveTask::Pull pull_task(globals, &uservars);
-        pull_task.run(sck, &ipc_pull);
+        try {
+            pull_task.run(sck, &ipc_pull);
+        } catch(...) {
+            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            sck->forceclose();
+            return;
+        }
     } else if(action == string("register")) {
         nar::MessageTypes::IPCRegister::Request ipc_register;
-        ipc_register.populate_object(msg);
+        try {
+            ipc_register.populate_object(msg);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            sck->forceclose();
+            return;
+        }
+
         nar::ActiveTask::Register register_task(globals, &uservars);
-        register_task.run(sck, &ipc_register);
+        try {
+            register_task.run(sck, &ipc_register);
+        } catch(...) {
+            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            sck->forceclose();
+            return;
+        }
     } else if(action == string("config")) {
         std::cout << "Config not implemented yet! See u soon!" << std::endl;
     } else if(action == string("status")) {
-        //std::cout << "stat" << std::endl;
+
         nar::MessageTypes::IPCStatus::Request ipc_status;
-        ipc_status.populate_object(msg);
+        try {
+            ipc_status.populate_object(msg);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            sck->forceclose();
+            return;
+        }
+
         nar::ActiveTask::Status status_task(globals, &uservars);
-        status_task.run(sck, &ipc_status);
+        try {
+            status_task.run(sck, &ipc_status);
+        } catch(...) {
+            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            sck->forceclose();
+            return;
+        }
     } else if(action == string("mkdir")) {
+
         nar::MessageTypes::IPCMkdir::Request ipc_mkdir;
-        ipc_mkdir.populate_object(msg);
+        try {
+            ipc_mkdir.populate_object(msg);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            sck->forceclose();
+            return;
+        }
+
         nar::ActiveTask::Mkdir mkdir(globals, &uservars);
-        mkdir.run(sck, &ipc_mkdir);
+        try {
+            mkdir.run(sck, &ipc_mkdir);
+        } catch(...) {
+            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            sck->forceclose();
+            return;
+        }
     } else if(action == string("delete_file")) {
         nar::MessageTypes::IPCDeleteFile::Request ipc_delete_file;
-        ipc_delete_file.populate_object(msg);
+        try {
+            ipc_delete_file.populate_object(msg);
+        } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
+            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            sck->forceclose();
+            return;
+        }
+
         nar::ActiveTask::DeleteFile delete_file(globals, &uservars);
-        delete_file.run(sck, &ipc_delete_file);
+        try {
+            delete_file.run(sck, &ipc_delete_file);
+        } catch(...) {
+            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            sck->forceclose();
+            return;
+        }
     }
 
 
