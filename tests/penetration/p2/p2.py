@@ -14,19 +14,22 @@ files = [f for f in listdir("messages/") if isfile(join("messages/", f))]
 files = sorted(files)
 i = 1
 for fil in files:
-    res = str(i)
-    i+=1
-    fil = "messages/" + fil
+    res = " PASS"
+    print str(i),
+    sys.stdout.flush()
     s = connect.connect()
+    fil = "messages/" + fil
     hand = open(fil, "r")
     content = hand.read().splitlines()
     hand.close()
-    print "Testing #" + fil
     for lin in content:
         s.sendall(lin)
-        s.recv(1024)
+        try:
+            s.recv(1024)
+        except Exception:
+            res = " FAIL"
     s.close()
     s = connect.connect()
-    res += " PASS"
     s.close()
     print res
+    i+=1

@@ -6,6 +6,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <mutex>
+#include <recursive_mutex>
 #include <set>
 #include <nar/narnode/File/File.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -115,7 +116,7 @@ namespace nar {
             unsigned int _next_seqnum;
             unsigned int _expected_seqnum;
             bool _syned;
-            std::mutex _work_mutex;
+            std::recursive_mutex _work_mutex;
             std::condition_variable _event_cv;
 
             std::string _recv_buffer;

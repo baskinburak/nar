@@ -27,8 +27,8 @@ namespace nar {
             boost::asio::ssl::context _srv_ctx;
             boost::asio::ssl::context _ipc_ctx;
 
-            std::mutex read_mtx;
-            std::mutex write_mtx;
+            std::recursive_mutex read_mtx;
+            std::recursive_mutex write_mtx;
             int read_count = 0;
             void read_start();
             void read_end();
@@ -36,7 +36,7 @@ namespace nar {
             void write_end();
 
             std::string _config_path;
-            std::mutex _file_mtx;
+            std::recursive_mutex _file_mtx;
             void write_config();
         public:
             Global(std::string config_path);

@@ -41,8 +41,8 @@ namespace nar {
             std::string _pass;
             sql::Connection * _con;
             sql::Driver * _driver;
-            std::mutex read_mtx;
-            std::mutex write_mtx;
+            std::recursive_mutex read_mtx;
+            std::recursive_mutex write_mtx;
 
 
             int read_count = 0;

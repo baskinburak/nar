@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <mutex>
+#include <recursive_mutex>
 #include <thread>
 #include "boost/date_time/posix_time/posix_time.hpp" //include all types plus i/o
 
@@ -39,7 +40,7 @@ namespace nar {
             }
 
         private:
-            std::mutex log_mtx;
+            std::recursive_mutex log_mtx;
             std::ostream& _stream;
     };
 }

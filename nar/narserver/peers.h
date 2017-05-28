@@ -13,8 +13,8 @@ using std::string;
 namespace nar {
     class Peers {
         private:
-            std::mutex read_mtx;
-            std::mutex write_mtx;
+            std::recursive_mutex read_mtx;
+            std::recursive_mutex write_mtx;
             std::map<string, nar::SockInfo*> _keepalives;
             std::vector<string> _macs;
             nar::Database * _db;

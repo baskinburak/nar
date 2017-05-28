@@ -37,8 +37,8 @@ namespace nar {
     */
     class ServerGlobal {
         private:
-            std::mutex read_mtx;
-            std::mutex write_mtx;
+            std::recursive_mutex read_mtx;
+            std::recursive_mutex write_mtx;
             string _db_name;
             string _db_pass;
             string _db_user;
