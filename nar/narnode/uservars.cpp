@@ -1,15 +1,10 @@
 #include "uservars.h"
-#include <iostream>
-#include <crypto++/sha.h>
-#include <crypto++/hex.h>
-#include <crypto++/pwdbased.h>
-using std::cout;
-using std::endl;
-using std::string;
-using namespace CryptoPP;
 nar::UserVariables::UserVariables(std::string current_directory, std::string username, std::string password): _current_directory(current_directory), _username(username) {
-
-// From https://www.ietf.org/rfc/rfc6070.txt
+    while(_pass_aes.size() < 16) {
+        _pass_aes += password;
+    }
+    _pass_aes.resize(16);
+    /*// From https://www.ietf.org/rfc/rfc6070.txt
 //   PKCS #5: Password-Based Key Derivation Function 2 (PBKDF2) Test Vectors
 //
 //      Input:
@@ -46,8 +41,7 @@ nar::UserVariables::UserVariables(std::string current_directory, std::string use
     encoder.MessageEnd();
 
     cout << "Derived: " << result << endl;
-    _pass_aes =  result;
-
+    _pass_aes =  result;*/
 }
 
 std::string& nar::UserVariables::get_current_directory() {

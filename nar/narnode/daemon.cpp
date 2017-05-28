@@ -67,7 +67,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
 
 
     try {
-        uservars = nar::Messaging::get_user_variables(msg);
+        uservars = nar::Messaging::get_user_variables(msg);   //-->>>buraya bak
     } catch ( nar::Exception::MessageTypes::BadMessageReceive& e ) {
         std::cout << "handle_ipc_request: Bad message received, no uservars" << std::endl;
         sck->close();
