@@ -111,7 +111,13 @@ int main(int argc, char *argv[]) {
 
     while(true) {
         nar::Socket* new_skt = new nar::Socket(s_global.get_ioserv(), s_global.get_ctx(), 'c');
-        entry_skt.accept(*new_skt);
+        try {
+            entry_skt.accept(*new_skt);
+        } catch(...) {
+            NAR_LOG << "Protocol handshake failed." << std::endl;
+            delete new_skt;
+            continue;
+        }
         NAR_LOG << "New Connection" << std::endl;
         std::thread thr(&handle_request, new_skt, &s_global);
         thr.detach();
