@@ -6,7 +6,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <mutex>
-#include <recursive_mutex>
 #include <set>
 #include <nar/narnode/File/File.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
