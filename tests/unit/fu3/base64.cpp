@@ -1,5 +1,5 @@
 #include <nar/lib/base64/base64.h>
-#include "colormod.h"
+#include <tests/unit/colormod.h>
 #include <iostream>
 #include <sstream>
 
