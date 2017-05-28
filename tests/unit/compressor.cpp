@@ -20,7 +20,5 @@ int main()
     nar::FileCompressor fc(&fk);
     fc.compress_one_file(cptr, cptr2);
     fc.decompress_one_file(cptr2,cptr3);
-    
-
     return 0;
 }

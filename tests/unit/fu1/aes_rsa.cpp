@@ -3,7 +3,7 @@
 #include <sstream>
 #include <nar/lib/Cryption/aes.h>
 #include <nar/lib/Cryption/rsa.h>
-#include "colormod.h"
+#include <tests/unit/colormod.h>
 
 typedef bool (*fnc_t)(std::stringstream &); // type for conciseness
 
