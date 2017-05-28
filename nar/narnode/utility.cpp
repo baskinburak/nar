@@ -91,33 +91,29 @@ void nar::divide_nar_path (std::string& dir_name, std::string &dir_path, std::st
 std::string nar::get_message(nar::Socket& skt) {
     static const char* codes = "\x01\x02\x03";
     char buf[1035];
+    char nmin = 0;
     int received = skt.recv(buf, 10);
 
     int len = 0;
     int prev_len = 0;
     int idx = 0;
-    for(; idx<received; idx++) {
-        if(buf[idx] == ' ') {
-            idx++;
-            break;
-        }
-        if(buf[idx] > '9' || buf[idx] < '0') {
+    skt.recv(&nmin, 1);
+    while(nmin != ' ') {
+        if(nmin > '9' || nmin < '0') {
             skt.send(codes, 1);
             throw nar::Exception::LowLevelMessaging::NoSize("Message does not contain a size field.");
         }
         prev_len = len;
         len*=10;
-        len += buf[idx] - '0';
+        len += nmin - '0';
         if(prev_len > len) {
             skt.send(codes+1, 1);
             throw nar::Exception::LowLevelMessaging::SizeIntOverflow("Size is too big.");
         }
+        skt.recv(&nmin, 1);
     }
 
     std::string data;
-    int cur;
-    data.append(buf+idx, cur = std::min((received - idx), len));
-    len -= cur;
 
     while(len > 0) {
         int rec = skt.recv(buf, std::min(len, std::min(len, 1024)));

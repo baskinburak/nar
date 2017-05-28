@@ -11,17 +11,20 @@ files = [f for f in listdir("messages/") if isfile(join("messages/", f))]
 
 files = sorted(files)
 
+
 for fil in files:
     fil = "messages/" + fil
-    s = connect.connect()
+    s = connect.ssl_connect()
     hand = open(fil, "r")
-    content = hand.readlines()
+    content = hand.read().splitlines()
     hand.close()
     print "Testing #" + fil
     for lin in content:
-        s.send(lin)
-        s.recv(1024)
+        s.write(lin)
+        s.write(lin)
+        s.write(lin)
+        print s.read(1024)
     s.close()
-    s = connect.connect()
+    s = connect.ssl_connect()
     print "PASS"
     s.close()
