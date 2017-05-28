@@ -8,7 +8,6 @@ def pull(username,password,file_name,path):
 
 def get_md5(file_path):
 	p = Popen(['md5sum',file_path],stdout=PIPE, stdin=PIPE, stderr=PIPE)
-	inp = username + "\n" + password + "\n"
 	stdout_data = p.communicate()[0]
 	return stdout_data.split()[0]
 

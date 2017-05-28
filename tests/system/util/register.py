@@ -8,6 +8,6 @@ def register(username,password):
 
 def run_daemon():
 	p = Popen(['sudo', '../../build/nardaemon'],stdout=PIPE, stdin=PIPE, stderr=PIPE)
-	p.stdin.close()
+	
 if __name__ == "__main__":
 	run_daemon()
