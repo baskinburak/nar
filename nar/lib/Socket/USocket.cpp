@@ -159,7 +159,7 @@ void nar::USocket::timer_thread(unsigned long usec, bool* stop_timer) {
 
 
     try {
-	    std::unique_lock<std::recursive_mutex> lck(this->_work_mutex);
+	    std::unique_lock<std::mutex> lck(this->_work_mutex);
 	    if(!(*stop_timer)) {
 		this->_timer_flag = true;
 		this->_event_cv.notify_all();
@@ -218,7 +218,7 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
     char *buff = new char[nar::Packet::PACKET_LEN];
     boost::system::error_code ec;
     udp::endpoint remote_endpoint;
-    std::unique_lock<std::recursive_mutex> lck(sock->_work_mutex);
+    std::unique_lock<std::mutex> lck(sock->_work_mutex);
 
     std::map<unsigned int, nar::Packet*> received_packets; // map from seqnum to packets themselves.
 
@@ -364,7 +364,7 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
 
 void nar::USocket::randezvous_server() {
     boost::system::error_code ec;
-    std::unique_lock<std::recursive_mutex> lck(this->_work_mutex);
+    std::unique_lock<std::mutex> lck(this->_work_mutex);
     std::map<unsigned int, nar::USocket::RandezvousEntry> prev_rands;
     while(true) {
         if(this->_ran_flag) {
@@ -444,7 +444,7 @@ void nar::USocket::randezvous_server() {
 
 void nar::USocket::connect() {
     boost::system::error_code ec;
-    std::unique_lock<std::recursive_mutex> lck(this->_work_mutex);
+    std::unique_lock<std::mutex> lck(this->_work_mutex);
     nar::Packet ran_packet;
     ran_packet.make_ran_request(this->_stream_id);
     std::string ranpck = ran_packet.make_packet();
@@ -531,7 +531,7 @@ void nar::USocket::connect() {
 
 
 int nar::USocket::recv(char* buf, int len) {
-    std::unique_lock<std::recursive_mutex> lck(this->_work_mutex);
+    std::unique_lock<std::mutex> lck(this->_work_mutex);
     while(true) {
         if(this->_recv_flag) {
             break;
@@ -557,7 +557,7 @@ int nar::USocket::recv(char* buf, int len) {
 bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len, std::string& hash) {
     boost::system::error_code ec;
     nar::USocket::PacketGenerator pckgen(file, this->_next_seqnum, this->_stream_id, start, len);
-    std::unique_lock<std::recursive_mutex> lck(this->_work_mutex);
+    std::unique_lock<std::mutex> lck(this->_work_mutex);
     double window_size = 16; // packets
     unsigned int used_window = 0; // packets
     double rtt = 1000000; // microseconds

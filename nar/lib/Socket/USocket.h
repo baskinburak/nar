@@ -115,7 +115,7 @@ namespace nar {
             unsigned int _next_seqnum;
             unsigned int _expected_seqnum;
             bool _syned;
-            std::recursive_mutex _work_mutex;
+            std::mutex _work_mutex;
             std::condition_variable _event_cv;
 
             std::string _recv_buffer;
