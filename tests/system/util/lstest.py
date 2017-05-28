@@ -1,7 +1,7 @@
 from subprocess import Popen, PIPE, STDOUT
-def ls(username,password):
 
-    p = Popen(['../../build/narcli','ls'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+def ls(username,password):
+    p = Popen(['../../../build/narcli','ls'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     stdout_data = p.communicate(input=username+'\n'+password+'\n')[0]
     return stdout_data
 
