@@ -81,6 +81,10 @@ void f(int naber, int iyidir);
     * 301: Format error [NOT JSON, non existing key etc.]
     * 302: Domain error [At least one of the fields does not have required domain]
 * //4xx//: Database related error
+    * 401: database findDirectoryId(user.user_name,target_dir) in mkdir
+    * 402: database findDirectoryId is -1 returned in mkdir
+    * 403: nextDirectoryId error or insertDirectory error in mkdir
+    * 404: insertDirectoryTo error in mkdir
 * //5xx//: Algorithmic error
     * 501: AesCryptor unexpected server error
     * 502: RsaCryptor unexpected server error

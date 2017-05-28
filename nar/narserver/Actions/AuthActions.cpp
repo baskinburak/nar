@@ -317,12 +317,43 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
     std::string target_dir = req.get_dest_dir();
     std::string dir_name = req.get_dir_name();
     nar::Database* db = s_global->get_db();
+    nar::DBStructs::Directory pwd;
+    try{
+        pwd = db->findDirectoryId(user.user_name,target_dir);
+    } catch(sql::SQLException& e) {
+        std::cout<<e.what()<<std::endl;
+        nar::MessageTypes::Mkdir::Response resp(401);
+        try{
+            resp.send_mess(skt);
+        } catch(...) {
+            std::cout<<"send mess bomb mkdir"<<std::endl;
+        }
 
-    nar::DBStructs::Directory pwd = db->findDirectoryId(user.user_name,target_dir);
+    }
+    if (pwd.dir_id == -1) {
+        nar::MessageTypes::Mkdir::Response resp(402);
+        try{
+            resp.send_mess(skt);
+        } catch(...) {
+            std::cout<<"send mess bomb mkdir"<<std::endl;
+        }
+    }
     nar::DBStructs::Directory new_dir;
     new_dir.dir_name = dir_name;
 
-    db->insertDirectory(new_dir);          // DIR_ID ASSIGNED
+    try {
+        new_dir.dir_id = db->getNextDirectoryId(1);
+        db->insertDirectory(new_dir);          // DIR_ID ASSIGNED
+    } catch(sql::SQLException& e){
+        std::cout<<e.what()<<std::endl;
+        nar::MessageTypes::Mkdir::Response resp(403);
+        try{
+            resp.send_mess(skt);
+        } catch(...) {
+            std::cout<<"send mess bomb mkdir"<<std::endl;
+        }
+    }
+
 
     std::cout <<  "parent id " << pwd.dir_id << std::endl;
 
@@ -332,7 +363,18 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
     tmp.item_id=new_dir.dir_id;
     tmp.ForD = true;
 
-    db->insertDirectoryTo(tmp);
+    try {
+        db->insertDirectoryTo(tmp);
+    } catch(sql::SQLException& e) {
+        std::cout<<e.what()<<std::endl;
+        nar::MessageTypes::Mkdir::Response resp(404);
+        try{
+            resp.send_mess(skt);
+        } catch(...) {
+            std::cout<<"send mess bomb mkdir"<<std::endl;
+        }
+    }
+
     nar::MessageTypes::Mkdir::Response resp(200);
     resp.send_mess(skt);
     return;
