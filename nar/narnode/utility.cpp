@@ -92,7 +92,6 @@ std::string nar::get_message(nar::Socket& skt) {
     static const char* codes = "\x01\x02\x03";
     char buf[1035];
     char nmin = 0;
-    int received = skt.recv(buf, 10);
 
     int len = 0;
     int prev_len = 0;
