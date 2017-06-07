@@ -206,26 +206,31 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
     std::cout << "Total chunks to be sent: " << elements.size() << std::endl;
     unsigned long start = 0;
     for(int i=0; i<elements.size(); i++) {
-        std::cout << "Sending chunk " << i << " with id " << elements[i].chunk_id << " with stream_id " << elements[i].stream_id << "." << std::endl;
-        boost::asio::io_service& ioserv = this->_globals->get_ioserv();
-        nar::USocket* usck = new nar::USocket(ioserv, this->_globals->get_server_ip(), push_resp.get_randezvous_port(), elements[i].stream_id);
-        std::cout << "Trying to connect...";
-        usck->connect();
-        std::cout << "CONNECTED." << std::endl;
-        std::string hash;
-        std::cout << "Send is starting...";
-        try {
-            usck->send(*encrypted, start, elements[i].chunk_size, hash);
-        } catch(nar::Exception::USocket::InactivePeer& exp) {
-            std::cout << "FAIL. [peer inactive]" << std::endl;
+        long long int current_cid = elements[i].chunk_id;
+        int j=i;
+        for(; current_cid == elements[j].chunk_id; j++) {
+            std::cout << "Sending chunk " << i << " with id " << elements[i].chunk_id << " with stream_id " << elements[i].stream_id << "." << std::endl;
+            boost::asio::io_service& ioserv = this->_globals->get_ioserv();
+            nar::USocket* usck = new nar::USocket(ioserv, this->_globals->get_server_ip(), push_resp.get_randezvous_port(), elements[j].stream_id);
+            std::cout << "Trying to connect...";
+            usck->connect();
+            std::cout << "CONNECTED." << std::endl;
+            std::string hash;
+            std::cout << "Send is starting...";
+            try {
+                usck->send(*encrypted, start, elements[i].chunk_size, hash);
+            } catch(nar::Exception::USocket::InactivePeer& exp) {
+                std::cout << "FAIL. [peer inactive]" << std::endl;
+                usck->close();
+                server_sck->close();
+                this->send_error_response(ipc_socket, 799);
+                return;
+            }
+            std::cout << "SENT. Hash: " << hash << std::endl;
+            start += elements[i].chunk_size;
             usck->close();
-            server_sck->close();
-            this->send_error_response(ipc_socket, 799);
-            return;
         }
-        std::cout << "SENT. Hash: " << hash << std::endl;
-        start += elements[i].chunk_size;
-        usck->close();
+        i = j-1;
     }
 
 

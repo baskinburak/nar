@@ -559,7 +559,7 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
 
     std::vector<nar::DBStructs::Chunk> v_chunks;
     std::vector<nar::DBStructs::ChunkToMachine> v_chunktomac;
-    std::vector<std::string> v_macid;
+    std::map<long long int, std::vector<std::string> > v_macid;
 
     long long int c_id = db->getNextChunkId(peer_num);
     long long int f_id = db->getNextFileId(1);
@@ -567,26 +567,36 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
     unsigned long long int f_size = file_size;
 
     for(int i=0; i<peer_num; i++, c_id++, f_size -= CHUNK_SIZE) {
-        nar::DBStructs::Chunk chnk;
-        nar::DBStructs::ChunkToMachine c_to_m;
-
         long long int c_size = std::min(CHUNK_SIZE, f_size);
-        long long int s_id = s_global->get_next_stream_id();
 
-        nar::MessageTypes::WaitChunkPush::Request chunk_req(r_port, s_id, c_id, c_size);
-        nar::MessageTypes::WaitChunkPush::Response chunk_resp;
+        std::vector<nar::SockInfo*>* peer_socks;
 
         try {
-            peer_sock = s_global->peers->peer_select(user, CHUNK_SIZE);
+            peer_socks = s_global->peers->peer_select(user, CHUNK_SIZE, 2);
         } catch(nar::Exception::Peers::NoValidPeer& exp) {
             p_resp.set_status_code(707);
             p_resp.send_mess(skt);
             return;
         }
 
-        chunk_req.send_mess(peer_sock->get_sck(), chunk_resp);
-        v_macid.push_back(peer_sock->get_machine_id());
-        p_resp.add_element(std::string(""), c_id, s_id, c_size);
+        /*try {
+            peer_sock = s_global->peers->peer_select(user, CHUNK_SIZE);
+        } catch(nar::Exception::Peers::NoValidPeer& exp) {
+            p_resp.set_status_code(707);
+            p_resp.send_mess(skt);
+            return;
+        }*/
+
+        for(int i=0; i<peer_socks->size(); i++) {
+            long long int s_id = s_global->get_next_stream_id();
+            nar::MessageTypes::WaitChunkPush::Request chunk_req(r_port, s_id, c_id, c_size);
+            nar::MessageTypes::WaitChunkPush::Response chunk_resp;
+            peer_sock = (*peer_socks)[i];
+            chunk_req.send_mess(peer_sock->get_sck(), chunk_resp);
+            v_macid[c_id].push_back(peer_sock->get_machine_id());
+            p_resp.add_element(std::string(""), c_id, s_id, c_size);
+        }
+
     }
 
     p_resp.send_mess(skt);
@@ -612,8 +622,10 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
             chnk.file_id = f_id ;
             chnk.chunk_size = std::min(CHUNK_SIZE, f_size);
             db->insertChunk(chnk);
-            c_to_m.machine_id = v_macid[i];
-            db->insertChunkToMachine(c_to_m);
+            for(int j=0; j<v_macid[c_to_m.chunk_id].size(); j++) {
+                c_to_m.machine_id = v_macid[c_to_m.chunk_id][j];
+                db->insertChunkToMachine(c_to_m);
+            }
         }
     } catch(...) {
         //rollback TODO !!!!

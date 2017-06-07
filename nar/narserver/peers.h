@@ -9,6 +9,7 @@
 #include <random>
 #include <set>
 #include <algorithm>
+#include <vector>
 using std::string;
 namespace nar {
     class Peers {
@@ -30,8 +31,10 @@ namespace nar {
             void insert_keepalive(string& mac_id, nar::Socket* skt);
             void delete_keepalive(string& mac_id);
             nar::SockInfo* peer_select(nar::DBStructs::User& user, unsigned long int chunk_size);
+            std::vector<nar::SockInfo*>* peer_select(nar::DBStructs::User& user, unsigned long int chunk_size, int peer_count);
             nar::SockInfo* get_peer(string& machine_id);
             nar::SockInfo* random_policy(nar::DBStructs::User& user, unsigned long chunk_size);
+            std::vector<nar::SockInfo*>* random_policy(nar::DBStructs::User& user, unsigned long int chunk_size, int peer_count);
 
     };
 }

@@ -77,6 +77,83 @@ nar::SockInfo* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long
     return result;
 }
 
+std::vector<nar::SockInfo*>* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long chunk_size, int peer_count) {
+    read_start();
+    std::vector<nar::SockInfo*>* res;
+    try {
+        res = random_policy(user, chunk_size, peer_count);
+    } catch(...) {
+        std::cout << "VECTOR PEER SELECT FAILED" << std::endl;
+        read_end();
+        throw;
+    }
+    read_end();
+    return res;
+    
+}
+
+std::vector<nar::SockInfo*>* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned long int chunk_size, int peer_count) {
+
+    std::vector<nar::SockInfo*>* res = new std::vector<nar::SockInfo*>;
+
+    std::set<std::string> user_machines = _db->get_user_machines(user);
+
+    bool another_keepalive = false;
+    for(int i=0; i<_macs.size(); i++) {
+        if(user_machines.find(_macs[i]) == user_machines.end()) {
+            another_keepalive = true;
+            break;
+        }
+    }
+
+    if(!another_keepalive) {
+        std::cout<<"not enough user to push "<<std::endl;
+        throw nar::Exception::Peers::NoValidPeer("No valid peer to push");
+    }
+
+    std::random_device rd; // only used once to initialise (seed) engine
+    std::mt19937 rng(rd()); // random-number engine used (Mersenne-Twister in this case)
+    std::uniform_int_distribution<int> uni(0,_keepalives.size()-1); // guaranteed unbiased
+    std::set<std::string>::iterator it;
+    std::string selected;
+    nar::MessageTypes::KeepAliveCheck::Request req;
+    nar::MessageTypes::KeepAliveCheck::Response resp;
+
+    for(int p=0; p<peer_count; p++) {
+        int try_count = 10;
+	    bool flg = true;
+        nar::SockInfo* sckinf;
+        do {
+            try_count--;
+            if(try_count == 0 && res->size() > 0) break;
+	        flg = true;
+            auto random_integer = uni(rng);
+            selected = _macs[random_integer % _keepalives.size()];
+            sckinf = _keepalives[selected];
+            nar::Socket* sck = sckinf->get_sck();
+            try {
+                req.send_mess(sck, resp);
+            } catch(...) {
+                std::cout<<"can not connect peer"<<std::endl;
+                nar::SockInfo* sckinf = this->_keepalives[selected];
+                unsigned long sessid = sckinf->get_sessid();
+                nar::DBStructs::Session sess;
+                sess.session_id = sessid;
+                this->_db->leaveSession(sess);
+                this->_keepalives.erase(selected);
+                std::vector<std::string>::iterator it;
+                if ( ( it = std::find(_macs.begin(), _macs.end(), selected) ) != _macs.end() ) {
+                   this->_macs.erase(it);
+                }
+		        flg = false;
+           }
+        } while((it = user_machines.find(selected)) != user_machines.end() || !flg || (std::find(res->begin(), res->end(), sckinf) != res->end()));
+        if(try_count > 0 || res->size() == 0)
+            res->push_back(this->_keepalives[selected]);
+    }
+    return res;
+}
+
 nar::SockInfo* nar::Peers::random_policy(nar::DBStructs::User& user, unsigned long chunk_size) {
 
     std::set<std::string> user_machines = _db->get_user_machines(user);
