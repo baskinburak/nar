@@ -98,6 +98,7 @@ unsigned short nar::USocket::get_port() const {
 }
 
 nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id), _iserv(&io_serv) {
+    this->_active_timer_count = 0;
     this->_ran_done = false;
     this->_close_sck = false;
     this->_exp_sqnm_set = false;
@@ -151,6 +152,9 @@ nar::USocket::~USocket() {
 }
 
 void nar::USocket::timer_thread(unsigned long usec, bool* stop_timer) {
+    this->_atc_mutex.lock();
+    this->_active_timer_count++;
+    this->_atc_mutex.unlock();
     boost::asio::deadline_timer timer(*(this->_iserv), boost::posix_time::microseconds(usec));
     try {
         timer.wait();
@@ -159,17 +163,19 @@ void nar::USocket::timer_thread(unsigned long usec, bool* stop_timer) {
 
 
     try {
-	    std::unique_lock<std::mutex> lck(this->_work_mutex);
+	    this->_work_mutex.lock();
 	    if(!(*stop_timer)) {
-		this->_timer_flag = true;
-		this->_event_cv.notify_all();
-
+		    this->_timer_flag = true;
+		    this->_event_cv.notify_all();
 	    }
 	    delete stop_timer;
-
-	    lck.unlock();
+	    this->_work_mutex.unlock();
     } catch(std::system_error& ia) {
     }
+
+    this->_atc_mutex.lock();
+    this->_active_timer_count--;
+    this->_atc_mutex.unlock();
 }
 
 bool* nar::USocket::start_timer(unsigned long usec) {
@@ -229,7 +235,6 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
 
         if(sock->_close_sck) {
             *stop_poke = true;
-            delete sock;
             delete buff;
             for(auto& pckent : received_packets) {
                 delete pckent.second;
@@ -360,6 +365,17 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
         }
     }
     lck.unlock();
+
+    sock->_atc_mutex.lock();
+    while(sock->_active_timer_count > 0) {
+        std::cout << sock->_active_timer_count << std::endl;
+        sock->_atc_mutex.unlock();
+        boost::asio::deadline_timer timer(*(sock->_iserv), boost::posix_time::microseconds(1000000));
+        timer.wait();
+        sock->_atc_mutex.lock();
+    }
+    sock->_atc_mutex.unlock();
+    delete sock;
 }
 
 void nar::USocket::randezvous_server() {

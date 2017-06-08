@@ -227,9 +227,9 @@ void nar::ActiveTask::Push::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCP
                 return;
             }
             std::cout << "SENT. Hash: " << hash << std::endl;
-            start += elements[i].chunk_size;
             usck->close();
         }
+        start += elements[i].chunk_size;
         i = j-1;
     }
 

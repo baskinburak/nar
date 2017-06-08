@@ -141,6 +141,10 @@ namespace nar {
             bool _inactive_flag;
 
             unsigned int rand_seqnum();
+
+            std::mutex _atc_mutex;
+            int _active_timer_count;
+
         public:
             /*
                 stream_id = 0 for server
