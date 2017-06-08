@@ -421,7 +421,7 @@ void nar::Database::leaveSession(struct DBStructs::Session &ses) {
     prep_stmt = _con -> prepareStatement("UPDATE Sessions SET leave_time = NOW() WHERE session_id = ? ;");
     prep_stmt -> setBigInt(1, session.session_id);
     prep_stmt -> execute();
-    updateTimeTable(session);
+    //updateTimeTable(session);
     delete prep_stmt;
 }
 
