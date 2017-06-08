@@ -38,9 +38,11 @@ void nar::ServerAction::keepalive_action(nar::ServerGlobal* s_global, nar::Messa
     try {
         if(mac.delete_list.size() > 0) {
             boost::split( delete_list, mac.delete_list, boost::is_any_of( "," ) );
+            mac.delete_list = std::string();
+            db->updateMachineDeleteList(mac);
         }
     } catch(...) {
-        std::cout<<"boost error at server keepalive"<<std::endl;
+        std::cout<<"boost or database error at server keepalive"<<std::endl;
         nar::MessageTypes::KeepAlive::Response resp(709);
         try{
             resp.send_mess(skt);
