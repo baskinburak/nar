@@ -16,9 +16,14 @@ namespace nar {
                 301 -> Message Not Valid [HEADER or PAYLOAD problems]
             */
             class Response : public ResponseHeader {
+                private:
+                    std::vector<std::string> _delete_list;
                 public:
                     Response() :ResponseHeader(-1, std::string("keepalive")) {}
                     Response(int statcode ) : ResponseHeader(statcode, std::string("keepalive")) {}
+                    void set_delete_list(std::vector<std::string>& delete_list);
+                    std::vector<std::string>& get_delete_list();
+                    void add_delete_list_element(std::string& ele);
                     void send_mess(nar::Socket* skt);
                     void receive_message(nlohmann::json& keep_resp_recv);
                     nlohmann::json test_json();

@@ -31,6 +31,10 @@ nlohmann::json nar::MessageTypes::KeepAlive::Request::test_json() {
 void nar::MessageTypes::KeepAlive::Response::send_mess(nar::Socket* skt) {
     nlohmann::json keep_resp_send;
     keep_resp_send["header"] = send_head();
+    keep_resp_send["payload"]["size"] = _delete_list.size();
+    for(int i=0; i<_delete_list.size(); i++) {
+        keep_resp_send["payload"]["delete_list"][i] = _delete_list[i];
+    }
     send_message(skt, keep_resp_send.dump());
     return;
 }
@@ -38,6 +42,12 @@ void nar::MessageTypes::KeepAlive::Response::receive_message(nlohmann::json& kee
     try {
         nlohmann::json head = keep_resp_recv["header"];
         recv_fill(head);
+        if(_status_code == 200) {
+            unsigned long size = keep_resp_recv["payload"]["size"];
+            for(int i= 0;i<size;i++) {
+                _delete_list.push_back(keep_resp_recv["payload"]["delete_list"][i]);
+            }
+        }
     } catch(...) {        
         throw nar::Exception::MessageTypes::BadMessageReceive("KeepAlive Response message is not properly constructed.");
     }
@@ -52,6 +62,18 @@ nlohmann::json nar::MessageTypes::KeepAlive::Response::test_json() {
     nlohmann::json keep_resp_test;
     keep_resp_test["header"] = send_head();
     return keep_resp_test;
+}
+
+void nar::MessageTypes::KeepAlive::Response::set_delete_list(std::vector<std::string>& delete_list){
+    this->_delete_list = delete_list;
+    return;
+}
+std::vector<std::string>& nar::MessageTypes::KeepAlive::Response::get_delete_list() {
+    return this->_delete_list;
+}
+void nar::MessageTypes::KeepAlive::Response::add_delete_list_element(std::string& ele) {
+    this->_delete_list.push_back(ele);
+    return;
 }
 
 std::string& nar::MessageTypes::KeepAlive::Request::get_machine_id() {

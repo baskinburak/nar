@@ -198,7 +198,11 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                     return;
                 }
                 std::string cur_value = t_mac.delete_list;
-                t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                if (cur_value.size() > 0) {
+                    t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                } else {
+                    t_mac.delete_list = std::to_string(chunks[i].chunk_id);
+                }
                 try {
                     db->updateMachineDeleteList(t_mac);
                 } catch (...) {
@@ -239,7 +243,12 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                         return;
                     }
                     std::string cur_value = t_mac.delete_list;
-                    t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                    if (cur_value.size() > 0) {
+                        t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                    } else {
+                        t_mac.delete_list = std::to_string(chunks[i].chunk_id);
+                    }
+
                     try {
                         db->updateMachineDeleteList(t_mac);
                     } catch (...) {
