@@ -166,7 +166,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
         try {
             action = Messaging::get_action(message);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            NAR_LOG << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
+            NAR_LOG << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << message << std::endl;
             exit(0);
         }
 
@@ -176,7 +176,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
             try {
                 req.receive_message(Messaging::transform(message));
             } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-                std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << std::endl;
+                std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << message << std::endl;
                 exit(0);
             }
 

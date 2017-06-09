@@ -125,7 +125,7 @@ std::vector<nar::SockInfo*>* nar::Peers::random_policy(nar::DBStructs::User& use
         nar::SockInfo* sckinf;
         do {
             try_count--;
-            if(try_count == 0 && res->size() > 0) break;
+            if(try_count == 0) break;
 	        flg = true;
             auto random_integer = uni(rng);
             selected = _macs[random_integer % _keepalives.size()];
@@ -150,6 +150,9 @@ std::vector<nar::SockInfo*>* nar::Peers::random_policy(nar::DBStructs::User& use
         } while((it = user_machines.find(selected)) != user_machines.end() || !flg || (std::find(res->begin(), res->end(), sckinf) != res->end()));
         if(try_count > 0 || res->size() == 0)
             res->push_back(this->_keepalives[selected]);
+    }
+    if(res.size() == 0) {
+        throw nar::Exception::Peers::NoValidPeer("no valid peer to select");
     }
     return res;
 }

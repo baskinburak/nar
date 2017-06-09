@@ -314,7 +314,7 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
 
                 nar::Packet rplpck;
                 rplpck.make_synack(sock->_stream_id, sock->_start_seqnum, rcvpck->get_seqnum());
-                rplpck.print();
+                //rplpck.print();
                 std::string pckstr = rplpck.make_packet();
                 sock->_socket.send_to(boost::asio::buffer(pckstr), sock->_peer_endpoint, 0, ec);
                 sock->_event_cv.notify_all();
@@ -391,7 +391,6 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
 
     sock->_atc_mutex.lock();
     while(sock->_active_timer_count > 0) {
-        std::cout << sock->_active_timer_count << std::endl;
         sock->_atc_mutex.unlock();
         boost::asio::deadline_timer timer(*(sock->_iserv), boost::posix_time::microseconds(1000000));
         timer.wait();
@@ -566,6 +565,8 @@ void nar::USocket::connect() {
     }
 
     lck.unlock();
+
+    
 }
 
 
@@ -597,9 +598,9 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len,
     boost::system::error_code ec;
     nar::USocket::PacketGenerator pckgen(file, this->_next_seqnum, this->_stream_id, start, len);
     std::unique_lock<std::mutex> lck(this->_work_mutex);
-    double window_size = 16; // packets
+    double window_size = 256; // packets
     unsigned int used_window = 0; // packets
-    double rtt = 1000000; // microseconds
+    double rtt = 5000000; // microseconds
     double devrtt = 0; // microseconds
     std::set<unsigned int> resend_seqnums;
     std::map<unsigned int, boost::posix_time::ptime> sent_times;
@@ -688,6 +689,7 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len,
             stp_tmr = start_timer(rtt + 4*devrtt);
             window_size -= 0.5;
             window_size = std::max(window_size, 1.1);
+            std::cout << window_size << std::endl;
         }
         this->_event_cv.wait(lck);
     }
