@@ -213,132 +213,185 @@ void nar::Database::insertUser(struct DBStructs::User &us)
 
 
 void nar::Database::insertDirectory(struct DBStructs::Directory & dir){
-    nar::db::Directory directory = turnDirectory(dir);
-    sql::PreparedStatement *prep_stmt;
-    if(dir.dir_id == -1) {
-        prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
-                                                           "Dir_size) "
-                                                           "VALUES( ?, ?);");
+    write_start();
+    try {
+        nar::db::Directory directory = turnDirectory(dir);
+        sql::PreparedStatement *prep_stmt;
+        if(dir.dir_id == -1) {
+            prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
+                                                               "Dir_size) "
+                                                               "VALUES( ?, ?);");
 
-        prep_stmt -> setString(1, directory.dir_name);
-        prep_stmt -> setBigInt(2, directory.dir_size);
-    } else {
-        prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
-                                                           "Dir_size, Dir_id) "
-                                                           "VALUES( ?, ?, ?);");
+            prep_stmt -> setString(1, directory.dir_name);
+            prep_stmt -> setBigInt(2, directory.dir_size);
+        } else {
+            prep_stmt = _con -> prepareStatement("INSERT INTO Directories(Dir_name, "
+                                                               "Dir_size, Dir_id) "
+                                                               "VALUES( ?, ?, ?);");
 
-        prep_stmt -> setString(1, directory.dir_name);
-        prep_stmt -> setBigInt(2, directory.dir_size);
-        prep_stmt -> setBigInt(3, directory.dir_id);
+            prep_stmt -> setString(1, directory.dir_name);
+            prep_stmt -> setBigInt(2, directory.dir_size);
+            prep_stmt -> setBigInt(3, directory.dir_id);
+        }
+
+
+        prep_stmt -> execute();
+        delete prep_stmt;
+    } catch(...) {
+        write_end();
+        throw;
     }
-
-
-    prep_stmt -> execute();
-    delete prep_stmt;
-    return;
+    write_end();
 }
 
 void nar::Database::insertDirectoryTo(struct DBStructs::DirectoryTo & dirTo){
-    nar::db::DirectoryTo directoryTo = turnDirectoryTo(dirTo);
-    bool keeper = dirTo.ForD;
-    sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO DirectoryTo( Dir_id, Item_id, "
-                                            "ForD ) "
-                                            "VALUES(?, ?, ?);");
-    prep_stmt -> setBigInt(1,directoryTo.dir_id);
-    prep_stmt -> setBigInt(2, directoryTo.item_id);
-    prep_stmt -> setBoolean(3, keeper);
+    write_start();
+    try {
+        nar::db::DirectoryTo directoryTo = turnDirectoryTo(dirTo);
+        bool keeper = dirTo.ForD;
+        sql::PreparedStatement *prep_stmt;
+        prep_stmt = _con -> prepareStatement("INSERT INTO DirectoryTo( Dir_id, Item_id, "
+                                                "ForD ) "
+                                                "VALUES(?, ?, ?);");
+        prep_stmt -> setBigInt(1,directoryTo.dir_id);
+        prep_stmt -> setBigInt(2, directoryTo.item_id);
+        prep_stmt -> setBoolean(3, keeper);
 
-    prep_stmt -> execute();
+        prep_stmt -> execute();
 
-    delete prep_stmt;
+        delete prep_stmt;
+    } catch(...) {
+        write_end();
+        throw;
+    }
+    write_end();
 }
 
 void nar::Database::insertChunk(struct DBStructs::Chunk &ch)
 {
-    nar::db::Chunk chunk = turnChunk(ch);
-    sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Chunks(Chunk_id, File_id, Chunk_size, Hashed) "
-                                            "VALUES(?, ?, ?, ?);");
-    prep_stmt -> setBigInt(1, chunk.chunk_id);
-    prep_stmt -> setBigInt(2, chunk.file_id);
-    prep_stmt -> setBigInt(3, chunk.chunk_size);
-    prep_stmt -> setString(4, chunk.hashed);
+    write_start();
+    try {
+        nar::db::Chunk chunk = turnChunk(ch);
+        sql::PreparedStatement *prep_stmt;
+        prep_stmt = _con -> prepareStatement("INSERT INTO Chunks(Chunk_id, File_id, Chunk_size, Hashed) "
+                                                "VALUES(?, ?, ?, ?);");
+        prep_stmt -> setBigInt(1, chunk.chunk_id);
+        prep_stmt -> setBigInt(2, chunk.file_id);
+        prep_stmt -> setBigInt(3, chunk.chunk_size);
+        prep_stmt -> setString(4, chunk.hashed);
 
-    prep_stmt -> execute();
+        prep_stmt -> execute();
 
-    delete prep_stmt;
+        delete prep_stmt;
+    } catch(...) {
+        write_end();
+        throw;
+    }
+    write_end();
 }
 
 void nar::Database::insertFile(struct DBStructs::File &fi)
 {
-    nar::db::File file = turnFile(fi);
-    sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Files(File_id ,File_name, File_size) "
-                                            "VALUES(?, ?, ?);");
-    prep_stmt -> setBigInt(1, file.file_id);
-    prep_stmt -> setString(2, file.file_name);
-    prep_stmt -> setString(3, file.file_size);
+    write_start();
+    try {
+        nar::db::File file = turnFile(fi);
+        sql::PreparedStatement *prep_stmt;
+        prep_stmt = _con -> prepareStatement("INSERT INTO Files(File_id ,File_name, File_size) "
+                                                "VALUES(?, ?, ?);");
+        prep_stmt -> setBigInt(1, file.file_id);
+        prep_stmt -> setString(2, file.file_name);
+        prep_stmt -> setString(3, file.file_size);
 
-    prep_stmt -> execute();
+        prep_stmt -> execute();
 
-    delete prep_stmt;
+        delete prep_stmt;
+    } catch(...) {
+        write_end();
+        throw;
+    }
+    write_end();
 }
 
 void nar::Database::insertMachine(struct DBStructs::Machine &ma)
 {
-    nar::db::Machine machine = turnMachine(ma);
-    sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Machines(Machine_id,  Machine_quota, Machine_diskSpace, User_id) "
-                                            "VALUES(?,  ?, ?, ?);");
-    prep_stmt -> setString(1, machine.machine_id);
-    prep_stmt -> setBigInt(2, machine.machine_quota);
-    prep_stmt -> setBigInt(3, machine.machine_diskSpace);
-    prep_stmt -> setBigInt(4, machine.user_id);
+    write_start();
+    try {
+        nar::db::Machine machine = turnMachine(ma);
+        sql::PreparedStatement *prep_stmt;
+        prep_stmt = _con -> prepareStatement("INSERT INTO Machines(Machine_id,  Machine_quota, Machine_diskSpace, User_id) "
+                                                "VALUES(?,  ?, ?, ?);");
+        prep_stmt -> setString(1, machine.machine_id);
+        prep_stmt -> setBigInt(2, machine.machine_quota);
+        prep_stmt -> setBigInt(3, machine.machine_diskSpace);
+        prep_stmt -> setBigInt(4, machine.user_id);
 
-    prep_stmt -> execute();
-
-    delete prep_stmt;
+        prep_stmt -> execute();
+        delete prep_stmt;
+    } catch(...) {
+        write_end();
+        throw;
+    }
+    write_end();
 }
 
 void nar::Database::insertUserToFile(struct DBStructs::UserToFile &use)
 {
-    nar::db::UserToFile userToFile = turnUserToFile(use);
-    sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO UserToFile(User_id, File_id) "
-                                            "VALUES(?, ?);");
-    prep_stmt -> setBigInt(1, userToFile.user_id);
-    prep_stmt -> setBigInt(2, userToFile.file_id);
+    write_start();
+    try {
+        nar::db::UserToFile userToFile = turnUserToFile(use);
+        sql::PreparedStatement *prep_stmt;
+        prep_stmt = _con -> prepareStatement("INSERT INTO UserToFile(User_id, File_id) "
+                                                "VALUES(?, ?);");
+        prep_stmt -> setBigInt(1, userToFile.user_id);
+        prep_stmt -> setBigInt(2, userToFile.file_id);
 
-    prep_stmt -> execute();
-
-    delete prep_stmt;
+        prep_stmt -> execute();
+        delete prep_stmt;
+    } catch(...) {
+        write_end();
+        throw;
+    }
+    write_end();
 }
 
 void nar::Database::insertChunkToMachine(struct DBStructs::ChunkToMachine &chu)
 {
-    nar::db::ChunkToMachine chunktomachine = turnChunkToMachine(chu);
-    sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO ChunkToMachine(Chunk_id, Machine_id) "
-                                            "VALUES(?, ?);");
-    prep_stmt -> setBigInt(1, chunktomachine.chunk_id);
-    prep_stmt -> setString(2, chunktomachine.machine_id);
+    write_start();
+    try {
+        nar::db::ChunkToMachine chunktomachine = turnChunkToMachine(chu);
+        sql::PreparedStatement *prep_stmt;
+        prep_stmt = _con -> prepareStatement("INSERT INTO ChunkToMachine(Chunk_id, Machine_id) "
+                                                "VALUES(?, ?);");
+        prep_stmt -> setBigInt(1, chunktomachine.chunk_id);
+        prep_stmt -> setString(2, chunktomachine.machine_id);
 
-    prep_stmt -> execute();
-
-    delete prep_stmt;
+        prep_stmt -> execute();
+        delete prep_stmt;
+    } catch(...) {
+        write_end();
+        throw;
+    }
+    write_end();
 }
 unsigned long nar::Database::insertSession(struct DBStructs::Session &ses) {
+    write_start();
     unsigned long last = getNextSessionId(1);
     ses.session_id = last;
-    nar::db::Session session = turnSession(ses);
-    sql::PreparedStatement *prep_stmt;
-    prep_stmt = _con -> prepareStatement("INSERT INTO Sessions(machine_id, session_id) "
-                                                 "VALUES(?, ?);");
-    prep_stmt -> setString(1, session.machine_id);
-    prep_stmt -> setBigInt(2, session.session_id);
-    prep_stmt -> execute();
-    delete prep_stmt;
+    try {
+        nar::db::Session session = turnSession(ses);
+        sql::PreparedStatement *prep_stmt;
+        prep_stmt = _con -> prepareStatement("INSERT INTO Sessions(machine_id, session_id) "
+                                                     "VALUES(?, ?);");
+        prep_stmt -> setString(1, session.machine_id);
+        prep_stmt -> setBigInt(2, session.session_id);
+        prep_stmt -> execute();
+        delete prep_stmt;
+
+    } catch(...) {
+        write_end();
+        throw;
+    }
+    write_end();
     return last;
 }
 void nar::Database::updateTimeTable(nar::db::Session &session) {
@@ -428,125 +481,153 @@ void nar::Database::leaveSession(struct DBStructs::Session &ses) {
 
 nar::DBStructs::User nar::Database::getUser(std::string name)
 {
-    sql::PreparedStatement *prep_stmt;
-    sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT User_id, User_name, AESCrypted, RSAPriCrypted, RSAPub, "
-                                            "Dir_id, UNIX_TIMESTAMP(Change_time) As Time "
-                                            "FROM Users "
-                                            "WHERE Users.User_name = ?;");
+    try {
+        write_start();
+        sql::PreparedStatement *prep_stmt;
+        sql::ResultSet *res;
+        prep_stmt = _con -> prepareStatement("SELECT User_id, User_name, AESCrypted, RSAPriCrypted, RSAPub, "
+                                                "Dir_id, UNIX_TIMESTAMP(Change_time) As Time "
+                                                "FROM Users "
+                                                "WHERE Users.User_name = ?;");
 
-    prep_stmt -> setString(1, name);
+        prep_stmt -> setString(1, name);
 
-    res = prep_stmt -> executeQuery();
+        res = prep_stmt -> executeQuery();
 
-    delete prep_stmt;
-    nar::DBStructs::User a;
-    a.user_id = -1;
-    while(res->next()){
-        a.user_id = std::stoll(res->getString("User_id").asStdString());
-        a.user_name = res->getString("User_name").asStdString();
-        a.aes_crypted = res->getString("AESCrypted").asStdString();
-        a.rsa_pri_crypted = res->getString("RSAPriCrypted").asStdString();
-        a.rsa_pub = res->getString("RSAPub").asStdString();
-        a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
+        delete prep_stmt;
+        nar::DBStructs::User a;
+        a.user_id = -1;
+        while(res->next()){
+            a.user_id = std::stoll(res->getString("User_id").asStdString());
+            a.user_name = res->getString("User_name").asStdString();
+            a.aes_crypted = res->getString("AESCrypted").asStdString();
+            a.rsa_pri_crypted = res->getString("RSAPriCrypted").asStdString();
+            a.rsa_pub = res->getString("RSAPub").asStdString();
+            a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
 
-        a.change_time = res->getUInt64("Time");
+            a.change_time = res->getUInt64("Time");
+        }
+        delete res;
+        write_end();
+        return a;
+    } catch(...) {
+        write_end();
+        throw;
     }
-    delete res;
-    return a;
 }
 
 nar::DBStructs::User nar::Database::getUser(long long int userId)
 {
-    sql::SQLString user_id = std::to_string(userId);
-    sql::PreparedStatement *prep_stmt;
-        sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT User_id, User_name, AESCrypted, RSAPriCrypted, RSAPub, "
-                                        "Dir_id, UNIX_TIMESTAMP(Change_time) As Time "
-                                        "FROM Users "
-                                        "WHERE Users.User_id = ?;");
+    try {
+        write_start();
+        sql::SQLString user_id = std::to_string(userId);
+        sql::PreparedStatement *prep_stmt;
+            sql::ResultSet *res;
+        prep_stmt = _con -> prepareStatement("SELECT User_id, User_name, AESCrypted, RSAPriCrypted, RSAPub, "
+                                            "Dir_id, UNIX_TIMESTAMP(Change_time) As Time "
+                                            "FROM Users "
+                                            "WHERE Users.User_id = ?;");
 
-    prep_stmt -> setBigInt(1, user_id);
+        prep_stmt -> setBigInt(1, user_id);
 
-    res = prep_stmt -> executeQuery();
+        res = prep_stmt -> executeQuery();
 
-    delete prep_stmt;
-    nar::DBStructs::User a;
-    a.user_id = -1;
-    while(res->next()){
-        a.user_id = std::stoll(res->getString("User_id").asStdString());
-        a.user_name = res->getString("User_name").asStdString();
-        a.aes_crypted = res->getString("Quota").asStdString();
-        a.rsa_pri_crypted = res->getString("Disk_space").asStdString();
-        a.rsa_pub = res->getString("CryptedKey").asStdString();
-        a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
+        delete prep_stmt;
+        nar::DBStructs::User a;
+        a.user_id = -1;
+        while(res->next()){
+            a.user_id = std::stoll(res->getString("User_id").asStdString());
+            a.user_name = res->getString("User_name").asStdString();
+            a.aes_crypted = res->getString("Quota").asStdString();
+            a.rsa_pri_crypted = res->getString("Disk_space").asStdString();
+            a.rsa_pub = res->getString("CryptedKey").asStdString();
+            a.dir_id = std::stoll(res->getString("Dir_id").asStdString());
 
-        a.change_time = res->getUInt64("Time");
+            a.change_time = res->getUInt64("Time");
+        }
+        delete res;
+        write_end();
+        return a;
+    } catch(...) {
+        write_end();
+        throw;
     }
-    delete res;
-    return a;
 }
 
 
 nar::DBStructs::Machine nar::Database::getMachine(std::string machine_id)
 {
-    sql::PreparedStatement *prep_stmt;
-    sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT Machine_id, Machine_quota, Machine_diskSpace, User_id, Delete_list, "
-                                        "UNIX_TIMESTAMP(Change_time) As Time "
-                                        "FROM Machines "
-                                        "WHERE Machines.Machine_id = ?;");
+    try {
+        write_start();
+        sql::PreparedStatement *prep_stmt;
+        sql::ResultSet *res;
+        prep_stmt = _con -> prepareStatement("SELECT Machine_id, Machine_quota, Machine_diskSpace, User_id, Delete_list, "
+                                            "UNIX_TIMESTAMP(Change_time) As Time "
+                                            "FROM Machines "
+                                            "WHERE Machines.Machine_id = ?;");
 
-    prep_stmt -> setString(1, machine_id);
+        prep_stmt -> setString(1, machine_id);
 
-    res = prep_stmt -> executeQuery();
+        res = prep_stmt -> executeQuery();
 
-    delete prep_stmt;
+        delete prep_stmt;
 
-    nar::DBStructs::Machine a;
-    a.machine_id = std::string("-1");
-    while (res->next()) {
+        nar::DBStructs::Machine a;
+        a.machine_id = std::string("-1");
+        while (res->next()) {
 
-        a.machine_id = res->getString("Machine_id").asStdString();
-        a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
-        a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
-        a.change_time = res->getUInt64("Time");
-        a.user_id = std::stoll(res->getString("User_id").asStdString());
-        a.delete_list = res->getString("Delete_list").asStdString();
+            a.machine_id = res->getString("Machine_id").asStdString();
+            a.machine_quota = std::stoll(res->getString("Machine_quota").asStdString());
+            a.machine_diskSpace = std::stoll(res->getString("Machine_diskSpace").asStdString());
+            a.change_time = res->getUInt64("Time");
+            a.user_id = std::stoll(res->getString("User_id").asStdString());
+            a.delete_list = res->getString("Delete_list").asStdString();
 
+        }
+        delete res;
+        write_end();
+        return a;
+    } catch(...) {
+        write_end();
+        throw;
     }
-    delete res;
-    return a;
 }
 
 nar::DBStructs::File nar::Database::getFile(long long int fileId)
 {
-    sql::SQLString file_id = std::to_string(fileId);
-    sql::PreparedStatement *prep_stmt;
-    sql::ResultSet *res;
-    prep_stmt = _con -> prepareStatement("SELECT File_id,File_name,File_size, "
-                                        "UNIX_TIMESTAMP(Change_time) As Time "
-                                        "FROM Files "
-                                        "WHERE Files.File_id = ?;");
+    try {
+        write_start();
+        sql::SQLString file_id = std::to_string(fileId);
+        sql::PreparedStatement *prep_stmt;
+        sql::ResultSet *res;
+        prep_stmt = _con -> prepareStatement("SELECT File_id,File_name,File_size, "
+                                            "UNIX_TIMESTAMP(Change_time) As Time "
+                                            "FROM Files "
+                                            "WHERE Files.File_id = ?;");
 
-    prep_stmt -> setBigInt(1, file_id);
+        prep_stmt -> setBigInt(1, file_id);
 
-    res = prep_stmt -> executeQuery();
+        res = prep_stmt -> executeQuery();
 
-    delete prep_stmt;
-    nar::DBStructs::File a;
-    a.file_id = -1;
-    while (res->next()) {
+        delete prep_stmt;
+        nar::DBStructs::File a;
+        a.file_id = -1;
+        while (res->next()) {
 
-        a.file_id = std::stoll(res->getString("File_id").asStdString());
-        a.file_name = res->getString("File_name").asStdString();
-        a.file_size = std::stoll(res->getString("File_size").asStdString());
+            a.file_id = std::stoll(res->getString("File_id").asStdString());
+            a.file_name = res->getString("File_name").asStdString();
+            a.file_size = std::stoll(res->getString("File_size").asStdString());
 
-        a.change_time = res->getUInt64("Time");
+            a.change_time = res->getUInt64("Time");
 
+        }
+        delete res;
+        write_end();
+        return a;
+    } catch(...) {
+        write_end();
+        throw;
     }
-    delete res;
-    return a;
 }
 
 nar::DBStructs::Chunk nar::Database::getChunk(long long int chunkId)
@@ -982,7 +1063,6 @@ std::vector<nar::DBStructs::Directory> nar::Database::getDirectoryDir(long long 
 }
 unsigned long  nar::Database::getNextSessionId(long long int N) {
     static long long int next_id = -1;
-    write_start();
     if(next_id == -1) {
         sql::PreparedStatement *prep_stmt;
         long long int keep = 1;
@@ -1001,12 +1081,10 @@ unsigned long  nar::Database::getNextSessionId(long long int N) {
 
     long long int ret = next_id;
     next_id += N;
-    write_end();
     return ret;
 }
 long long int nar::Database::getNextFileId(long long int N){
     static long long int next_id = -1;
-    write_start();
     if(next_id == -1) {
         sql::PreparedStatement *prep_stmt;
         long long int keep = 1;
@@ -1025,12 +1103,10 @@ long long int nar::Database::getNextFileId(long long int N){
 
     long long int ret = next_id;
     next_id += N;
-    write_end();
     return ret;
 }
 long long int nar::Database::getNextChunkId(long long int N){
     static long long int next_id = -1;
-    write_start();
     if(next_id == -1) {
         sql::PreparedStatement *prep_stmt;
         long long int keep = 1;
@@ -1048,13 +1124,11 @@ long long int nar::Database::getNextChunkId(long long int N){
     }
     long long int ret = next_id;
     next_id += N;
-    write_end();
     return ret;
 
 }
 long long int nar::Database::getNextDirectoryId(long long int N){
     static long long int next_id = -1;
-    write_start();
     if(next_id == -1) {
         sql::PreparedStatement *prep_stmt;
         long long int keep = 1;
@@ -1073,7 +1147,6 @@ long long int nar::Database::getNextDirectoryId(long long int N){
     }
     long long int ret = next_id;
     next_id += N;
-    write_end();
     return ret;
 }
 std::vector<nar::DBStructs::File>  nar::Database::getUserFiles(long long int userId){

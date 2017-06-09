@@ -10,7 +10,7 @@ import register
 import lstest
 
 if __name__ == "__main__":
-	count = 3
+	count = 100
 	test_file_name = "test"
 
 	username,password = str(raw_input("Username Password <")).split()

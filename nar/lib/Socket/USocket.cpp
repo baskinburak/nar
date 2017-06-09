@@ -98,6 +98,9 @@ unsigned short nar::USocket::get_port() const {
 }
 
 nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id), _iserv(&io_serv) {
+    static unsigned short udp_next_port = 6543;
+
+
     this->_active_timer_count = 0;
     this->_ran_done = false;
     this->_close_sck = false;
@@ -115,14 +118,19 @@ nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, u
 
     this->_socket.open(udp::v4());
 
-    for(this->_port = 10000; this->_port < 65536; this->_port++) {
+    for(this->_port = udp_next_port; ; this->_port++) {
         this->_socket.bind(udp::endpoint(udp::v4(), this->_port), ec);
         if(!ec) break;
+        if(this->_port == udp_next_port-1) {
+            throw nar::Exception::USocket::NoAvailablePort("No available UDP port to bind");
+        }
     }
 
-    if(this->_port == 65536) {
+    udp_next_port = this->_port+1;
+
+    /*if(this->_port == 65536) {
         throw nar::Exception::USocket::NoAvailablePort("No available UDP port to bind");
-    }
+    }*/
 
 
     this->_syned = false;
@@ -234,12 +242,12 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
         lck.lock();
 
         if(sock->_close_sck) {
-            *stop_poke = true;
+            /**stop_poke = true;
             delete buff;
             for(auto& pckent : received_packets) {
                 delete pckent.second;
             }
-            break;
+            break;*/
         }
 
 
@@ -319,6 +327,21 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
             sock->_event_cv.notify_all();
             delete rcvpck;
         } else if(rcvpck->is_fin()) {
+            nar::Packet fin_pck;
+            fin_pck.make_fin(sock->_stream_id);
+            std::string finstr = fin_pck.make_packet();
+            for(int i=0; i<100; i++) {
+                sock->_socket.send_to(boost::asio::buffer(finstr), sock->_peer_endpoint, 0, ec);
+                boost::asio::deadline_timer timer(*(sock->_iserv), boost::posix_time::microseconds(10000));
+                timer.wait();
+            }
+
+            *stop_poke = true;
+            delete buff;
+            for(auto& pckent : received_packets) {
+                delete pckent.second;
+            }
+            break;
         } else if(rcvpck->is_nat()) {
             nar::Packet rplpck;
             rplpck.make_nat(sock->_stream_id);
@@ -670,6 +693,14 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len,
     }
     lck.unlock();
     hash = pckgen.getHash();
+    nar::Packet fin_pck;
+    fin_pck.make_fin(this->_stream_id);
+    std::string finstr = fin_pck.make_packet();
+    for(int i=0; i<100; i++) {
+        this->_socket.send_to(boost::asio::buffer(finstr), this->_peer_endpoint, 0, ec);
+        boost::asio::deadline_timer timer(*(this->_iserv), boost::posix_time::microseconds(10000));
+        timer.wait();
+    }
     return true;
 }
 
