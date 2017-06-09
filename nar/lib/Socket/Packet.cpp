@@ -371,7 +371,7 @@ udp::endpoint nar::Packet::get_endpoint() const {
     }
     boost::asio::ip::address addr(boost::asio::ip::address_v4(nar::Packet::ntoh(this->payload, 0, 4)));
     unsigned short port = nar::Packet::ntoh(this->payload, 4, 2);
-    std::cout<< "port: " << port << std::endl;
+    //std::cout<< "port: " << port << std::endl;
     return udp::endpoint(addr, port);
 }
 

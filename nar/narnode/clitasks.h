@@ -1,9 +1,10 @@
-#ifndef NAR_CLITASKS_H
-#define NAR_CLITASKS_H
+#ifndef NAR_CLITASKSS_H
+#define NAR_CLITASKSS_H
 #include <string>
-
+#include <nar/narnode/global.h>
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
+
 
 namespace nar {
     namespace CLITasks {

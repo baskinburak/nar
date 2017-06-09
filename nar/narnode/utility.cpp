@@ -10,6 +10,10 @@
 #include <sstream>
 #include <iostream>
 #include <boost/filesystem.hpp>
+#include <nar/lib/Logging/logger.h>
+extern nar::Logger* anar_log;
+#define aNAR_LOG *anar_log
+nar::Logger *anar_log = new nar::Logger(std::cout);
 
 std::string nar::get_message(nar::Socket* skt) {
     return get_message(*skt);
@@ -112,7 +116,7 @@ std::string nar::get_message(nar::Socket& skt) {
         skt.recv(&nmin, 1);
     }
 
-    std::cout << "LL recv len: " << len << std::endl;
+    //std::cout << "LL recv len: " << len << std::endl;
 
     std::string data;
 
@@ -214,7 +218,7 @@ bool nar::isChunkExists(std::string& file_name) {
     try {
         dir = boost::filesystem::canonical(dir);
     } catch (boost::filesystem::filesystem_error er) {
-        std::cout << er.what() << '\n';
+        aNAR_LOG << er.what() << '\n';
 		isexists = false;
         return isexists;
     }

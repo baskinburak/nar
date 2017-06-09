@@ -68,7 +68,7 @@ nar::Global::Global(std::string config_path): _server_ip(std::string()), _server
             this->_machine_id = value;
             if (this->_machine_id == std::string("")) {
                 this->_machine_id = machine_register();
-                std::cout << "machine id: " << this->_machine_id << std::endl;
+               // std::cout << "machine id: " << this->_machine_id << std::endl;
             }
         }
     }
@@ -78,7 +78,7 @@ nar::Global::Global(std::string config_path): _server_ip(std::string()), _server
     this->write_config();
 
     if(mask != (1 | 2 | 4 | 8 | 16)) {
-        std::cout << "Config file is not complete" << std::endl;
+        NAR_LOG << "Config file is not complete" << std::endl;
         exit(0);
     }
 
@@ -174,7 +174,7 @@ void nar::Global::set_machine_id(std::string& id) {
 
 void nar::Global::write_config() {
     this->_file_mtx.lock();
-    std::cout << "Config File: " << this->_config_path.c_str() << std::endl;
+    //std::cout << "Config File: " << this->_config_path.c_str() << std::endl;
     this->_config_file.open(this->_config_path.c_str(), std::ios::out | std::ios::trunc);
     this->_config_file.write("NAR_FOLDER=", 11);
     this->_config_file.write(this->_nar_folder.c_str(), this->_nar_folder.size());
@@ -219,7 +219,7 @@ std::string nar::Global::machine_register() {
     //std::cout << exs_user << std::endl;
     std::string machineid;
     if(exs_user == 'Y') {
-        std::cout << "todo" << std::endl;
+        std::cout << "not implemented yet" << std::endl;
         exit(0);
     } else {
         std::cout << "Username: ";

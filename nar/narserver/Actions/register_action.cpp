@@ -17,7 +17,7 @@ void nar::ServerAction::register_action(nar::ServerGlobal* s_global, nar::Messag
         nar::DatabaseWriteLock write_locker(db);
         db->insertUser(usr);
     } catch (...) {
-        std::cout<<"User insert Error to database"<<std::endl;
+        NAR_LOG<<"User insert Error to database"<<std::endl;
         status_code = 400;
     }
 

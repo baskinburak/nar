@@ -24,10 +24,9 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
 
     //std::cout << "Trying to open keepalive connection to the server: ";
     while (true) {
-        std::cout << tried++ << " ";
+        tried++ ;
         try {
             req.send_mess(sck, resp);
-            std::cout << resp.get_status_code() << std::endl;
             break;
         } catch (nar::Exception::MessageTypes::ServerSocketAuthenticationError& exp) {
             NAR_LOG << "You probably have non-existing machine id" << std::endl;
@@ -43,7 +42,6 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
             delete_chunk_keepalive(globals,delete_list[i]);
         }
     }
-    std::cout << "Connected." << std::endl;
     return;
 }
 
@@ -71,9 +69,9 @@ void nar::chunk_push_replier(long long int stream_id, nar::Global* globals, long
          try {
             len = cli_sck->recv(buf, 1024);
          } catch(nar::Exception::USocket::InactivePeer& exp) {
-            std::cout << "Reactive push replier peer inactive. Removing file: " << path << std::endl;
-            boost::filesystem::remove(path);
-            return;
+             NAR_LOG << "Reactive push replier peer inactive. Removing file: " << path << std::endl;
+             boost::filesystem::remove(path);
+             return;
          }
          hash.Update((const byte*) buf, len);
          recvfile.write(buf, len);
@@ -106,48 +104,44 @@ void nar::chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int c
 
 void nar::delete_chunk_keepalive( nar::Global* globals, std::string chunk_id)  {
     std::string chunkToDelete = std::string("c").append(chunk_id);
-    std::cout << "Chunk Name: " << chunkToDelete  << " is being deleted." << std::endl;
 
     boost::filesystem::path path(globals->get_file_folder());
     path /= chunkToDelete;
 
     if( !boost::filesystem::exists(path) || boost::filesystem::is_directory(path) || !boost::filesystem::remove(path) ) {
-        std::cout << "Reactive delete failed" << std::endl;
+        NAR_LOG << "Reactive delete failed" << std::endl;
     }
     return;
 }
 
 void nar::delete_chunk( nar::Global* globals, std::string chunk_id, nar::Socket* server_socket)  {
 	std::string chunkToDelete = std::string("c").append(chunk_id);
-	std::cout << "Chunk Name: " << chunkToDelete  << " is being deleted." << std::endl;
 
     boost::filesystem::path path(globals->get_file_folder());
     path /= chunkToDelete;
 
     if( !boost::filesystem::exists(path) || boost::filesystem::is_directory(path) || !boost::filesystem::remove(path) ) {
         nar::MessageTypes::DeleteMachineChunk::Response resp(601);
-        std::cout << "Reactive delete failed" << std::endl;
+        NAR_LOG << "Reactive delete failed" << std::endl;
         try {
             resp.send_mess(server_socket);
         }
-        catch (...) { std::cout << "Daemon-server socket failed." << std::endl;}
+        catch (...) { NAR_LOG << "Daemon-server socket failed." << std::endl;}
         return;
     }
     nar::MessageTypes::DeleteMachineChunk::Response resp(200);
     try {
-        std::cout << "Resp send b4" << std::endl;
         resp.send_mess(server_socket);
-        std::cout << "Resp send After" << std::endl;
     }
-    catch (...) { std::cout << "Daemon-server socket failed." << std::endl; }
+    catch (...) { NAR_LOG << "Daemon-server socket failed." << std::endl; }
     return;
 }
 
 void nar::reactive_dispatcher(nar::Global *globals) {
     nar::Socket* server_socket = globals->establish_server_connection();
-    NAR_LOG << "Server Connection established" << std::endl;
+   // NAR_LOG << "Server Connection established" << std::endl;
     keep_alive(server_socket, globals);
-    NAR_LOG << "KeepAlive Connection established" << std::endl;
+   // NAR_LOG << "KeepAlive Connection established" << std::endl;
 
     for(;;) {
         std::string message;
@@ -176,7 +170,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
             try {
                 req.receive_message(Messaging::transform(message));
             } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-                std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << message << std::endl;
+                NAR_LOG << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << message << std::endl;
               //  exit(0);
             }
 
@@ -227,7 +221,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
             try {
                 req.receive_message(message);
             } catch( nar::Exception::MessageTypes::BadMessageReceive& e ) {
-                std::cout << e.what() << std::endl;
+                NAR_LOG << e.what() << std::endl;
                 nar::MessageTypes::DeleteMachineChunk::Response resp(600);
                 try {
                     resp.send_mess(server_socket);

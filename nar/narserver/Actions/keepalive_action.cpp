@@ -24,13 +24,13 @@ void nar::ServerAction::keepalive_action(nar::ServerGlobal* s_global, nar::Messa
         mac = db->getMachine(mac_id);
 
     } catch(...) {
-        std::cout<<"database error at keepalive"<<std::endl;
+        NAR_LOG<<"database error at keepalive"<<std::endl;
         nar::MessageTypes::KeepAlive::Response resp(405);
         try{
             resp.send_mess(skt);
         }
         catch(...) {
-            std::cout<<"socket gone boom in keepalive 405"<<std::endl;
+            NAR_LOG<<"socket gone boom in keepalive 405"<<std::endl;
             skt->close();
             return;
         }
@@ -47,13 +47,13 @@ void nar::ServerAction::keepalive_action(nar::ServerGlobal* s_global, nar::Messa
             db->updateMachineDeleteList(mac);
         }
     } catch(...) {
-        std::cout<<"boost or database error at server keepalive"<<std::endl;
+        NAR_LOG<<"boost or database error at server keepalive"<<std::endl;
         nar::MessageTypes::KeepAlive::Response resp(709);
         try{
             resp.send_mess(skt);
         }
         catch(...) {
-            std::cout<<"socket gone boom in keepalive 709"<<std::endl;
+            NAR_LOG<<"socket gone boom in keepalive 709"<<std::endl;
             skt->close();
             return;
         }
@@ -69,7 +69,7 @@ void nar::ServerAction::keepalive_action(nar::ServerGlobal* s_global, nar::Messa
             resp.send_mess(skt);
         }
         catch(...) {
-            std::cout<<"socket gone boom in keepalive 200"<<std::endl;
+            NAR_LOG<<"socket gone boom in keepalive 200"<<std::endl;
             skt->close();
             return;
         }
@@ -79,7 +79,7 @@ void nar::ServerAction::keepalive_action(nar::ServerGlobal* s_global, nar::Messa
             resp.send_mess(skt);
         }
         catch(...) {
-            std::cout<<"socket gone boom in keepalive 709"<<std::endl;
+            NAR_LOG<<"socket gone boom in keepalive 709"<<std::endl;
             skt->close();
             return;
         }

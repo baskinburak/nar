@@ -59,9 +59,9 @@ void nar::MessageTypes::IPCBaseResponse::send_message_progress(nar::Socket* skt,
 
 void nar::MessageTypes::IPCBaseResponse::send_message_end(nar::Socket* skt) {
     nlohmann::json json_to_sent;
-    std::cout << "sending from here" << std::endl;
+    //std::cout << "sending from here" << std::endl;
     json_to_sent["header"]["reply_to"] = std::string("END");
-    std::cout << json_to_sent["header"]["reply_to"] << std::endl;
+    //std::cout << json_to_sent["header"]["reply_to"] << std::endl;
     nar::send_message(skt, json_to_sent.dump());
     return;
 }

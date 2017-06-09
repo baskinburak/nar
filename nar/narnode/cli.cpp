@@ -1,4 +1,4 @@
-#include "clitasks.h"
+#include <nar/narnode/clitasks.h>
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -6,7 +6,6 @@
 #include <fstream>
 #include <unistd.h>
 #include <string>
-
 std::pair<std::string, std::string> get_uname_pw() {
     std::string username, password;
     std::cout << "Username: ";

@@ -27,7 +27,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
         //std::cout << "first key enc: " << crypted_aes << std::endl;
     }
     catch(...) {
-        std::cout<<"Daemon register aes cryptor error"<<std::endl;
+        NAR_LOG<<"Daemon register aes cryptor error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,600);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
@@ -38,7 +38,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     try{
         b64_crypted_aes= base64_encode((const unsigned char*) crypted_aes.c_str(), crypted_aes.size());
     } catch(...) {
-        std::cout<<"Daemon register base 64 encode error"<<std::endl;
+        NAR_LOG<<"Daemon register base 64 encode error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,601);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
@@ -52,7 +52,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     try {
         RsaCryptor::generate_key_pair(pub, pri);
     } catch(...) {
-        std::cout<<"Daemon register RSACryptor generate key pair error"<<std::endl;
+        NAR_LOG<<"Daemon register RSACryptor generate key pair error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,602);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
@@ -63,7 +63,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
         b64_pub = base64_encode((const unsigned char*) pub.c_str(), pub.size());
     }
     catch(...) {
-        std::cout<<"Daemon register base 64 encode error"<<std::endl;
+        NAR_LOG<<"Daemon register base 64 encode error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,603);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
@@ -73,7 +73,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     try {
         aes_cryptor.encrypt(pri, crypted_pri_key);
     } catch(...) {
-        std::cout<<"Daemon register aes cryptor encrypt error"<<std::endl;
+        NAR_LOG<<"Daemon register aes cryptor encrypt error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,604);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
@@ -83,7 +83,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     try{
         b64_crypted_pri_key = base64_encode((const unsigned char*) crypted_pri_key.c_str(), crypted_pri_key.size());
     } catch(...) {
-        std::cout<<"Daemon register base 64 encode error"<<std::endl;
+        NAR_LOG<<"Daemon register base 64 encode error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,605);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
@@ -97,7 +97,7 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     try {
         srvsck= _globals->establish_server_connection();
     } catch(...) {
-        std::cout<<"Daemon register can not connect to server error"<<std::endl;
+        NAR_LOG<<"Daemon register can not connect to server error"<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,606);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
@@ -109,25 +109,25 @@ void nar::ActiveTask::Register::run(nar::Socket* ipc_socket, nar::MessageTypes::
     try {
         request.send_mess(srvsck, resp);
     } catch(nar::Exception::MessageTypes::BadRequest exp) {
-        std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        NAR_LOG<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,exp.get_status_code());
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     } catch(nar::Exception::MessageTypes::InternalServerError exp) {
-        std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        NAR_LOG<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,exp.get_status_code());
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     } catch(nar::Exception::MessageTypes::InternalServerDatabaseError exp) {
-        std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        NAR_LOG<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,exp.get_status_code());
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
-        std::cout<<exp.what()<<std::endl;
+        NAR_LOG<<exp.what()<<std::endl;
         nar::MessageTypes::IPCRegister::Response ipc_resp(0,607);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);

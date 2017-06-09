@@ -1,4 +1,4 @@
-#include "clitasks.h"
+#include <nar/narnode/clitasks.h>
 #include <nar/lib/Messaging/MessageTypes/IPCBaseRequest.h>
 
 #include <nar/lib/Messaging/MessageTypes/IPCBaseResponse.h>
@@ -38,7 +38,6 @@ void nar::CLITasks::nar_ls(std::string dir_name, std::string username, std::stri
 
 }
 void nar::CLITasks::nar_pull(std::string file_name,std::string dir_name, std::string username, std::string password, std::string curdir) {
-    std::cout << "File name: " << file_name << std::endl;
 
     nar::MessageTypes::IPCPull::Request req(file_name,dir_name, username, password, curdir);
     boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
@@ -83,7 +82,6 @@ void nar::CLITasks::nar_push(std::string file_name, std::string username, std::s
         curdirstr = file_name;
     }
 
-	std::cout << "Pushing file in path: " << curdirstr << std::endl;
 
     MessageTypes::IPCPush::Request req(curdirstr, username, password, curdir);
 
@@ -197,7 +195,6 @@ void nar::CLITasks::nar_delete_file(std::string file_name, std::string username,
     std::string dir_path;
     std::string file;
     divide_nar_path(file_name,dir_path,file);
-    std::cout << file << " " << dir_path << std::endl;
     nar::MessageTypes::IPCDeleteFile::Request req(dir_path,file, username, password, std::string("/"));
     boost::asio::io_service io_serv;
     nar::Socket cli_skt(io_serv, ctx, 'c');
@@ -208,11 +205,8 @@ void nar::CLITasks::nar_delete_file(std::string file_name, std::string username,
         return;
     }
     try {
-        std::cout<<"alicik"<<std::endl;
         req.send_action(&cli_skt);
-        std::cout<<"aysecik"<<std::endl;
         req.print_loop(&cli_skt);
-        std::cout<<"fatmacik"<<std::endl;
     }
     catch( ... ) {
         std::cout << "Connection lost with daemon" << '\n';
@@ -277,8 +271,6 @@ void nar::CLITasks::nar_mkdir(std::string dir_name, std::string username, std::s
         }
     }
 
-    std::cout<<"file_name "<<file_name<<std::endl;
-    std::cout<<"dir_name "<<dir_path<<std::endl;
 
     nar::MessageTypes::IPCMkdir::Request req(dir_name,file_name, username, password, std::string("/"));
 

@@ -15,7 +15,7 @@ def createfile(dirName,filename):
     p = Popen(['touch', dirName+'/'+filename], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     stdout_data = p.communicate()[0]
     file = open(dirName+'/'+filename, 'w')
-    file.write(id_generator(random.randint(1200000,1200001)))
+    file.write(id_generator(random.randint(10000,15000)))
     file.close()
     return stdout_data
 

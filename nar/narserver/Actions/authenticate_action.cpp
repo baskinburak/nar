@@ -32,7 +32,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
     }
 
     if (user.user_id == -1) {
-        std::cout << "There is no such user: " << username << std::endl;
+        NAR_LOG << "There is no such user: " << username << std::endl;
         nar::MessageTypes::UserAuthenticationInit::Response auth_resp(701);
         auth_resp.send_mess(skt);
         return;
@@ -110,5 +110,4 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
         NAR_LOG << "AUTHENTICATON FAILED! (Wrong Key)" << std::endl;
         ans_resp.send_mess(skt);
     }
-    NAR_LOG << "AUTHENTICATION SUCCESFULL" << std::endl;
 }

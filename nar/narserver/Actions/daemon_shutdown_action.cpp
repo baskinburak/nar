@@ -12,7 +12,7 @@ void nar::ServerAction::daemon_shutdown_action(nar::ServerGlobal *s_global, nar:
 
         peers->delete_keepalive(mac_id);
     } catch(...) {
-        std::cout<<"daemon_shutdown_action peer delete_keepalive failure"<<std::endl;
+        NAR_LOG<<"daemon_shutdown_action peer delete_keepalive failure"<<std::endl;
         skt->close();
     }
 }

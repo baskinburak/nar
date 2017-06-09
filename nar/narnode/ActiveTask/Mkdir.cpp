@@ -15,7 +15,7 @@ void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPC
     try{
         server_sck = this->_globals->establish_server_connection();
     } catch(...) {
-        std::cout << "Cannot establish server connection." << std::endl;
+        NAR_LOG << "Cannot establish server connection." << std::endl;
 
         nar::MessageTypes::IPCPush::Response resp(601);
         nar::MessageTypes::IPCBaseResponse end_resp;
@@ -24,7 +24,7 @@ void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPC
             resp.send_message(ipc_socket);
             end_resp.send_message_end(ipc_socket);
         } catch(...) {
-            std::cout << "CLI seems down." << std::endl;
+            NAR_LOG << "CLI seems down." << std::endl;
         }
         return;
     }
@@ -40,7 +40,7 @@ void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPC
     try {
         nar::ActiveTask::user_authenticate(server_sck, this->_vars);
     } catch (nar::Exception::Daemon::AuthenticationError exp) {
-        std::cout<<exp.what()<<std::endl;
+        NAR_LOG<<exp.what()<<std::endl;
         return;
     }
 
@@ -51,23 +51,23 @@ void nar::ActiveTask::Mkdir::run(nar::Socket* ipc_socket, nar::MessageTypes::IPC
     try{
         mkdir_req.send_mess(server_sck,mdkir_resp);
     } catch(nar::Exception::ExcpBase e) {
-        std::cout << e.what() << std::endl;
-        std::cout << "In Mkdir, there is an error related to nar!" << std::endl;
+        NAR_LOG << e.what() << std::endl;
+        NAR_LOG << "In Mkdir, there is an error related to nar!" << std::endl;
         return;
     } catch(...){
-        std::cout << "In Mkdir, there is an error not based on nar!" << std::endl;
+        NAR_LOG << "In Mkdir, there is an error not based on nar!" << std::endl;
         return;
     }
     nar::MessageTypes::IPCMkdir::Response resp;
     try{
         resp.send_message_end(ipc_socket);
     } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow exp) {
-        std::cout << exp.what() << std::endl;
+        NAR_LOG << exp.what() << std::endl;
     } catch(nar::Exception::LowLevelMessaging::FormatError exp) {
-        std::cout << exp.what() << std::endl;
+        NAR_LOG << exp.what() << std::endl;
     } catch(nar::Exception::LowLevelMessaging::ServerSizeIntOverflow exp) {
-        std::cout << exp.what() << std::endl;
+        NAR_LOG << exp.what() << std::endl;
     } catch(...) {
-        std::cout << "In Mkdir, There is a problem in send message of utility!" << std::endl;
+        NAR_LOG << "In Mkdir, There is a problem in send message of utility!" << std::endl;
     }
 }

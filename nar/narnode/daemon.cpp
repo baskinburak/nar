@@ -27,7 +27,6 @@ void clean_up(nar::Global* globals, nar::UserVariables* _var) {
     nar::Socket* server_sck = globals->establish_server_connection();
     nar::MessageTypes::DaemonShutdown::Request req(globals->get_machine_id());
     req.send_mess(server_sck);
-    std::cout << "Bize ayrilan surenin sonuna geldik :)" << std::endl;
     return;
 }
 
@@ -40,19 +39,19 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     try {
         msg = nar::trim(nar::get_message(*sck));
     } catch(nar::Exception::Socket::SystemError& exp) {
-        std::cout << "handle_ipc_request: Connection to UI is broken." << std::endl;
+        NAR_LOG << "handle_ipc_request: Connection to UI is broken." << std::endl;
         sck->close();
         return;
     } catch(nar::Exception::LowLevelMessaging::NoSize& exp) {
-        std::cout << "handle_ipc_request: Low level messaging error: NoSize" << std::endl;
+        NAR_LOG << "handle_ipc_request: Low level messaging error: NoSize" << std::endl;
         sck->close();
         return;
     } catch(nar::Exception::LowLevelMessaging::SizeIntOverflow& exp) {
-        std::cout << "handle_ipc_request: Low level messaging error: SizeIntOverflow" << std::endl;
+        NAR_LOG << "handle_ipc_request: Low level messaging error: SizeIntOverflow" << std::endl;
         sck->close();
         return;
     } catch(...) {
-        std::cout << "handle_ipc_request: Unhandled error" << std::endl;
+        NAR_LOG << "handle_ipc_request: Unhandled error" << std::endl;
         sck->close();
         return;
     }
@@ -60,7 +59,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     try {
         action = nar::Messaging::get_action(msg);
     } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-        std::cout << "handle_ipc_request: Bad message received, no action" << std::endl;
+        NAR_LOG << "handle_ipc_request: Bad message received, no action" << std::endl;
         sck->close();
         return;
     }
@@ -69,7 +68,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
     try {
         uservars = nar::Messaging::get_user_variables(msg);   //-->>>buraya bak
     } catch ( nar::Exception::MessageTypes::BadMessageReceive& e ) {
-        std::cout << "handle_ipc_request: Bad message received, no uservars" << std::endl;
+        NAR_LOG << "handle_ipc_request: Bad message received, no uservars" << std::endl;
         sck->close();
         return;
     }
@@ -79,7 +78,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             ipc_ls.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            NAR_LOG << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
             sck->forceclose();
             return;
         }
@@ -88,7 +87,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             ls_task.run(sck, &ipc_ls);
         } catch(...) {
-            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            NAR_LOG << "handle_ipc_request: push_task.run unhandled error." << std::endl;
             sck->forceclose();
             return;
         }
@@ -97,7 +96,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             ipc_push.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: push" << std::endl;
+            NAR_LOG << "handle_ipc_request: Bad message received from UI, Request Type: push" << std::endl;
             sck->forceclose();
             return;
         }
@@ -105,7 +104,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             push_task.run(sck, &ipc_push);
         } catch(...) {
-            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            NAR_LOG << "handle_ipc_request: push_task.run unhandled error." << std::endl;
             sck->forceclose();
             return;
         }
@@ -114,7 +113,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             ipc_pull.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: pull" << std::endl;
+            NAR_LOG << "handle_ipc_request: Bad message received from UI, Request Type: pull" << std::endl;
             sck->forceclose();
             return;
         }
@@ -123,7 +122,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             pull_task.run(sck, &ipc_pull);
         } catch(...) {
-            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            NAR_LOG << "handle_ipc_request: push_task.run unhandled error." << std::endl;
             sck->forceclose();
             return;
         }
@@ -132,7 +131,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             ipc_register.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            NAR_LOG << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
             sck->forceclose();
             return;
         }
@@ -141,19 +140,19 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             register_task.run(sck, &ipc_register);
         } catch(...) {
-            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            NAR_LOG << "handle_ipc_request: push_task.run unhandled error." << std::endl;
             sck->forceclose();
             return;
         }
     } else if(action == string("config")) {
-        std::cout << "Config not implemented yet! See u soon!" << std::endl;
+            NAR_LOG << "Config not implemented yet! See u soon!" << std::endl;
     } else if(action == string("status")) {
 
         nar::MessageTypes::IPCStatus::Request ipc_status;
         try {
             ipc_status.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            NAR_LOG << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
             sck->forceclose();
             return;
         }
@@ -162,7 +161,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             status_task.run(sck, &ipc_status);
         } catch(...) {
-            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            NAR_LOG << "handle_ipc_request: push_task.run unhandled error." << std::endl;
             sck->forceclose();
             return;
         }
@@ -172,7 +171,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             ipc_mkdir.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            NAR_LOG << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
             sck->forceclose();
             return;
         }
@@ -181,7 +180,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             mkdir.run(sck, &ipc_mkdir);
         } catch(...) {
-            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            NAR_LOG << "handle_ipc_request: push_task.run unhandled error." << std::endl;
             sck->forceclose();
             return;
         }
@@ -190,7 +189,7 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             ipc_delete_file.populate_object(msg);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
-            std::cout << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
+            NAR_LOG << "handle_ipc_request: Bad message received from UI, Request Type: ls" << std::endl;
             sck->forceclose();
             return;
         }
@@ -199,17 +198,16 @@ void handle_ipc_request(nar::Socket* sck, nar::Global* globals) {
         try {
             delete_file.run(sck, &ipc_delete_file);
         } catch(...) {
-            std::cout << "handle_ipc_request: push_task.run unhandled error." << std::endl;
+            NAR_LOG << "handle_ipc_request: push_task.run unhandled error." << std::endl;
             sck->forceclose();
             return;
         }
     }
 
 
-    NAR_LOG << "slm" << std::endl;
     //globals->get_ioserv().run();
     sck->close();
-    NAR_LOG << "canim" << std::endl;
+
 }
 
 
@@ -224,19 +222,17 @@ try {
     nar::Socket ipc_entry(globals->get_ioserv(), globals->get_ipc_ctx(), 's');
     ipc_entry.bind(17700, "127.0.0.1");
 
-    NAR_LOG << "KeepAlive thread is starting" << std::endl;
     std::thread reactive_thr(nar::reactive_dispatcher, globals);
     reactive_thr.detach();
 
     while(true) {
         nar::Socket* sck = new nar::Socket(globals->get_ioserv(), globals->get_ipc_ctx(), 'c');
-	std::cout << "wooooooooooooot" << std::endl;
         ipc_entry.accept(*sck);
         std::thread ipc_thread(handle_ipc_request, sck, globals);
         ipc_thread.detach();
     }
 } catch(std::invalid_argument& ia) {
-	std::cout << ia.what() << std::endl;
+    NAR_LOG << ia.what() << std::endl;
 }
 }
 

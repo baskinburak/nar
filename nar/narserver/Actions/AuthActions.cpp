@@ -603,7 +603,6 @@ void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* 
         struct DBStructs::File& tmpFile = files[i];
         resp.add_element(std::to_string(tmpFile.change_time),tmpFile.file_id,tmpFile.file_name, tmpFile.file_size, false );
     }
-    NAR_LOG << "Dir Info response is being sent." << std::endl;
     resp.send_mess(skt);
     return;
 }

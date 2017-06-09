@@ -19,7 +19,7 @@ void nar::ActiveTask::LS::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCLs:
     try{
         server_sck = this->_globals->establish_server_connection();
     } catch(...) {
-        std::cout<<"Daemon ls can not connect to server error"<<std::endl;
+        NAR_LOG<<"Daemon ls can not connect to server error"<<std::endl;
         nar::MessageTypes::IPCLs::Response ipc_resp(0,600);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
@@ -35,31 +35,31 @@ void nar::ActiveTask::LS::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCLs:
     try {
         nar::ActiveTask::user_authenticate(server_sck, this->_vars);
     } catch (nar::Exception::Daemon::AuthenticationError exp) {
-        std::cout<<exp.what()<<std::endl;
+        NAR_LOG<<exp.what()<<std::endl;
         return;
     }
     try {
         dir_req.send_mess(server_sck, dir_resp);
     }  catch(nar::Exception::MessageTypes::BadRequest exp) {
-        std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        NAR_LOG<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
         nar::MessageTypes::IPCLs::Response ipc_resp(0,exp.get_status_code());
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     } catch(nar::Exception::MessageTypes::InternalServerError exp) {
-        std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        NAR_LOG<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
         nar::MessageTypes::IPCLs::Response ipc_resp(0,exp.get_status_code());
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     } catch(nar::Exception::MessageTypes::InternalServerDatabaseError exp) {
-        std::cout<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
+        NAR_LOG<<exp.what()<<" status code "<<exp.get_status_code()<<std::endl;
         nar::MessageTypes::IPCLs::Response ipc_resp(0,exp.get_status_code());
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
         return;
     } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
-        std::cout<<exp.what()<<std::endl;
+        NAR_LOG<<exp.what()<<std::endl;
         nar::MessageTypes::IPCLs::Response ipc_resp(0,602);
         ipc_resp.send_message_progress(ipc_socket,0);
         ipc_resp.send_message_end(ipc_socket);
@@ -85,7 +85,6 @@ void nar::ActiveTask::LS::run(nar::Socket* ipc_socket, nar::MessageTypes::IPCLs:
 
 
         ls_resp.send_message_progress(ipc_socket, 100);
-        cout<<"received"<<endl;
 
     }
     ls_resp.send_message_end(ipc_socket);
