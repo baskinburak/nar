@@ -151,7 +151,7 @@ std::vector<nar::SockInfo*>* nar::Peers::random_policy(nar::DBStructs::User& use
         if(try_count > 0 || res->size() == 0)
             res->push_back(this->_keepalives[selected]);
     }
-    if(res.size() == 0) {
+    if(res->size() == 0) {
         throw nar::Exception::Peers::NoValidPeer("no valid peer to select");
     }
     return res;
