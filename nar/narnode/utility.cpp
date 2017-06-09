@@ -112,6 +112,8 @@ std::string nar::get_message(nar::Socket& skt) {
         skt.recv(&nmin, 1);
     }
 
+    std::cout << "LL recv len: " << len << std::endl;
+
     std::string data;
 
     while(len > 0) {

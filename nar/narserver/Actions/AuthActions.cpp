@@ -25,7 +25,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
             req.receive_message(message);
         }
         catch( ... ) {
-            std::cout<<"Malformed Pull request received, ignored."<<std::endl;
+            NAR_LOG<<"Malformed Pull request received, ignored."<<std::endl;
             nar::MessageTypes::FilePull::Response resp(300,-1);
             try {
                 resp.send_mess(skt);
@@ -50,7 +50,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         try {
             req.receive_message(message);
         } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
-            std::cout<<exp.what()<<std::endl;
+            NAR_LOG<<exp.what()<<std::endl;
             nar::MessageTypes::DirInfo::Response resp(300);
             resp.send_mess(skt);
             return;
@@ -66,7 +66,7 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
         try {
             req.receive_message(message);
         } catch(nar::Exception::MessageTypes::BadMessageReceive exp) {
-            std::cout<<exp.what()<<std::endl;
+            NAR_LOG<<exp.what()<<std::endl;
             nar::MessageTypes::DeleteFile::Response resp(300);
             resp.send_mess(skt);
             return;
@@ -85,7 +85,7 @@ long long int findFileId(std::string& file_name,std::string& dir_name,std::strin
     dir  = db->findDirectoryId(uname,dir_name);
     if(dir.dir_id == -1)
     {
-        std::cout<<"No such User directory pair"<<std::endl;
+        NAR_LOG<<"No such User directory pair"<<std::endl;
         throw nar::Exception::MessageTypes::PullFileDoesNotExist("File does not exist",300);
     } else {
         std::vector<nar::DBStructs::File> files = db->getDirectoryFile(dir.dir_id);
@@ -107,82 +107,80 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
     try{
         nar::DatabaseReadLock read_lock(db);
         file_id = findFileId(f_name, d_name, u_name, db);
-        std::cout << "file id: " << file_id << std::endl;
     } catch(...) {
-        std::cout<<"some error with findFileId in server"<<std::endl;
         nar::MessageTypes::DeleteFile::Response resp(400);
         try {
             resp.send_mess(skt);
         }catch(...) {
-            std::cout<<"send_mess_bomb"<<std::endl;
+            NAR_LOG<<"send_mess_bomb"<<std::endl;
             return;
         }
         return;
     }
 
     if(file_id == -1) {
-        std::cout<<"There is no such file"<<std::endl;
+        NAR_LOG<<"There is no such file"<<std::endl;
         nar::MessageTypes::DeleteFile::Response resp(300);
         try {
             resp.send_mess(skt);
         }catch(...) {
-            std::cout<<"send_mess_bomb"<<std::endl;
+            NAR_LOG<<"send_mess_bomb"<<std::endl;
             return;
         }
         return;
     }
-    std::cout << "here here" << std::endl;
+    //NAR_LOG << "here here" << std::endl;
     std::vector<struct DBStructs::Chunk> chunks;
     try{
         nar::DatabaseReadLock read_lock(db);
         chunks  = db->getChunks(file_id);
-        std::cout << "your chunks, sir" << std::endl;
+        //NAR_LOG << "your chunks, sir" << std::endl;
     } catch(...) {
-        std::cout<<"Server delete file getchunk error------fileid "<<std::endl;
+        NAR_LOG << "Server delete file getchunk error------fileid "<<std::endl;
         nar::MessageTypes::DeleteFile::Response resp(401);
         try {
             resp.send_mess(skt);
         }catch(...) {
-            std::cout<<"send_mess_bomb"<<std::endl;
+            NAR_LOG<<"send_mess_bomb"<<std::endl;
             return;
         }
         return;
     }
-    std::cout << "all chunks" << std::endl;
+    //NAR_LOG << "all chunks" << std::endl;
     for(int i=0;i<chunks.size();i++) {
         std::vector<struct DBStructs::Machine> chunk_machines;
 
         try {
-            std::cout << "machines" << std::endl;
+           // NAR_LOG << "machines" << std::endl;
             nar::DatabaseReadLock read_lock(db);
             chunk_machines= db->getMachines(chunks[i].chunk_id);
-            std::cout << "machines2" << std::endl;
+           // NAR_LOG << "machines2" << std::endl;
 
         } catch(...) {
-            std::cout<<"Server delete file getmachines error----chunkid "<<chunks[i].chunk_id<<std::endl;
+            NAR_LOG<<"Server delete file getmachines error----chunkid "<<chunks[i].chunk_id<<std::endl;
             nar::MessageTypes::DeleteFile::Response resp(402);
             try {
                 resp.send_mess(skt);
             }catch(...) {
-                std::cout<<"send_mess_bomb"<<std::endl;
+                NAR_LOG<<"send_mess_bomb"<<std::endl;
                 return;
             }
             return;
         }
-        std::cout << "chunk machinessssss ay" << std::endl;
+        //NAR_LOG << "chunk machinessssss ay" << std::endl;
         for(int j=0;j<chunk_machines.size();j++) {
             nar::SockInfo* peer_sck;
             try {
-                std::cout << "efendim" << std::endl;
+                //NAR_LOG << "efendim" << std::endl;
                 peer_sck = s_global->peers->get_peer(chunk_machines[j].machine_id );
-                std::cout << "olur" << std::endl;
+                //NAR_LOG << "olur" << std::endl;
             } catch(...) {
                 NAR_LOG <<"Server delete file get_peer error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
                 nar::MessageTypes::DeleteFile::Response resp(500);
                 try {
                     resp.send_mess(skt);
                 }catch(...) {
-                    std::cout<<"send_mess_bomb"<<std::endl;
+                    NAR_LOG<<"send_mess_bomb"<<std::endl;
                     return;
                 }
                 return;
@@ -193,12 +191,12 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                     nar::DatabaseReadLock read_lock(db);
                     t_mac =  db->getMachine(chunk_machines[j].machine_id);
                 } catch(...) {
-                    std::cout<<"Server delete file getMachine error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                    NAR_LOG<<"Server delete file getMachine error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
                     nar::MessageTypes::DeleteFile::Response resp(403);
                     try {
                         resp.send_mess(skt);
                     }catch(...) {
-                        std::cout<<"send_mess_bomb"<<std::endl;
+                        NAR_LOG<<"send_mess_bomb"<<std::endl;
                         return;
                     }
                     return;
@@ -213,12 +211,12 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                     nar::DatabaseWriteLock write_lock(db);
                     db->updateMachineDeleteList(t_mac);
                 } catch (...) {
-                    std::cout<<"Server delete file updateMachineDeleteList error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                    NAR_LOG<<"Server delete file updateMachineDeleteList error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
                     nar::MessageTypes::DeleteFile::Response resp(404);
                     try {
                         resp.send_mess(skt);
                     }catch(...) {
-                        std::cout<<"send_mess_bomb"<<std::endl;
+                        NAR_LOG<<"send_mess_bomb"<<std::endl;
                         return;
                     }
                     return;
@@ -234,18 +232,18 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                     del_req.send_mess(peer_sck->get_sck(),del_resp);
 
                 } catch (nar::Exception::MessageTypes::InternalDaemonError exp) {
-                    std::cout<< "AuthAction::Delete" << exp.what()<<std::endl;
+                    NAR_LOG<< "AuthAction::Delete" << exp.what()<<std::endl;
                     struct nar::DBStructs::Machine t_mac;
                     try {
                         nar::DatabaseReadLock read_lock(db);
                         t_mac =  db->getMachine(chunk_machines[j].machine_id);
                     } catch(...) {
-                        std::cout<<"Server delete file getMachine error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                        NAR_LOG<<"Server delete file getMachine error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
                         nar::MessageTypes::DeleteFile::Response resp(405);
                         try {
                             resp.send_mess(skt);
                         }catch(...) {
-                            std::cout<<"send_mess_bomb"<<std::endl;
+                            NAR_LOG<<"send_mess_bomb"<<std::endl;
                             return;
                         }
                         return;
@@ -261,12 +259,12 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                         nar::DatabaseWriteLock write_lock(db);
                         db->updateMachineDeleteList(t_mac);
                     } catch (...) {
-                        std::cout<<"Server delete file updateMachineDeleteList error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
+                        NAR_LOG<<"Server delete file updateMachineDeleteList error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
                         nar::MessageTypes::DeleteFile::Response resp(406);
                         try {
                             resp.send_mess(skt);
                         }catch(...) {
-                            std::cout<<"send_mess_bomb"<<std::endl;
+                            NAR_LOG<<"send_mess_bomb"<<std::endl;
                             return;
                         }
                         return;
@@ -295,7 +293,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         try {
             resp.send_mess(skt);
         }catch(...) {
-            std::cout<<"send_mess_bomb"<<std::endl;
+            NAR_LOG<<"send_mess_bomb"<<std::endl;
             return;
         }
         return;
@@ -312,12 +310,12 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         nar::DatabaseWriteLock write_lock(db);
         db->deleteFile(m_file);
     } catch (...) {
-        std::cout<<"File could not be deleted from Database"<<std::endl;
+        NAR_LOG<<"File could not be deleted from Database"<<std::endl;
         nar::MessageTypes::DeleteFile::Response resp(407);
         try {
             resp.send_mess(skt);
         }catch(...) {
-            std::cout<<"send_mess_bomb"<<std::endl;
+            NAR_LOG<<"send_mess_bomb"<<std::endl;
             return;
         }
         return;
@@ -326,20 +324,19 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
     try {
         resp.send_mess(skt);
     }catch(...) {
-        std::cout<<"send_mess_bomb"<<std::endl;
+        NAR_LOG<<"send_mess_bomb"<<std::endl;
         return;
     }
     try {
         nar::DatabaseWriteLock write_lock(db);
         db->deleteDirectoryTo(dir_to);
     } catch(sql::SQLException& e) {
-        std::cout<<e.what()<<std::endl;
-        std::cout<<"DATABASE BOOOOOOOOOOOM"<<std::endl;
+        NAR_LOG<<e.what()<<std::endl;
         nar::MessageTypes::DeleteFile::Response resp(408);
         try {
             resp.send_mess(skt);
         }catch(...) {
-            std::cout<<"send_mess_bomb"<<std::endl;
+            NAR_LOG<<"send_mess_bomb"<<std::endl;
             return;
         }
         return;
@@ -357,12 +354,12 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
         nar::DatabaseReadLock read_lock(db);
         pwd = db->findDirectoryId(user.user_name,target_dir);
     } catch(sql::SQLException& e) {
-        std::cout<<e.what()<<std::endl;
+        NAR_LOG<<e.what()<<std::endl;
         nar::MessageTypes::Mkdir::Response resp(401);
         try{
             resp.send_mess(skt);
         } catch(...) {
-            std::cout<<"send mess bomb mkdir"<<std::endl;
+            NAR_LOG<<"send mess bomb mkdir"<<std::endl;
         }
 
     }
@@ -371,7 +368,7 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
         try{
             resp.send_mess(skt);
         } catch(...) {
-            std::cout<<"send mess bomb mkdir"<<std::endl;
+            NAR_LOG<<"send mess bomb mkdir"<<std::endl;
         }
     }
     nar::DBStructs::Directory new_dir;
@@ -382,21 +379,19 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
         new_dir.dir_id = db->getNextDirectoryId(1);
         db->insertDirectory(new_dir);          // DIR_ID ASSIGNED
     } catch(sql::SQLException& e){
-        std::cout<<e.what()<<std::endl;
+        NAR_LOG<<e.what()<<std::endl;
         nar::MessageTypes::Mkdir::Response resp(403);
         try{
             resp.send_mess(skt);
         } catch(...) {
-            std::cout<<"send mess bomb mkdir"<<std::endl;
+            NAR_LOG<<"send mess bomb mkdir"<<std::endl;
         }
     }
 
 
-    std::cout <<  "parent id " << pwd.dir_id << std::endl;
 
     nar::DBStructs::DirectoryTo tmp;
     tmp.dir_id=pwd.dir_id;
-    std::cout <<  "İtem id " << new_dir.dir_id << std::endl;
     tmp.item_id=new_dir.dir_id;
     tmp.ForD = true;
 
@@ -404,12 +399,12 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
         nar::DatabaseWriteLock write_lock(db);
         db->insertDirectoryTo(tmp);
     } catch(sql::SQLException& e) {
-        std::cout<<e.what()<<std::endl;
+        NAR_LOG<<e.what()<<std::endl;
         nar::MessageTypes::Mkdir::Response resp(404);
         try{
             resp.send_mess(skt);
         } catch(...) {
-            std::cout<<"send mess bomb mkdir"<<std::endl;
+            NAR_LOG<<"send mess bomb mkdir"<<std::endl;
         }
     }
 
@@ -423,7 +418,6 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     std::string file_name = req.get_file_name();
     std::string dir_name = req.get_dir_name();
     nar::MessageTypes::FilePull::Response resp;
-    std::cout << "File Pull Fnc Entered" << std::endl;
 
     nar::Database* db = s_global->get_db();
     long long int f_id = -1;
@@ -449,7 +443,6 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
         return;
     }
 
-    std::cout << "File id to pull : " << f_id << std::endl;
     if (f_id == -1) {
         resp.set_status_code(315);
         NAR_LOG << "File pull request with non-existing file" << std::endl;
@@ -508,21 +501,17 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
             return;
         }
 
-        std::cout << "Peer to get chunk " << peer_sck->get_machine_id() << std::endl;
 
         long long int s_id = s_global->get_next_stream_id();
 
         nar::MessageTypes::WaitChunkPull::Request chunk_req(r_port, s_id, chunks[i].chunk_id, chunks[i].chunk_size);
         nar::MessageTypes::WaitChunkPull::Response chunk_resp;
-        std::cout << "Peer req sending "  << std::endl;
         chunk_req.send_mess(peer_sck->get_sck(), chunk_resp);
-        std::cout << "Peer req received "  << std::endl;
         if (chunk_resp.get_status_code() != 200 )
-            std::cout << "Pull Server: Peer does not respond to WaitChunkPull" << std::endl;
+            NAR_LOG << "Pull Server: Peer does not respond to WaitChunkPull" << std::endl;
 
         resp.add_element(peer_sck->get_machine_id(), chunks[i].chunk_id, s_id, chunks[i].chunk_size, chunks[i].hashed);
     }
-    std::cout << "Waitchunkpull messages are completed time to send Resp "  << std::endl;
     try {
         resp.set_status_code(200);
         resp.send_mess(skt);
@@ -533,31 +522,28 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
         try {
             req.receive_message(message);
         } catch(nar::Exception::Daemon::ActiveChunkError & e) {
-            std::cout<<e.what()<<std::endl;
+            NAR_LOG<<e.what()<<std::endl;
             nar::DBStructs::Chunk ck;
             long long int cid= req.get_chunk_id();
             try {
                 nar::DatabaseReadLock read_lock(db);
                 ck = db->getChunk(cid);
             } catch(sql::SQLException &err) {
-                std::cout<<err.what()<<"second try for active pull action"<<std::endl;
+                NAR_LOG<<err.what()<<"second try for active pull action"<<std::endl;
                 return;
             }
             std::vector<struct DBStructs::Machine> machines = db->getMachines(cid);
             nar::SockInfo* peer_sck;
             for(int j=0; !(peer_sck = s_global->peers->get_peer(machines[j].machine_id )); ++j);
 
-            std::cout << "Peer to get chunk " << peer_sck->get_machine_id() << std::endl;
 
             long long int s_id = s_global->get_next_stream_id();
 
             nar::MessageTypes::WaitChunkPull::Request chunk_req(r_port, s_id, cid, ck.chunk_size);
             nar::MessageTypes::WaitChunkPull::Response chunk_resp;
-            std::cout << "Peer req sending "  << std::endl;
             chunk_req.send_mess(peer_sck->get_sck(), chunk_resp);
-            std::cout << "Peer req received "  << std::endl;
             if (chunk_resp.get_status_code() != 200 )
-                std::cout << "Pull Server: Peer does not respond to WaitChunkPull" << std::endl;
+                NAR_LOG << "Pull Server: Peer does not respond to WaitChunkPull" << std::endl;
             nar::MessageTypes::InfoChunkPull::Response resp(s_id,200);
             resp.send_mess(skt);
         } catch(...) {
@@ -582,7 +568,7 @@ void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* 
         nar::DatabaseReadLock read_lock(db);
         dir = db->findDirectoryId(user.user_name, dir_name);
     } catch (...) {
-        std::cout<<"Server dir info action findDirectoryId error"<<std::endl;
+        NAR_LOG<<"Server dir info action findDirectoryId error"<<std::endl;
         resp.set_status_code(400);
         resp.send_mess(skt);
         return;
@@ -591,7 +577,7 @@ void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* 
         nar::DatabaseReadLock read_lock(db);
         files = db->getDirectoryFile(dir.dir_id);
     } catch (...) {
-        std::cout<<"Server dir info action getDirectoryFile error"<<std::endl;
+        NAR_LOG<<"Server dir info action getDirectoryFile error"<<std::endl;
         resp.set_status_code(401);
         resp.send_mess(skt);
         return;
@@ -600,7 +586,7 @@ void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* 
         nar::DatabaseReadLock read_lock(db);
         dirs = db->getDirectoryDir(dir.dir_id);
     } catch (...) {
-        std::cout<<"Server dir info action getDirectoryDir error"<<std::endl;
+        NAR_LOG<<"Server dir info action getDirectoryDir error"<<std::endl;
         resp.set_status_code(402);
         resp.send_mess(skt);
         return;
@@ -617,7 +603,7 @@ void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* 
         struct DBStructs::File& tmpFile = files[i];
         resp.add_element(std::to_string(tmpFile.change_time),tmpFile.file_id,tmpFile.file_name, tmpFile.file_size, false );
     }
-    std::cout << "Dir Info response is being sent." << std::endl;
+    NAR_LOG << "Dir Info response is being sent." << std::endl;
     resp.send_mess(skt);
     return;
 }

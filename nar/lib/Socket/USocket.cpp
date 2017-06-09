@@ -397,7 +397,7 @@ void nar::USocket::receive_thread(nar::USocket* sock) {
         sock->_atc_mutex.lock();
     }
     sock->_atc_mutex.unlock();
-    delete sock;
+   // delete sock;
 }
 
 void nar::USocket::randezvous_server() {
@@ -598,7 +598,7 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len,
     boost::system::error_code ec;
     nar::USocket::PacketGenerator pckgen(file, this->_next_seqnum, this->_stream_id, start, len);
     std::unique_lock<std::mutex> lck(this->_work_mutex);
-    double window_size = 256; // packets
+    double window_size = 382; // packets
     unsigned int used_window = 0; // packets
     double rtt = 5000000; // microseconds
     double devrtt = 0; // microseconds
@@ -680,7 +680,7 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len,
         if(this->_timer_flag) {
             nar::Packet* pck = pckgen[timer_seqnum];
             std::string pckstr = pck->make_packet();
-            sent_times[timer_seqnum] = boost::posix_time::microsec_clock::universal_time();
+            //sent_times[timer_seqnum] = boost::posix_time::microsec_clock::universal_time();
             do {
                 this->_socket.send_to(boost::asio::buffer(pckstr), this->_peer_endpoint, 0, ec);
             } while(ec);

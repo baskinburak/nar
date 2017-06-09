@@ -3,7 +3,6 @@
 #include <nar/narserver/dbstructs.h>
 void nar::Peers::read_start() {
     static int cnt = 0;
-    std::cout << "read_start " << cnt++ << std::endl;
     read_mtx.lock();
     read_count++;
     if(read_count == 1)
@@ -13,7 +12,6 @@ void nar::Peers::read_start() {
 
 void nar::Peers::read_end() {
     static int cnt = 0;
-    std::cout << "read_end " << cnt++ << std::endl;
     read_mtx.lock();
     read_count--;
     if(read_count == 0)
@@ -23,12 +21,10 @@ void nar::Peers::read_end() {
 
 void nar::Peers::write_start() {
     static int cnt = 0;
-    std::cout << "write_start " << cnt++ << std::endl;
     write_mtx.lock();
 }
 void nar::Peers::write_end() {
     static int cnt = 0;
-    std::cout << "write_end " << cnt++ << std::endl;
     write_mtx.unlock();
 }
 
@@ -69,7 +65,6 @@ nar::SockInfo* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long
     try {
         result = random_policy(user, chunk_size);
     } catch (...) {
-        std::cout << "PEER SELECT FAILED" << std::endl;
         read_end();
         throw;
     }
@@ -78,16 +73,16 @@ nar::SockInfo* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long
 }
 
 std::vector<nar::SockInfo*>* nar::Peers::peer_select(nar::DBStructs::User& user, unsigned long chunk_size, int peer_count) {
-    read_start();
+    write_start();
     std::vector<nar::SockInfo*>* res;
     try {
         res = random_policy(user, chunk_size, peer_count);
     } catch(...) {
-        std::cout << "VECTOR PEER SELECT FAILED" << std::endl;
+        std::cout << "Vector peer select failed." << std::endl;
         read_end();
         throw;
     }
-    read_end();
+    write_end();
     return res;
     
 }
@@ -107,7 +102,7 @@ std::vector<nar::SockInfo*>* nar::Peers::random_policy(nar::DBStructs::User& use
     }
 
     if(!another_keepalive) {
-        std::cout<<"not enough user to push "<<std::endl;
+        std::cout<<"Not enough user to push"<<std::endl;
         throw nar::Exception::Peers::NoValidPeer("No valid peer to push");
     }
 
@@ -134,12 +129,11 @@ std::vector<nar::SockInfo*>* nar::Peers::random_policy(nar::DBStructs::User& use
             try {
                 req.send_mess(sck, resp);
             } catch(...) {
-                std::cout<<"can not connect peer"<<std::endl;
                 nar::SockInfo* sckinf = this->_keepalives[selected];
                 unsigned long sessid = sckinf->get_sessid();
                 nar::DBStructs::Session sess;
                 sess.session_id = sessid;
-                this->_db->leaveSession(sess);
+                //this->_db->leaveSession(sess);
                 this->_keepalives.erase(selected);
                 std::vector<std::string>::iterator it;
                 if ( ( it = std::find(_macs.begin(), _macs.end(), selected) ) != _macs.end() ) {
@@ -247,3 +241,4 @@ nar::SockInfo* nar::Peers::get_peer(string& machine_id) {
     read_end();
     return result;
 }
+

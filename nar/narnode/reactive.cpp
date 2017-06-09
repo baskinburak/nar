@@ -167,7 +167,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
             action = Messaging::get_action(message);
         } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
             NAR_LOG << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << message << std::endl;
-            exit(0);
+            //exit(0);
         }
 
         if(action == std::string("wait_chunk_push_request")) {
@@ -177,7 +177,7 @@ void nar::reactive_dispatcher(nar::Global *globals) {
                 req.receive_message(Messaging::transform(message));
             } catch(nar::Exception::MessageTypes::BadMessageReceive& exp) {
                 std::cout << "Are you sure you are connecting to the server?" << std::endl << "We have received a badly constructed response." << message << std::endl;
-                exit(0);
+              //  exit(0);
             }
 
             long long int stream_id = req.get_stream_id();
