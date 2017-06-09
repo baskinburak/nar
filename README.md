@@ -85,6 +85,7 @@ void f(int naber, int iyidir);
     * 402: database findDirectoryId is -1 returned in mkdir
     * 403: nextDirectoryId error or insertDirectory error in mkdir
     * 404: insertDirectoryTo error in mkdir
+    * 405: Database get machine from machine_id error
 * //5xx//: Algorithmic error
     * 501: AesCryptor unexpected server error
     * 502: RsaCryptor unexpected server error
@@ -103,5 +104,6 @@ void f(int naber, int iyidir);
     * 706: Compression error
     * 707: Not enough valid peers to push your file [Server sends to daemon, daemon sends to CLI]
     * 708: Cryption error
+    * 709: Boost error at server
     * 799: Peer down
 * //900//: Unknown error

@@ -7,6 +7,8 @@
 #include <nar/lib/Messaging/MessageTypes/MachineRegister.h>
 #include <nar/lib/Messaging/MessageTypes/KeepAlive.h>
 #include <nar/lib/Messaging/MessageTypes/DaemonShutdown.h>
+#include <nar/narserver/databaseReadLock.h>
+#include <nar/narserver/databaseWriteLock.h>
 
 namespace nar {
     namespace ServerAction {

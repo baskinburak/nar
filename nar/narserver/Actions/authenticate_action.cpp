@@ -21,6 +21,7 @@ void nar::ServerAction::authenticate_action(nar::ServerGlobal* s_global, nar::Me
     nar::Database* db = s_global->get_db();
     nar::DBStructs::User user;
     try{
+        nar::DatabaseReadLock read_locker(db);
         user = db->getUser(username);
 
     } catch(...) {

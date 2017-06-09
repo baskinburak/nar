@@ -46,10 +46,7 @@ namespace nar {
 
 
             int read_count = 0;
-            void read_start();
-            void read_end();
-            void write_start();
-            void write_end();
+
 
             nar::db::User turnUser(nar::DBStructs::User & user);
             nar::db::File turnFile(nar::DBStructs::File & file);
@@ -67,6 +64,10 @@ namespace nar {
             Database():read_mtx(), write_mtx() {}
             ~Database();
 
+            void read_start();
+            void read_end();
+            void write_start();
+            void write_end();
 
             void setUser(std::string user);
             void setPass(std::string pass);

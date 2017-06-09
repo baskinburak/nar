@@ -1,4 +1,4 @@
-    #include <nar/lib/Messaging/MessageTypes/FilePush.h>
+#include <nar/lib/Messaging/MessageTypes/FilePush.h>
 #include <nar/lib/Messaging/MessageTypes/FilePull.h>
 #include <nar/narserver/Database.h>
 #include <nar/narserver/dbstructs.h>
@@ -79,19 +79,21 @@ void nar::AuthAction::authentication_dispatcher(nar::ServerGlobal* s_global, nar
 
 long long int findFileId(std::string& file_name,std::string& dir_name,std::string& uname, nar::Database *db)
 {// returns -1 in any case of problem
-     long long int file_id = -1;
-     nar::DBStructs::Directory dir = db->findDirectoryId(uname,dir_name);
-     if(dir.dir_id == -1)
-     {
-         std::cout<<"No such User directory pair"<<std::endl;
-         throw nar::Exception::MessageTypes::PullFileDoesNotExist("File does not exist",300);
-     } else {
-         std::vector<nar::DBStructs::File> files = db->getDirectoryFile(dir.dir_id);
-         for(int i= 0;i<files.size();i++){
-             if(files[i].file_name.compare(file_name)== 0) {
-                 file_id = files[i].file_id;
-                }
-         }
+    long long int file_id = -1;
+    nar::DBStructs::Directory dir;
+
+    dir  = db->findDirectoryId(uname,dir_name);
+    if(dir.dir_id == -1)
+    {
+        std::cout<<"No such User directory pair"<<std::endl;
+        throw nar::Exception::MessageTypes::PullFileDoesNotExist("File does not exist",300);
+    } else {
+        std::vector<nar::DBStructs::File> files = db->getDirectoryFile(dir.dir_id);
+        for(int i= 0;i<files.size();i++){
+            if(files[i].file_name.compare(file_name)== 0) {
+             file_id = files[i].file_id;
+            }
+        }
     }
     return file_id;
 }
@@ -103,6 +105,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
     long long int file_id;
 
     try{
+        nar::DatabaseReadLock read_lock(db);
         file_id = findFileId(f_name, d_name, u_name, db);
         std::cout << "file id: " << file_id << std::endl;
     } catch(...) {
@@ -131,6 +134,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
     std::cout << "here here" << std::endl;
     std::vector<struct DBStructs::Chunk> chunks;
     try{
+        nar::DatabaseReadLock read_lock(db);
         chunks  = db->getChunks(file_id);
         std::cout << "your chunks, sir" << std::endl;
     } catch(...) {
@@ -150,6 +154,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
 
         try {
             std::cout << "machines" << std::endl;
+            nar::DatabaseReadLock read_lock(db);
             chunk_machines= db->getMachines(chunks[i].chunk_id);
             std::cout << "machines2" << std::endl;
 
@@ -185,6 +190,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
             if(peer_sck ==NULL) {
                 struct nar::DBStructs::Machine t_mac;
                 try {
+                    nar::DatabaseReadLock read_lock(db);
                     t_mac =  db->getMachine(chunk_machines[j].machine_id);
                 } catch(...) {
                     std::cout<<"Server delete file getMachine error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
@@ -198,8 +204,13 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                     return;
                 }
                 std::string cur_value = t_mac.delete_list;
-                t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                if (cur_value.size() > 0) {
+                    t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                } else {
+                    t_mac.delete_list = std::to_string(chunks[i].chunk_id);
+                }
                 try {
+                    nar::DatabaseWriteLock write_lock(db);
                     db->updateMachineDeleteList(t_mac);
                 } catch (...) {
                     std::cout<<"Server delete file updateMachineDeleteList error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
@@ -226,6 +237,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                     std::cout<< "AuthAction::Delete" << exp.what()<<std::endl;
                     struct nar::DBStructs::Machine t_mac;
                     try {
+                        nar::DatabaseReadLock read_lock(db);
                         t_mac =  db->getMachine(chunk_machines[j].machine_id);
                     } catch(...) {
                         std::cout<<"Server delete file getMachine error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
@@ -239,8 +251,14 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
                         return;
                     }
                     std::string cur_value = t_mac.delete_list;
-                    t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                    if (cur_value.size() > 0) {
+                        t_mac.delete_list = cur_value + std::string(",")+ std::to_string(chunks[i].chunk_id);
+                    } else {
+                        t_mac.delete_list = std::to_string(chunks[i].chunk_id);
+                    }
+
                     try {
+                        nar::DatabaseWriteLock write_lock(db);
                         db->updateMachineDeleteList(t_mac);
                     } catch (...) {
                         std::cout<<"Server delete file updateMachineDeleteList error----machine_id "<<chunk_machines[j].machine_id<<std::endl;
@@ -267,7 +285,22 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
 
     }
     struct nar::DBStructs::File m_file;
-    struct nar::DBStructs::Directory m_dir = db->findDirectoryId(u_name ,d_name);
+    struct nar::DBStructs::Directory m_dir;
+    try {
+        nar::DatabaseReadLock read_lock(db);
+        m_dir= db->findDirectoryId(u_name ,d_name);
+    } catch(sql::SQLException & e) {
+        NAR_LOG<<e.what()<<std::endl;
+        nar::MessageTypes::DeleteFile::Response resp(318);
+        try {
+            resp.send_mess(skt);
+        }catch(...) {
+            std::cout<<"send_mess_bomb"<<std::endl;
+            return;
+        }
+        return;
+    }
+
 
     struct nar::DBStructs::DirectoryTo dir_to;
     dir_to.dir_id = m_dir.dir_id;
@@ -276,6 +309,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
     m_file.file_id = file_id;
 
     try {
+        nar::DatabaseWriteLock write_lock(db);
         db->deleteFile(m_file);
     } catch (...) {
         std::cout<<"File could not be deleted from Database"<<std::endl;
@@ -296,6 +330,7 @@ void nar::AuthAction::delete_file_action(nar::ServerGlobal* s_global, nar::Socke
         return;
     }
     try {
+        nar::DatabaseWriteLock write_lock(db);
         db->deleteDirectoryTo(dir_to);
     } catch(sql::SQLException& e) {
         std::cout<<e.what()<<std::endl;
@@ -319,6 +354,7 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
     nar::Database* db = s_global->get_db();
     nar::DBStructs::Directory pwd;
     try{
+        nar::DatabaseReadLock read_lock(db);
         pwd = db->findDirectoryId(user.user_name,target_dir);
     } catch(sql::SQLException& e) {
         std::cout<<e.what()<<std::endl;
@@ -342,6 +378,7 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
     new_dir.dir_name = dir_name;
 
     try {
+        nar::DatabaseWriteLock write_lock(db);
         new_dir.dir_id = db->getNextDirectoryId(1);
         db->insertDirectory(new_dir);          // DIR_ID ASSIGNED
     } catch(sql::SQLException& e){
@@ -364,6 +401,7 @@ void nar::AuthAction::mkdir_action(nar::ServerGlobal* s_global, nar::Socket* skt
     tmp.ForD = true;
 
     try {
+        nar::DatabaseWriteLock write_lock(db);
         db->insertDirectoryTo(tmp);
     } catch(sql::SQLException& e) {
         std::cout<<e.what()<<std::endl;
@@ -388,10 +426,30 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     std::cout << "File Pull Fnc Entered" << std::endl;
 
     nar::Database* db = s_global->get_db();
-    long long int f_id = findFileId(file_name,dir_name,user.user_name, db);
+    long long int f_id = -1;
+    try {
+        nar::DatabaseReadLock read_lock(db);
+        f_id = findFileId(file_name,dir_name,user.user_name, db);
+
+
+    } catch (sql::SQLException &e) {
+        NAR_LOG<<e.what()<<std::endl;
+        resp.set_status_code(315);
+        try {
+
+            resp.send_mess(skt);
+        } catch (...) {}
+        return;
+    } catch(...) {
+        NAR_LOG<<"findFileId unkown error"<<std::endl;
+        resp.set_status_code(316);
+        try {
+            resp.send_mess(skt);
+        } catch (...) {}
+        return;
+    }
 
     std::cout << "File id to pull : " << f_id << std::endl;
-
     if (f_id == -1) {
         resp.set_status_code(315);
         NAR_LOG << "File pull request with non-existing file" << std::endl;
@@ -401,7 +459,19 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
         return;
     }
 
-    std::vector<struct DBStructs::Chunk> chunks = db->getChunks(f_id);
+    std::vector<struct DBStructs::Chunk> chunks;
+    try {
+        nar::DatabaseReadLock read_lock(db);
+        chunks = db->getChunks(f_id);
+    } catch(sql::SQLException & e) {
+        NAR_LOG<<e.what()<<std::endl;
+        resp.set_status_code(318);
+        try {
+            resp.send_mess(skt);
+        } catch (...) {}
+        return;
+    }
+
     unsigned short r_port;
 
     try {
@@ -413,7 +483,19 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
     }
 
     for(int i=0; i < chunks.size(); ++i) {
-        std::vector<struct DBStructs::Machine> machines = db->getMachines(chunks[i].chunk_id);
+        std::vector<struct DBStructs::Machine> machines;
+        try {
+            nar::DatabaseReadLock read_lock(db);
+            machines = db->getMachines(chunks[i].chunk_id);
+        } catch(sql::SQLException & e) {
+            NAR_LOG<<e.what()<<std::endl;
+            resp.set_status_code(319);
+            try {
+                resp.send_mess(skt);
+            } catch (...) {}
+            return;
+        }
+
         nar::SockInfo* peer_sck;
         int j;
         for( j=0; !(peer_sck = s_global->peers->get_peer(machines[j].machine_id )) && (j < machines.size()) ; ++j);
@@ -455,6 +537,7 @@ void nar::AuthAction::pull_file_action(nar::ServerGlobal* s_global, nar::Socket*
             nar::DBStructs::Chunk ck;
             long long int cid= req.get_chunk_id();
             try {
+                nar::DatabaseReadLock read_lock(db);
                 ck = db->getChunk(cid);
             } catch(sql::SQLException &err) {
                 std::cout<<err.what()<<"second try for active pull action"<<std::endl;
@@ -496,6 +579,7 @@ void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* 
     std::vector<nar::DBStructs::File> files;
     std::vector<nar::DBStructs::Directory> dirs;
     try {
+        nar::DatabaseReadLock read_lock(db);
         dir = db->findDirectoryId(user.user_name, dir_name);
     } catch (...) {
         std::cout<<"Server dir info action findDirectoryId error"<<std::endl;
@@ -504,6 +588,7 @@ void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* 
         return;
     }
     try {
+        nar::DatabaseReadLock read_lock(db);
         files = db->getDirectoryFile(dir.dir_id);
     } catch (...) {
         std::cout<<"Server dir info action getDirectoryFile error"<<std::endl;
@@ -512,6 +597,7 @@ void nar::AuthAction::dir_info_action(nar::ServerGlobal* s_global, nar::Socket* 
         return;
     }
     try {
+        nar::DatabaseReadLock read_lock(db);
         dirs = db->getDirectoryDir(dir.dir_id);
     } catch (...) {
         std::cout<<"Server dir info action getDirectoryDir error"<<std::endl;
@@ -560,9 +646,15 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
     std::vector<nar::DBStructs::Chunk> v_chunks;
     std::vector<nar::DBStructs::ChunkToMachine> v_chunktomac;
     std::map<long long int, std::vector<std::string> > v_macid;
+    long long int c_id;
+    long long int f_id;
+    {
+        nar::DatabaseReadLock some_test_lock(db);
+        c_id = db->getNextChunkId(peer_num);
+        f_id = db->getNextFileId(1);
+    }
 
-    long long int c_id = db->getNextChunkId(peer_num);
-    long long int f_id = db->getNextFileId(1);
+
     long long int f_cid = c_id;
     unsigned long long int f_size = file_size;
 
@@ -612,8 +704,11 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
         dt.dir_id = user.dir_id;
         dt.item_id = f_id;
         dt.ForD = false;
-        db->insertFile(fl);
-        db->insertDirectoryTo(dt);
+        {
+            nar::DatabaseWriteLock write_lock(db);
+            db->insertFile(fl);
+            db->insertDirectoryTo(dt);
+        }
         f_size = file_size;
         for(int i=0;i<peer_num;i++, f_size -= CHUNK_SIZE){
             nar::DBStructs::Chunk chnk;
@@ -621,13 +716,17 @@ void nar::AuthAction::push_file_action(nar::ServerGlobal* s_global, nar::Socket*
             c_to_m.chunk_id = chnk.chunk_id = f_cid++;
             chnk.file_id = f_id ;
             chnk.chunk_size = std::min(CHUNK_SIZE, f_size);
-            db->insertChunk(chnk);
-            for(int j=0; j<v_macid[c_to_m.chunk_id].size(); j++) {
-                c_to_m.machine_id = v_macid[c_to_m.chunk_id][j];
-                db->insertChunkToMachine(c_to_m);
+            {
+                nar::DatabaseWriteLock write_lock(db);
+                db->insertChunk(chnk);
+                for(int j=0; j<v_macid[c_to_m.chunk_id].size(); j++) {
+                    c_to_m.machine_id = v_macid[c_to_m.chunk_id][j];
+                    db->insertChunkToMachine(c_to_m);
+                }
             }
         }
     } catch(...) {
+        NAR_LOG<<"server_push_bad try"<<std::endl;
         //rollback TODO !!!!
     }
 }
@@ -648,6 +747,7 @@ void nar::AuthAction::machine_register_action(nar::ServerGlobal* s_global, nar::
         AesCryptor::generate_key(mac_id,150);
         try {
             mac.machine_id = mac_id;
+            nar::DatabaseWriteLock write_lock(db);
             db->insertMachine(mac);
             break;
         } catch (...) {

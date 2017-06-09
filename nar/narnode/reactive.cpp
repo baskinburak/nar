@@ -37,6 +37,12 @@ void nar::keep_alive(nar::Socket* sck, nar::Global* globals) {
             exit(0);
         }
     }
+    std::vector<std::string> &delete_list = resp.get_delete_list();
+    if(delete_list.size()>0) {
+        for(int i=0;i<delete_list.size();i++) {
+            delete_chunk_keepalive(globals,delete_list[i]);
+        }
+    }
     std::cout << "Connected." << std::endl;
     return;
 }
@@ -96,6 +102,19 @@ void nar::chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int c
     std::string hash;
     cli_sck->send(f,0,f.size(), hash);
     cli_sck->close();
+}
+
+void nar::delete_chunk_keepalive( nar::Global* globals, std::string chunk_id)  {
+    std::string chunkToDelete = std::string("c").append(chunk_id);
+    std::cout << "Chunk Name: " << chunkToDelete  << " is being deleted." << std::endl;
+
+    boost::filesystem::path path(globals->get_file_folder());
+    path /= chunkToDelete;
+
+    if( !boost::filesystem::exists(path) || boost::filesystem::is_directory(path) || !boost::filesystem::remove(path) ) {
+        std::cout << "Reactive delete failed" << std::endl;
+    }
+    return;
 }
 
 void nar::delete_chunk( nar::Global* globals, std::string chunk_id, nar::Socket* server_socket)  {

@@ -57,7 +57,7 @@ void handle_request(nar::Socket* skt, nar::ServerGlobal* s_global) {
             nar::ServerAction::keepalive_action(s_global, req, skt);
         } else if(action == "daemon_shutdown") {
             nar::MessageTypes::DaemonShutdown::Request req;
-
+            std::cout<< "daemon_shutdown request"<<std::endl;
             try{
                 req.receive_message(msg);
             } catch(nar::Exception::MessageTypes::BadMessageReceive & e) {

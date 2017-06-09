@@ -9,4 +9,5 @@ namespace nar {
     void chunk_pull_replier(unsigned int stream_id, nar::Global* globals, int chunk_size, unsigned short rand_port, long long int chunk_id);
     void reactive_dispatcher(Global *globals);
     void delete_chunk( nar::Global* globals, std::string chunk_id,nar::Socket* server_socket);
+    void delete_chunk_keepalive( nar::Global* globals, std::string chunk_id);
 }
