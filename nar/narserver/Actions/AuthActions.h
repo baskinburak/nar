@@ -2,6 +2,8 @@
 #define NAR_AUTHACTIONS_H
 #include <nar/lib/Socket/Socket.h>
 #include <nar/narserver/ServerGlobal.h>
+#include <nar/narserver/databaseReadLock.h>
+#include <nar/narserver/databaseWriteLock.h>
 #include <nar/lib/Messaging/MessageTypes/UserAuthenticationInit.h>
 #include <nar/lib/Messaging/MessageTypes/MachineRegister.h>
 #include <nar/lib/Messaging/MessageTypes/UserRegister.h>

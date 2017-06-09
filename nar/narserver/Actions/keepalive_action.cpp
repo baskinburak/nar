@@ -1,5 +1,6 @@
 #include "ServerActions.h"
 #include <boost/algorithm/string.hpp>
+
 #include <nar/narserver/dbstructs.h>
 #include <nar/narserver/ServerGlobal.h>
 #include <nar/lib/Messaging/MessageTypes/UserRegister.h>
@@ -13,12 +14,15 @@
 
 
 void nar::ServerAction::keepalive_action(nar::ServerGlobal* s_global, nar::MessageTypes::KeepAlive::Request& req, nar::Socket* skt) {
+
     std::string& mac_id = req.get_machine_id();
     nar::Peers* peers = s_global->peers;
     nar::Database* db = s_global->get_db();
     nar::DBStructs::Machine mac;
     try {
+        nar::DatabaseReadLock read_locker(db);
         mac = db->getMachine(mac_id);
+
     } catch(...) {
         std::cout<<"database error at keepalive"<<std::endl;
         nar::MessageTypes::KeepAlive::Response resp(405);
@@ -39,6 +43,7 @@ void nar::ServerAction::keepalive_action(nar::ServerGlobal* s_global, nar::Messa
         if(mac.delete_list.size() > 0) {
             boost::split( delete_list, mac.delete_list, boost::is_any_of( "," ) );
             mac.delete_list = std::string();
+            nar::DatabaseWriteLock write_lock(db);
             db->updateMachineDeleteList(mac);
         }
     } catch(...) {

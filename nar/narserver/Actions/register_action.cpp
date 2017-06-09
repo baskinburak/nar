@@ -14,6 +14,7 @@ void nar::ServerAction::register_action(nar::ServerGlobal* s_global, nar::Messag
     usr.rsa_pri_crypted = req.get_rsa_pri_crypted();
 
     try {
+        nar::DatabaseWriteLock write_locker(db);
         db->insertUser(usr);
     } catch (...) {
         std::cout<<"User insert Error to database"<<std::endl;
