@@ -689,7 +689,7 @@ bool nar::USocket::send(nar::File& file, unsigned long start, unsigned long len,
             stp_tmr = start_timer(rtt + 4*devrtt);
             window_size -= 0.5;
             window_size = std::max(window_size, 1.1);
-            std::cout << window_size << std::endl;
+            //std::cout << window_size << std::endl;
         }
         this->_event_cv.wait(lck);
     }

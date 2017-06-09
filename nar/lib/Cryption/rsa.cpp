@@ -95,7 +95,6 @@ void RsaCryptor::encrypt(std::string& data, std::string& crypted) {
 
         if(data.length() <= 342) {
             encrypt_(data,crypted);
-            std::cout << "FAST CONVERSION" << crypted.length() << std::endl;
             return;
         }
     try {
