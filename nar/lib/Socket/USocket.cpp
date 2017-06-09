@@ -98,7 +98,7 @@ unsigned short nar::USocket::get_port() const {
 }
 
 nar::USocket::USocket(boost::asio::io_service& io_serv, std::string server_ip, unsigned short server_port, unsigned int stream_id): _socket(io_serv), _stream_id(stream_id), _iserv(&io_serv) {
-    static unsigned short udp_next_port = 6543;
+    static unsigned short udp_next_port = 10000;
 
 
     this->_active_timer_count = 0;
