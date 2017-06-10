@@ -46,9 +46,9 @@ void nar::MessageTypes::IPCDeleteFile::Request::print_loop(nar::Socket* skt) {
     while (true) {
 
         std::string tmp = get_message(*skt);
-        std::cout << tmp << std::endl;
+       // std::cout << tmp << std::endl;
         nlohmann::json received = nlohmann::json::parse(tmp);
-        std::cout << "PARSED" << std::endl;
+      //  std::cout << "PARSED" << std::endl;
 
 
         if( received["header"]["reply_to"] == std::string("END")  ) {
@@ -73,7 +73,7 @@ void nar::MessageTypes::IPCDeleteFile::Request::print_loop(nar::Socket* skt) {
                 std::cout<<"Some things went wrong in daemon --- stat"<< stat<<std::endl;
                 break;
             }
-        }
+        } else std::cout << "SUCCESS" << std::endl;
     }
 
     return;
